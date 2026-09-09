@@ -1,8 +1,9 @@
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { ArrowLeft, TrendingUp, TrendingDown, Minus, Bot } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useAppData } from '../hooks/useAppData';
 import { getExerciseHistory, getPersonalRecord, getExerciseTrend } from '../lib/stats';
+import { getCoachSuggestion } from '../lib/coach';
 import { Card, EmptyState } from '../components/ui';
 import { chartColors, tooltipStyle } from '../lib/chartTheme';
 
@@ -15,6 +16,9 @@ export function ExerciseDetail() {
   const history = getExerciseHistory(sessions, exerciseId ?? '');
   const pr = getPersonalRecord(sessions, exerciseId ?? '');
   const trend = getExerciseTrend(sessions, exerciseId ?? '');
+  const coach = getCoachSuggestion(sessions, exerciseId ?? '');
+  const coachColor =
+    coach.action === 'increase' ? chartColors.status.good : coach.action === 'deload' ? chartColors.status.warning : chartColors.axis;
 
   const chartData = history.map((h) => ({
     date: new Date(h.date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
@@ -65,6 +69,23 @@ export function ExerciseDetail() {
             <span className="text-xs ml-auto" style={{ color: 'var(--text-faint)' }}>
               vs. sessão anterior
             </span>
+          </Card>
+
+          <Card className="mb-4 flex items-start gap-2.5">
+            <div
+              className="w-7 h-7 rounded-full flex items-center justify-center shrink-0 mt-0.5"
+              style={{ background: 'var(--brand-dim)' }}
+            >
+              <Bot size={14} style={{ color: 'var(--brand)' }} />
+            </div>
+            <div>
+              <p className="text-xs font-semibold mb-0.5" style={{ color: 'var(--text-dim)' }}>
+                Seu treinador diz
+              </p>
+              <p className="text-sm" style={{ color: coachColor }}>
+                {coach.message}
+              </p>
+            </div>
           </Card>
 
           <Card className="mb-4">

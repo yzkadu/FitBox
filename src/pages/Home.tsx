@@ -1,17 +1,21 @@
 import { useNavigate } from 'react-router-dom';
-import { Play, Flame, CalendarCheck, Plus, ArrowRight } from 'lucide-react';
+import { Play, Flame, CalendarCheck, Plus, ArrowRight, Bot } from 'lucide-react';
 import { useAppData } from '../hooks/useAppData';
 import { startSession } from '../lib/actions';
 import { getCurrentStreakWeeks, getTotalSessionsThisMonth } from '../lib/stats';
+import { getTopCoachTip } from '../lib/coach';
 import { Card, PageHeader, Button, EmptyState } from '../components/ui';
 
 export function Home() {
-  const { workouts, sessions, activeSessionId } = useAppData();
+  const { workouts, sessions, exercises, activeSessionId } = useAppData();
   const navigate = useNavigate();
 
   const active = workouts.filter((w) => !w.archived);
   const streak = getCurrentStreakWeeks(sessions);
   const monthCount = getTotalSessionsThisMonth(sessions);
+  const coachTip = getTopCoachTip(sessions);
+  const coachExercise = coachTip ? exercises.find((e) => e.id === coachTip.exerciseId) : null;
+  const coachColor = coachTip?.action === 'increase' ? 'var(--success)' : coachTip?.action === 'deload' ? 'var(--warn)' : 'var(--text)';
 
   const lastFinished = sessions
     .filter((s) => s.finishedAt)
@@ -41,6 +45,25 @@ export function Home() {
               Continuar <ArrowRight size={14} />
             </span>
           </Button>
+        </Card>
+      )}
+
+      {coachTip && coachExercise && (
+        <Card
+          className="mb-4 flex items-start gap-2.5 cursor-pointer"
+          onClick={() => navigate(`/exercicio/${coachTip.exerciseId}`)}
+        >
+          <div className="w-7 h-7 rounded-full flex items-center justify-center shrink-0 mt-0.5" style={{ background: 'var(--brand-dim)' }}>
+            <Bot size={14} style={{ color: 'var(--brand)' }} />
+          </div>
+          <div className="min-w-0">
+            <p className="text-xs font-semibold mb-0.5" style={{ color: 'var(--text-dim)' }}>
+              Seu treinador · {coachExercise.name}
+            </p>
+            <p className="text-sm" style={{ color: coachColor }}>
+              {coachTip.message}
+            </p>
+          </div>
         </Card>
       )}
 

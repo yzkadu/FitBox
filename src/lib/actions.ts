@@ -1,4 +1,5 @@
 import { store, uid } from './storage';
+import { getSuggestedStartingPoint } from './coach';
 import type {
   Workout,
   WorkoutExercise,
@@ -107,6 +108,7 @@ export function reorderWorkoutExercises(workoutId: string, orderedEntryIds: stri
 // ---------- Sessions (workout execution / log) ----------
 
 export function startSession(workout: Workout): Session {
+  const pastSessions = store.getSnapshot().sessions;
   const session: Session = {
     id: uid(),
     workoutId: workout.id,
@@ -116,17 +118,25 @@ export function startSession(workout: Workout): Session {
     exercises: workout.exercises
       .slice()
       .sort((a, b) => a.order - b.order)
-      .map((we) => ({
-        id: uid(),
-        exerciseId: we.exerciseId,
-        sets: Array.from({ length: we.targetSets }).map((_, i) => ({
+      .map((we) => {
+        // Pré-preenche com a sugestão do treinador virtual (progressão de carga
+        // baseada no histórico), quando existir, para agilizar o registro.
+        const suggestion = getSuggestedStartingPoint(pastSessions, we.exerciseId);
+        return {
           id: uid(),
-          setNumber: i + 1,
-          weight: 0,
-          reps: 0,
-          completed: false,
-        })),
-      })),
+          exerciseId: we.exerciseId,
+          // Só o peso é pré-preenchido (ponto de partida sugerido); as reps ficam
+          // em branco até o usuário realmente registrar o que fez na série, para
+          // não gravar no histórico uma série que não foi executada.
+          sets: Array.from({ length: we.targetSets }).map((_, i) => ({
+            id: uid(),
+            setNumber: i + 1,
+            weight: suggestion?.weight ?? 0,
+            reps: 0,
+            completed: false,
+          })),
+        };
+      }),
   };
   store.update((d) => {
     d.sessions.push(session);
@@ -213,7 +223,10 @@ export function finishSession(sessionId: string) {
     s.durationSeconds = Math.round((Date.parse(s.finishedAt) - Date.parse(s.startedAt)) / 1000);
     // drop sets never touched (0 reps and not completed) to keep history clean
     s.exercises.forEach((se) => {
-      se.sets = se.sets.filter((st) => st.completed || st.reps > 0 || st.weight > 0);
+      // Uma série só conta como realizada se tiver reps registradas (ou estiver
+      // marcada como concluída) — peso sozinho pode ser só o valor sugerido pelo
+      // treinador virtual, pré-preenchido mas nunca executado.
+      se.sets = se.sets.filter((st) => st.completed || st.reps > 0);
     });
     s.exercises = s.exercises.filter((se) => se.sets.length > 0);
     if (d.activeSessionId === sessionId) d.activeSessionId = null;

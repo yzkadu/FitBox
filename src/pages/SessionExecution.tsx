@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { X, Plus, Check, Trash2, Clock } from 'lucide-react';
+import { X, Plus, Check, Trash2, Clock, Bot } from 'lucide-react';
 import { useAppData } from '../hooks/useAppData';
 import {
   addExerciseToSession,
@@ -11,6 +11,7 @@ import {
   discardSession,
 } from '../lib/actions';
 import { getExerciseHistory } from '../lib/stats';
+import { getCoachSuggestion } from '../lib/coach';
 import { Button } from '../components/ui';
 import { ExercisePicker } from '../components/ExercisePicker';
 import type { Exercise } from '../types';
@@ -129,9 +130,12 @@ export function SessionExecution() {
           const ex = exerciseById.get(se.exerciseId);
           const history = getExerciseHistory(sessions, se.exerciseId);
           const lastSession = history[history.length - 1];
+          const coach = getCoachSuggestion(sessions, se.exerciseId);
+          const coachColor =
+            coach.action === 'increase' ? 'var(--success)' : coach.action === 'deload' ? 'var(--warn)' : 'var(--text-faint)';
           return (
             <div key={se.id} className="rounded-2xl border p-3.5" style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
-              <div className="flex items-baseline justify-between mb-2">
+              <div className="flex items-baseline justify-between mb-1">
                 <p className="font-medium text-sm">{ex?.name ?? 'Exercício'}</p>
                 {lastSession && (
                   <p className="text-xs" style={{ color: 'var(--text-faint)' }}>
@@ -139,6 +143,12 @@ export function SessionExecution() {
                   </p>
                 )}
               </div>
+              {coach.action !== 'no-data' && (
+                <p className="text-xs mb-2 flex items-start gap-1" style={{ color: coachColor }}>
+                  <Bot size={13} className="shrink-0 mt-[1px]" />
+                  <span>{coach.message}</span>
+                </p>
+              )}
 
               <div className="grid grid-cols-[28px_1fr_1fr_32px_28px] gap-2 items-center mb-1 px-1">
                 <span className="text-[11px]" style={{ color: 'var(--text-faint)' }}>
