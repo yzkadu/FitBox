@@ -1,14 +1,26 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Play, Flame, CalendarCheck, Plus, ArrowRight, Bot } from 'lucide-react';
+import { Play, Flame, CalendarCheck, Plus, ArrowRight, Bot, Bike, BedDouble, ChevronDown } from 'lucide-react';
 import { useAppData } from '../hooks/useAppData';
+import { useProfiles } from '../hooks/useProfiles';
 import { startSession } from '../lib/actions';
 import { getCurrentStreakWeeks, getTotalSessionsThisMonth } from '../lib/stats';
 import { getTopCoachTip } from '../lib/coach';
+import { WEEKDAY_ORDER } from '../types';
 import { Card, PageHeader, Button, EmptyState } from '../components/ui';
+import { ProfileSwitcherSheet } from '../components/ProfileSwitcherSheet';
+
+/** Date.getDay(): 0=domingo...6=sábado → nosso índice seg..dom (0..6) */
+function todayWeekdayKey() {
+  const jsDay = new Date().getDay();
+  return WEEKDAY_ORDER[(jsDay + 6) % 7];
+}
 
 export function Home() {
-  const { workouts, sessions, exercises, activeSessionId } = useAppData();
+  const { workouts, sessions, exercises, activeSessionId, weeklySchedule } = useAppData();
+  const { profiles, activeProfileId } = useProfiles();
   const navigate = useNavigate();
+  const [switcherOpen, setSwitcherOpen] = useState(false);
 
   const active = workouts.filter((w) => !w.archived);
   const streak = getCurrentStreakWeeks(sessions);
@@ -16,6 +28,11 @@ export function Home() {
   const coachTip = getTopCoachTip(sessions);
   const coachExercise = coachTip ? exercises.find((e) => e.id === coachTip.exerciseId) : null;
   const coachColor = coachTip?.action === 'increase' ? 'var(--success)' : coachTip?.action === 'deload' ? 'var(--warn)' : 'var(--text)';
+
+  const activeProfile = profiles.find((p) => p.id === activeProfileId);
+  const todayKey = todayWeekdayKey();
+  const todaySchedule = weeklySchedule[todayKey];
+  const todayWorkout = todaySchedule?.kind === 'treino' ? workouts.find((w) => w.id === todaySchedule.workoutId) : null;
 
   const lastFinished = sessions
     .filter((s) => s.finishedAt)
@@ -30,7 +47,20 @@ export function Home() {
 
   return (
     <div className="px-4">
-      <PageHeader title="Olá 👋" />
+      <PageHeader
+        title="Olá 👋"
+        right={
+          <button
+            onClick={() => setSwitcherOpen(true)}
+            className="flex items-center gap-1.5 rounded-full pl-1 pr-2.5 py-1"
+            style={{ background: 'var(--surface-2)' }}
+          >
+            <span className="text-base">{activeProfile?.emoji ?? '💪'}</span>
+            <span className="text-xs font-medium max-w-[80px] truncate">{activeProfile?.name ?? 'Perfil'}</span>
+            <ChevronDown size={13} style={{ color: 'var(--text-faint)' }} />
+          </button>
+        }
+      />
 
       {activeSessionId && (
         <Card className="mb-4 flex items-center justify-between" style={{ borderColor: 'var(--brand)' }}>
@@ -45,6 +75,59 @@ export function Home() {
               Continuar <ArrowRight size={14} />
             </span>
           </Button>
+        </Card>
+      )}
+
+      {!activeSessionId && todaySchedule?.kind === 'treino' && todayWorkout && (
+        <Card className="mb-4 flex items-center gap-3" style={{ borderColor: 'var(--brand)' }}>
+          <span className="text-2xl">{todayWorkout.emoji ?? '💪'}</span>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-semibold mb-0.5" style={{ color: 'var(--brand)' }}>
+              Treino de hoje
+            </p>
+            <p className="text-sm font-medium truncate">{todayWorkout.name}</p>
+          </div>
+          <button
+            onClick={() => handleStart(todayWorkout.id)}
+            disabled={todayWorkout.exercises.length === 0}
+            className="w-11 h-11 rounded-full flex items-center justify-center shrink-0 disabled:opacity-30"
+            style={{ background: 'var(--brand)', color: 'white' }}
+          >
+            <Play size={17} fill="currentColor" />
+          </button>
+        </Card>
+      )}
+
+      {!activeSessionId && todaySchedule?.kind === 'cardio' && (
+        <Card
+          className="mb-4 flex items-center gap-3 cursor-pointer"
+          style={{ borderColor: 'var(--success)' }}
+          onClick={() => navigate('/cardio')}
+        >
+          <div className="w-11 h-11 rounded-full flex items-center justify-center shrink-0" style={{ background: 'var(--success-dim)' }}>
+            <Bike size={20} style={{ color: 'var(--success)' }} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-semibold mb-0.5" style={{ color: 'var(--success)' }}>
+              Hoje é dia de cardio
+            </p>
+            <p className="text-sm font-medium">Corrida ou bike — registre sua atividade</p>
+          </div>
+          <ArrowRight size={16} style={{ color: 'var(--text-faint)' }} />
+        </Card>
+      )}
+
+      {!activeSessionId && todaySchedule?.kind === 'descanso' && (
+        <Card className="mb-4 flex items-center gap-3">
+          <div className="w-11 h-11 rounded-full flex items-center justify-center shrink-0" style={{ background: 'var(--surface-2)' }}>
+            <BedDouble size={20} style={{ color: 'var(--text-dim)' }} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-semibold mb-0.5" style={{ color: 'var(--text-dim)' }}>
+              Dia de descanso
+            </p>
+            <p className="text-sm font-medium">Aproveite para recuperar os músculos.</p>
+          </div>
         </Card>
       )}
 
@@ -85,7 +168,7 @@ export function Home() {
       </div>
 
       <p className="text-sm font-semibold mb-2.5" style={{ color: 'var(--text-dim)' }}>
-        Escolha um treino
+        {todaySchedule ? 'Todos os treinos' : 'Escolha um treino'}
       </p>
 
       {active.length === 0 ? (
@@ -132,6 +215,8 @@ export function Home() {
           </p>
         </div>
       )}
+
+      <ProfileSwitcherSheet open={switcherOpen} onClose={() => setSwitcherOpen(false)} />
     </div>
   );
 }

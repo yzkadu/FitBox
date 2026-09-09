@@ -1,60 +1,84 @@
 import type { AppData } from '../types';
 import { BUILTIN_EXERCISES } from './exercises';
 
-const STORAGE_KEY = 'fitbox.data.v1';
+const LEGACY_STORAGE_KEY = 'fitbox.data.v1'; // pré-perfis, mantido só para migração
+export const PROFILES_KEY = 'fitbox.profiles.v1';
 
-function emptyData(): AppData {
+export function dataKeyFor(profileId: string): string {
+  return `fitbox.data.v1.${profileId}`;
+}
+
+export function emptyData(): AppData {
   return {
     exercises: [...BUILTIN_EXERCISES],
     workouts: [],
     sessions: [],
     measurements: [],
     photos: [],
+    cardioLogs: [],
+    weeklySchedule: {},
     activeSessionId: null,
   };
 }
 
-function load(): AppData {
+function normalize(parsed: Partial<AppData>): AppData {
+  const base = emptyData();
+  // Merge built-in exercises with any user additions already saved
+  const savedExercises = parsed.exercises ?? [];
+  const savedIds = new Set(savedExercises.map((e) => e.id));
+  const merged = [...savedExercises, ...base.exercises.filter((e) => !savedIds.has(e.id))];
+  return {
+    exercises: merged,
+    workouts: parsed.workouts ?? [],
+    sessions: parsed.sessions ?? [],
+    measurements: parsed.measurements ?? [],
+    photos: parsed.photos ?? [],
+    cardioLogs: parsed.cardioLogs ?? [],
+    weeklySchedule: parsed.weeklySchedule ?? {},
+    activeSessionId: parsed.activeSessionId ?? null,
+  };
+}
+
+function load(profileId: string): AppData {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(dataKeyFor(profileId));
     if (!raw) return emptyData();
-    const parsed = JSON.parse(raw) as Partial<AppData>;
-    const base = emptyData();
-    // Merge built-in exercises with any user additions already saved
-    const savedExercises = parsed.exercises ?? [];
-    const savedIds = new Set(savedExercises.map((e) => e.id));
-    const merged = [...savedExercises, ...base.exercises.filter((e) => !savedIds.has(e.id))];
-    return {
-      exercises: merged,
-      workouts: parsed.workouts ?? [],
-      sessions: parsed.sessions ?? [],
-      measurements: parsed.measurements ?? [],
-      photos: parsed.photos ?? [],
-      activeSessionId: parsed.activeSessionId ?? null,
-    };
+    return normalize(JSON.parse(raw) as Partial<AppData>);
   } catch (e) {
     console.error('Falha ao carregar dados do FitBox, iniciando vazio.', e);
     return emptyData();
   }
 }
 
-function save(data: AppData) {
+function save(profileId: string, data: AppData) {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    localStorage.setItem(dataKeyFor(profileId), JSON.stringify(data));
   } catch (e) {
     console.error('Falha ao salvar dados do FitBox.', e);
   }
 }
 
+/** Dados legados (de antes dos perfis existirem), se houver. Usado só para migração. */
+export function readLegacyData(): AppData | null {
+  try {
+    const raw = localStorage.getItem(LEGACY_STORAGE_KEY);
+    if (!raw) return null;
+    return normalize(JSON.parse(raw) as Partial<AppData>);
+  } catch {
+    return null;
+  }
+}
+
+export function clearLegacyData() {
+  localStorage.removeItem(LEGACY_STORAGE_KEY);
+}
+
 type Listener = (data: AppData) => void;
 
 class Store {
-  private data: AppData;
+  private data: AppData = emptyData();
+  private profileId: string | null = null;
   private listeners = new Set<Listener>();
-
-  constructor() {
-    this.data = load();
-  }
 
   getSnapshot = (): AppData => this.data;
 
@@ -63,19 +87,35 @@ class Store {
     return () => this.listeners.delete(listener);
   };
 
-  update(updater: (draft: AppData) => AppData | void) {
-    const draft = structuredClone(this.data);
-    const result = updater(draft);
-    this.data = result ?? draft;
-    save(this.data);
+  private notify() {
     this.listeners.forEach((l) => l(this.data));
   }
 
-  /** Wipe all data (used by settings/export screens if needed later) */
-  reset() {
-    this.data = emptyData();
-    save(this.data);
-    this.listeners.forEach((l) => l(this.data));
+  /** Carrega (ou troca para) os dados de um perfil específico. */
+  loadProfile(profileId: string) {
+    this.profileId = profileId;
+    this.data = load(profileId);
+    this.notify();
+  }
+
+  /** Usa dados já prontos (ex: migração de dados legados) para o perfil ativo. */
+  hydrate(data: AppData) {
+    if (!this.profileId) return;
+    this.data = data;
+    save(this.profileId, this.data);
+    this.notify();
+  }
+
+  update(updater: (draft: AppData) => AppData | void) {
+    if (!this.profileId) {
+      console.warn('Tentativa de atualizar dados sem um perfil ativo.');
+      return;
+    }
+    const draft = structuredClone(this.data);
+    const result = updater(draft);
+    this.data = result ?? draft;
+    save(this.profileId, this.data);
+    this.notify();
   }
 
   exportJson(): string {
@@ -83,10 +123,11 @@ class Store {
   }
 
   importJson(json: string) {
-    const parsed = JSON.parse(json) as AppData;
+    if (!this.profileId) return;
+    const parsed = normalize(JSON.parse(json) as Partial<AppData>);
     this.data = parsed;
-    save(this.data);
-    this.listeners.forEach((l) => l(this.data));
+    save(this.profileId, this.data);
+    this.notify();
   }
 }
 

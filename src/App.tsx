@@ -8,8 +8,17 @@ import { History } from './pages/History';
 import { ExerciseDetail } from './pages/ExerciseDetail';
 import { Progress } from './pages/Progress';
 import { BodyStats } from './pages/BodyStats';
+import { Cardio } from './pages/Cardio';
+import { ProfileGate } from './pages/ProfileGate';
+import { useProfiles } from './hooks/useProfiles';
 
 export default function App() {
+  const { activeProfileId } = useProfiles();
+
+  if (!activeProfileId) {
+    return <ProfileGate />;
+  }
+
   return (
     <BrowserRouter>
       <Routes>
@@ -21,6 +30,7 @@ export default function App() {
           <Route path="/exercicio/:exerciseId" element={<ExerciseDetail />} />
           <Route path="/evolucao" element={<Progress />} />
           <Route path="/medidas" element={<BodyStats />} />
+          <Route path="/cardio" element={<Cardio />} />
         </Route>
         <Route path="/sessao/:sessionId" element={<SessionExecution />} />
       </Routes>

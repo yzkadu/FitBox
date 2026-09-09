@@ -10,6 +10,9 @@ import type {
   BodyMeasurement,
   BodyPhoto,
   MuscleGroup,
+  CardioLog,
+  Weekday,
+  DaySchedule,
 } from '../types';
 
 // ---------- Exercises ----------
@@ -276,5 +279,34 @@ export function addPhoto(p: Omit<BodyPhoto, 'id'>): BodyPhoto {
 export function deletePhoto(id: string) {
   store.update((d) => {
     d.photos = d.photos.filter((p) => p.id !== id);
+  });
+}
+
+// ---------- Cardio (treino híbrido: corrida/bike) ----------
+
+export function addCardioLog(log: Omit<CardioLog, 'id'>): CardioLog {
+  const entry: CardioLog = { id: uid(), ...log };
+  store.update((d) => {
+    d.cardioLogs.push(entry);
+    d.cardioLogs.sort((a, b) => a.date.localeCompare(b.date));
+  });
+  return entry;
+}
+
+export function deleteCardioLog(id: string) {
+  store.update((d) => {
+    d.cardioLogs = d.cardioLogs.filter((c) => c.id !== id);
+  });
+}
+
+// ---------- Programa semanal ----------
+
+export function setDaySchedule(weekday: Weekday, schedule: DaySchedule | null) {
+  store.update((d) => {
+    if (schedule === null) {
+      delete d.weeklySchedule[weekday];
+    } else {
+      d.weeklySchedule[weekday] = schedule;
+    }
   });
 }

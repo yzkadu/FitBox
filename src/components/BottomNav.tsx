@@ -1,9 +1,10 @@
 import { NavLink } from 'react-router-dom';
-import { Dumbbell, Calendar, History, TrendingUp, Ruler } from 'lucide-react';
+import { Dumbbell, Calendar, History, TrendingUp, Ruler, Bike } from 'lucide-react';
 
 const tabs = [
   { to: '/', label: 'Hoje', icon: Calendar, end: true },
   { to: '/treinos', label: 'Treinos', icon: Dumbbell, end: false },
+  { to: '/cardio', label: 'Cardio', icon: Bike, end: false },
   { to: '/historico', label: 'Histórico', icon: History, end: false },
   { to: '/evolucao', label: 'Evolução', icon: TrendingUp, end: false },
   { to: '/medidas', label: 'Medidas', icon: Ruler, end: false },
@@ -22,7 +23,7 @@ export function BottomNav() {
             to={to}
             end={end}
             className={({ isActive }) =>
-              `flex flex-col items-center gap-1 py-2.5 px-2 flex-1 text-xs transition-colors ${
+              `flex flex-col items-center gap-0.5 py-2 px-0.5 flex-1 text-[10px] leading-tight transition-colors ${
                 isActive ? '' : ''
               }`
             }
@@ -30,7 +31,7 @@ export function BottomNav() {
               color: isActive ? 'var(--brand)' : 'var(--text-faint)',
             })}
           >
-            <Icon size={22} strokeWidth={2} />
+            <Icon size={19} strokeWidth={2} />
             <span>{label}</span>
           </NavLink>
         ))}

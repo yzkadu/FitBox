@@ -91,11 +91,53 @@ export interface BodyPhoto {
   label?: 'frente' | 'lado' | 'costas' | 'outro';
 }
 
+export type CardioActivityType = 'corrida' | 'bike';
+
+/** Uma atividade de cardio registrada manualmente (estilo Strava/Apple Fitness) */
+export interface CardioLog {
+  id: string;
+  date: string; // ISO date (yyyy-mm-dd)
+  type: CardioActivityType;
+  durationMin: number;
+  distanceKm?: number;
+  avgHeartRate?: number;
+  rpe?: number; // 1-10 sensação de esforço
+  notes?: string;
+}
+
+export type Weekday = 'seg' | 'ter' | 'qua' | 'qui' | 'sex' | 'sab' | 'dom';
+
+export const WEEKDAY_ORDER: Weekday[] = ['seg', 'ter', 'qua', 'qui', 'sex', 'sab', 'dom'];
+export const WEEKDAY_LABELS: Record<Weekday, string> = {
+  seg: 'Segunda',
+  ter: 'Terça',
+  qua: 'Quarta',
+  qui: 'Quinta',
+  sex: 'Sexta',
+  sab: 'Sábado',
+  dom: 'Domingo',
+};
+
+/** O que fazer em um dia da semana: treinar (um Workout específico), cardio, ou descansar */
+export type DaySchedule = { kind: 'treino'; workoutId: string } | { kind: 'cardio' } | { kind: 'descanso' };
+
+export type WeeklySchedule = Partial<Record<Weekday, DaySchedule>>;
+
+/** Um perfil = uma pessoa usando o app neste dispositivo. Cada perfil tem seus próprios dados. */
+export interface Profile {
+  id: string;
+  name: string;
+  emoji?: string;
+  createdAt: string; // ISO
+}
+
 export interface AppData {
   exercises: Exercise[];
   workouts: Workout[];
   sessions: Session[];
   measurements: BodyMeasurement[];
   photos: BodyPhoto[];
+  cardioLogs: CardioLog[];
+  weeklySchedule: WeeklySchedule;
   activeSessionId: string | null;
 }
