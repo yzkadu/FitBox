@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronDown, Trophy, Trash2 } from 'lucide-react';
+import { ChevronDown, Trophy, Trash2, Camera } from 'lucide-react';
 import { useAppData } from '../hooks/useAppData';
 import { getPersonalRecord, getTrainedExerciseIds } from '../lib/stats';
 import { deleteSession } from '../lib/actions';
@@ -93,10 +93,13 @@ export function History() {
                     {s.rpe != null && ` · RPE ${s.rpe}`}
                   </p>
                 </div>
-                <ChevronDown
-                  size={18}
-                  style={{ color: 'var(--text-faint)', transform: isOpen ? 'rotate(180deg)' : undefined, transition: 'transform 0.15s' }}
-                />
+                <div className="flex items-center gap-2 shrink-0">
+                  {s.proofPhotoDataUrl && <Camera size={14} style={{ color: 'var(--success)' }} />}
+                  <ChevronDown
+                    size={18}
+                    style={{ color: 'var(--text-faint)', transform: isOpen ? 'rotate(180deg)' : undefined, transition: 'transform 0.15s' }}
+                  />
+                </div>
               </button>
 
               {isOpen && (
@@ -120,6 +123,10 @@ export function History() {
                     <p className="text-xs pt-1" style={{ color: 'var(--text-faint)' }}>
                       Volume total: {Math.round(totalVolume)}kg
                     </p>
+
+                    {s.proofPhotoDataUrl && (
+                      <img src={s.proofPhotoDataUrl} alt="Prova do treino" className="w-20 h-20 rounded-lg object-cover" />
+                    )}
 
                     {confirmDelete === s.id ? (
                       <div className="flex gap-2 pt-1">

@@ -15,6 +15,7 @@ import { getCoachSuggestion } from '../lib/coach';
 import { Button } from '../components/ui';
 import { ExercisePicker } from '../components/ExercisePicker';
 import { Sheet } from '../components/Sheet';
+import { PhotoField } from '../components/PhotoField';
 import type { Exercise } from '../types';
 
 const RPE_OPTIONS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
@@ -44,6 +45,7 @@ export function SessionExecution() {
   const [confirmDiscard, setConfirmDiscard] = useState(false);
   const [rpeSheetOpen, setRpeSheetOpen] = useState(false);
   const [selectedRpe, setSelectedRpe] = useState<number | null>(null);
+  const [proofPhoto, setProofPhoto] = useState<string | undefined>(undefined);
 
   const session = sessions.find((s) => s.id === sessionId);
   const elapsed = useElapsed(session?.startedAt ?? new Date().toISOString());
@@ -64,11 +66,12 @@ export function SessionExecution() {
   function handleFinish() {
     setConfirmDiscard(false);
     setSelectedRpe(null);
+    setProofPhoto(undefined);
     setRpeSheetOpen(true);
   }
 
   function confirmFinish(rpe?: number) {
-    finishSession(session!.id, rpe);
+    finishSession(session!.id, rpe, proofPhoto);
     setRpeSheetOpen(false);
     navigate(`/`);
   }
@@ -273,6 +276,13 @@ export function SessionExecution() {
               );
             })}
           </div>
+
+          <PhotoField
+            value={proofPhoto}
+            onChange={setProofPhoto}
+            label="Foto do relógio/tracker (opcional, prova pro seu foguinho)"
+          />
+
           <div className="flex flex-col gap-2">
             <Button full disabled={selectedRpe === null} onClick={() => confirmFinish(selectedRpe ?? undefined)}>
               Salvar treino

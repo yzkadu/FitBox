@@ -348,7 +348,7 @@ export function removeSetFromSessionExercise(sessionId: string, sessionExerciseI
   syncSessionExercises(sessionId);
 }
 
-export function finishSession(sessionId: string, rpe?: number) {
+export function finishSession(sessionId: string, rpe?: number, proofPhotoDataUrl?: string) {
   let finishedAt = '';
   let durationSeconds = 0;
   store.update((d) => {
@@ -357,6 +357,7 @@ export function finishSession(sessionId: string, rpe?: number) {
     s.finishedAt = new Date().toISOString();
     s.durationSeconds = Math.round((Date.parse(s.finishedAt) - Date.parse(s.startedAt)) / 1000);
     if (rpe != null) s.rpe = rpe;
+    if (proofPhotoDataUrl) s.proofPhotoDataUrl = proofPhotoDataUrl;
     // Uma série só conta como realizada se tiver reps registradas (ou estiver
     // marcada como concluída) — peso sozinho pode ser só o valor sugerido pelo
     // treinador virtual, pré-preenchido mas nunca executado.
@@ -380,6 +381,7 @@ export function finishSession(sessionId: string, rpe?: number) {
           duration_seconds: durationSeconds,
           exercises: session?.exercises ?? [],
           rpe: session?.rpe ?? null,
+          proof_photo_data_url: session?.proofPhotoDataUrl ?? null,
         })
         .eq('id', sessionId)
         .then(logIfError('sessions.finish'));
@@ -500,6 +502,7 @@ export function addCardioLog(log: Omit<CardioLog, 'id'>): CardioLog {
         avg_heart_rate: entry.avgHeartRate,
         rpe: entry.rpe,
         notes: entry.notes,
+        proof_photo_data_url: entry.proofPhotoDataUrl,
       })
       .then(logIfError('cardio_logs.insert'));
   }

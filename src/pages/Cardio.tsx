@@ -6,6 +6,7 @@ import { useAppData } from '../hooks/useAppData';
 import { addCardioLog, deleteCardioLog } from '../lib/actions';
 import { PageHeader, Card, Button, EmptyState, Pill } from '../components/ui';
 import { Sheet } from '../components/Sheet';
+import { PhotoField } from '../components/PhotoField';
 import { chartColors, tooltipStyle } from '../lib/chartTheme';
 import { WEEKDAY_ORDER } from '../types';
 import type { CardioActivityType, CardioLog } from '../types';
@@ -50,6 +51,7 @@ export function Cardio() {
     rpe: '',
     notes: '',
   });
+  const [proofPhoto, setProofPhoto] = useState<string | undefined>(undefined);
 
   function openSheet() {
     if (suggestedDistanceKm && form.date === todayIso() && !form.distanceKm) {
@@ -95,9 +97,11 @@ export function Cardio() {
       avgHeartRate: num(form.avgHeartRate),
       rpe: num(form.rpe),
       notes: form.notes.trim() || undefined,
+      proofPhotoDataUrl: proofPhoto,
     });
     setSheetOpen(false);
     setForm({ ...form, durationMin: '', distanceKm: '', avgHeartRate: '', rpe: '', notes: '' });
+    setProofPhoto(undefined);
   }
 
   return (
@@ -340,6 +344,8 @@ export function Cardio() {
             />
           </Field>
 
+          <PhotoField value={proofPhoto} onChange={setProofPhoto} label="Foto do relógio/tracker (opcional, prova pro seu foguinho)" />
+
           <Button full disabled={!form.durationMin} onClick={handleSave} className="mt-1">
             Salvar atividade
           </Button>
@@ -377,6 +383,9 @@ function CardioRow({ log, onDelete }: { log: CardioLog; onDelete: () => void }) 
           </p>
         )}
       </div>
+      {log.proofPhotoDataUrl && (
+        <img src={log.proofPhotoDataUrl} alt="Prova da atividade" className="w-10 h-10 rounded-lg object-cover shrink-0" />
+      )}
       <button onClick={onDelete} style={{ color: 'var(--text-faint)' }} className="shrink-0">
         <Trash2 size={15} />
       </button>

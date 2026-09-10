@@ -5,7 +5,7 @@ import { useAppData } from '../hooks/useAppData';
 import { useAuth } from '../hooks/useAuth';
 import { useProfile } from '../hooks/useProfile';
 import { startSession } from '../lib/actions';
-import { getCurrentStreakWeeks, getTotalSessionsThisMonth } from '../lib/stats';
+import { getCurrentStreakDays, getTotalSessionsThisMonth } from '../lib/stats';
 import { getTopCoachTip } from '../lib/coach';
 import { WEEKDAY_ORDER } from '../types';
 import { Card, PageHeader, Button, EmptyState } from '../components/ui';
@@ -19,14 +19,14 @@ function todayWeekdayKey() {
 }
 
 export function Home() {
-  const { workouts, sessions, exercises, activeSessionId, weeklySchedule } = useAppData();
+  const { workouts, sessions, exercises, activeSessionId, weeklySchedule, cardioLogs } = useAppData();
   const { user } = useAuth();
   const profile = useProfile(user?.id);
   const navigate = useNavigate();
   const [switcherOpen, setSwitcherOpen] = useState(false);
 
   const active = workouts.filter((w) => !w.archived);
-  const streak = getCurrentStreakWeeks(sessions);
+  const streak = getCurrentStreakDays(sessions, cardioLogs, weeklySchedule);
   const monthCount = getTotalSessionsThisMonth(sessions);
   const coachTip = getTopCoachTip(sessions);
   const coachExercise = coachTip ? exercises.find((e) => e.id === coachTip.exerciseId) : null;
@@ -159,7 +159,7 @@ export function Home() {
           <Flame size={20} style={{ color: 'var(--warn)' }} />
           <p className="text-2xl font-semibold mt-1">{streak}</p>
           <p className="text-xs" style={{ color: 'var(--text-faint)' }}>
-            semana{streak !== 1 ? 's' : ''} seguida{streak !== 1 ? 's' : ''}
+            dia{streak !== 1 ? 's' : ''} seguido{streak !== 1 ? 's' : ''}
           </p>
         </Card>
         <Card className="flex flex-col items-center py-4">

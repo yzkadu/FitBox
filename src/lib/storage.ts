@@ -47,6 +47,7 @@ function rowToSession(r: Record<string, unknown>): Session {
     exercises: (r.exercises as Session['exercises']) ?? [],
     durationSeconds: (r.duration_seconds as number) ?? undefined,
     rpe: (r.rpe as number) ?? undefined,
+    proofPhotoDataUrl: (r.proof_photo_data_url as string) ?? undefined,
   };
 }
 
@@ -84,6 +85,7 @@ function rowToCardio(r: Record<string, unknown>): CardioLog {
     avgHeartRate: r.avg_heart_rate != null ? Number(r.avg_heart_rate) : undefined,
     rpe: r.rpe != null ? Number(r.rpe) : undefined,
     notes: (r.notes as string) ?? undefined,
+    proofPhotoDataUrl: (r.proof_photo_data_url as string) ?? undefined,
   };
 }
 

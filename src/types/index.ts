@@ -70,6 +70,8 @@ export interface Session {
   durationSeconds?: number;
   /** Esforço percebido (0-10) que a pessoa indica ao concluir o treino do dia */
   rpe?: number;
+  /** Foto opcional (ex: relógio/tracker mostrando o treino) como prova de constância */
+  proofPhotoDataUrl?: string;
 }
 
 export interface BodyMeasurement {
@@ -105,6 +107,8 @@ export interface CardioLog {
   avgHeartRate?: number;
   rpe?: number; // 1-10 sensação de esforço
   notes?: string;
+  /** Foto opcional (ex: relógio/tracker mostrando a atividade) como prova de constância */
+  proofPhotoDataUrl?: string;
 }
 
 export type Weekday = 'seg' | 'ter' | 'qua' | 'qui' | 'sex' | 'sab' | 'dom';

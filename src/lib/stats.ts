@@ -1,4 +1,5 @@
-import type { Session, SetLog } from '../types';
+import type { CardioLog, Session, SetLog, WeeklySchedule } from '../types';
+import { WEEKDAY_ORDER } from '../types';
 
 export interface ExerciseHistoryPoint {
   date: string; // ISO
@@ -129,6 +130,43 @@ export function getCurrentStreakWeeks(sessions: Session[]): number {
   for (let i = freq.length - 1; i >= 0; i--) {
     if (freq[i].count > 0) streak += 1;
     else break;
+  }
+  return streak;
+}
+
+/**
+ * "Foguinho" de dias ativos: conta os dias consecutivos (terminando hoje) com
+ * pelo menos um treino de força concluído ou uma atividade de cardio registrada.
+ * Um dia de descanso PLANEJADO na agenda semanal não quebra a sequência — só
+ * conta contra a pessoa se ela pulou um dia que deveria ter treino ou cardio.
+ * O dia de hoje nunca quebra a sequência sozinho (pode ainda estar por vir).
+ */
+export function getCurrentStreakDays(sessions: Session[], cardioLogs: CardioLog[], weeklySchedule: WeeklySchedule): number {
+  const activeDates = new Set<string>();
+  sessions.forEach((s) => {
+    if (s.finishedAt) activeDates.add(s.finishedAt.slice(0, 10));
+  });
+  cardioLogs.forEach((c) => activeDates.add(c.date));
+
+  let streak = 0;
+  const cursor = new Date();
+  cursor.setHours(0, 0, 0, 0);
+  let isToday = true;
+  for (let guard = 0; guard < 3650; guard++) {
+    const iso = cursor.toISOString().slice(0, 10);
+    const weekdayKey = WEEKDAY_ORDER[(cursor.getDay() + 6) % 7];
+    const hasActivity = activeDates.has(iso);
+    if (hasActivity) {
+      streak += 1;
+    } else if (weeklySchedule[weekdayKey]?.kind === 'descanso') {
+      // dia de descanso planejado: não conta, mas também não quebra
+    } else if (isToday) {
+      // hoje ainda pode acontecer: não conta a favor nem quebra
+    } else {
+      break;
+    }
+    isToday = false;
+    cursor.setDate(cursor.getDate() - 1);
   }
   return streak;
 }
