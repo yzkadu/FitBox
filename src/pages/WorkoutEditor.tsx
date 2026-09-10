@@ -94,6 +94,13 @@ export function WorkoutEditor() {
         />
       ) : (
         <div className="flex flex-col gap-2.5 pb-40">
+          <button
+            onClick={() => setPickerOpen(true)}
+            className="flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-medium"
+            style={{ background: 'var(--surface-2)', color: 'var(--brand)' }}
+          >
+            <Plus size={16} /> Adicionar exercício
+          </button>
           {sorted.map((we) => {
             const ex = exerciseById.get(we.exerciseId);
             return (
@@ -146,13 +153,6 @@ export function WorkoutEditor() {
               </Card>
             );
           })}
-          <button
-            onClick={() => setPickerOpen(true)}
-            className="flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-medium"
-            style={{ background: 'var(--surface-2)', color: 'var(--brand)' }}
-          >
-            <Plus size={16} /> Adicionar exercício
-          </button>
         </div>
       )}
 
