@@ -348,7 +348,7 @@ export function removeSetFromSessionExercise(sessionId: string, sessionExerciseI
   syncSessionExercises(sessionId);
 }
 
-export function finishSession(sessionId: string) {
+export function finishSession(sessionId: string, rpe?: number) {
   let finishedAt = '';
   let durationSeconds = 0;
   store.update((d) => {
@@ -356,6 +356,7 @@ export function finishSession(sessionId: string) {
     if (!s) return;
     s.finishedAt = new Date().toISOString();
     s.durationSeconds = Math.round((Date.parse(s.finishedAt) - Date.parse(s.startedAt)) / 1000);
+    if (rpe != null) s.rpe = rpe;
     // Uma série só conta como realizada se tiver reps registradas (ou estiver
     // marcada como concluída) — peso sozinho pode ser só o valor sugerido pelo
     // treinador virtual, pré-preenchido mas nunca executado.
@@ -374,7 +375,12 @@ export function finishSession(sessionId: string) {
       const session = store.getSnapshot().sessions.find((s) => s.id === sessionId);
       supabase
         .from('sessions')
-        .update({ finished_at: finishedAt, duration_seconds: durationSeconds, exercises: session?.exercises ?? [] })
+        .update({
+          finished_at: finishedAt,
+          duration_seconds: durationSeconds,
+          exercises: session?.exercises ?? [],
+          rpe: session?.rpe ?? null,
+        })
         .eq('id', sessionId)
         .then(logIfError('sessions.finish'));
     })();

@@ -14,7 +14,16 @@ import { getExerciseHistory } from '../lib/stats';
 import { getCoachSuggestion } from '../lib/coach';
 import { Button } from '../components/ui';
 import { ExercisePicker } from '../components/ExercisePicker';
+import { Sheet } from '../components/Sheet';
 import type { Exercise } from '../types';
+
+const RPE_OPTIONS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+function rpeColor(v: number): string {
+  if (v <= 3) return 'var(--success)';
+  if (v <= 6) return 'var(--brand)';
+  if (v <= 8) return 'var(--warn)';
+  return 'var(--danger)';
+}
 
 function useElapsed(startedAt: string) {
   const [elapsed, setElapsed] = useState(() => Math.floor((Date.now() - Date.parse(startedAt)) / 1000));
@@ -33,6 +42,8 @@ export function SessionExecution() {
   const { sessions, exercises } = useAppData();
   const [pickerOpen, setPickerOpen] = useState(false);
   const [confirmDiscard, setConfirmDiscard] = useState(false);
+  const [rpeSheetOpen, setRpeSheetOpen] = useState(false);
+  const [selectedRpe, setSelectedRpe] = useState<number | null>(null);
 
   const session = sessions.find((s) => s.id === sessionId);
   const elapsed = useElapsed(session?.startedAt ?? new Date().toISOString());
@@ -51,7 +62,14 @@ export function SessionExecution() {
   const exerciseById = new Map(exercises.map((e) => [e.id, e]));
 
   function handleFinish() {
-    finishSession(session!.id);
+    setConfirmDiscard(false);
+    setSelectedRpe(null);
+    setRpeSheetOpen(true);
+  }
+
+  function confirmFinish(rpe?: number) {
+    finishSession(session!.id, rpe);
+    setRpeSheetOpen(false);
     navigate(`/`);
   }
 
@@ -231,6 +249,40 @@ export function SessionExecution() {
       </div>
 
       <ExercisePicker open={pickerOpen} onClose={() => setPickerOpen(false)} onSelect={handleAddExercise} />
+
+      <Sheet open={rpeSheetOpen} onClose={() => setRpeSheetOpen(false)} title="Como foi o esforço hoje?">
+        <div className="flex flex-col gap-4">
+          <p className="text-sm" style={{ color: 'var(--text-dim)' }}>
+            De 0 (muito leve) a 10 (esforço máximo), como você sentiu esse treino?
+          </p>
+          <div className="grid grid-cols-6 gap-2">
+            {RPE_OPTIONS.map((v) => {
+              const active = selectedRpe === v;
+              return (
+                <button
+                  key={v}
+                  onClick={() => setSelectedRpe(v)}
+                  className="h-11 rounded-xl text-sm font-semibold flex items-center justify-center"
+                  style={{
+                    background: active ? rpeColor(v) : 'var(--surface-2)',
+                    color: active ? '#0b0b0f' : 'var(--text-dim)',
+                  }}
+                >
+                  {v}
+                </button>
+              );
+            })}
+          </div>
+          <div className="flex flex-col gap-2">
+            <Button full disabled={selectedRpe === null} onClick={() => confirmFinish(selectedRpe ?? undefined)}>
+              Salvar treino
+            </Button>
+            <Button full variant="secondary" onClick={() => confirmFinish(undefined)}>
+              Pular
+            </Button>
+          </div>
+        </div>
+      </Sheet>
     </div>
   );
 }

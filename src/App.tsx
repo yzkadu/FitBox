@@ -15,6 +15,7 @@ import { Auth } from './pages/Auth';
 import { useAuth } from './hooks/useAuth';
 import { store } from './lib/storage';
 import { applyProgramTemplate } from './lib/seedPrograms';
+import type { ProgramTemplateId } from './lib/seedPrograms';
 import { takePendingTemplate } from './lib/pendingTemplate';
 
 function Splash() {
@@ -43,7 +44,11 @@ export default function App() {
       if (cancelled) return;
       const snapshot = store.getSnapshot();
       const isEmpty = snapshot.workouts.length === 0 && Object.keys(snapshot.weeklySchedule).length === 0;
-      const pendingTemplate = takePendingTemplate();
+      // Preferimos o valor em memória (cadastro sem confirmação de e-mail); se não tiver
+      // (fluxo com confirmação de e-mail passou por um reload da página no meio do caminho),
+      // caímos pro template salvo nos metadados do usuário no momento do cadastro.
+      const metaTemplate = session.user.user_metadata?.template as ProgramTemplateId | undefined;
+      const pendingTemplate = takePendingTemplate() ?? metaTemplate ?? null;
       if (isEmpty && pendingTemplate && pendingTemplate !== 'blank') {
         applyProgramTemplate(pendingTemplate);
       }

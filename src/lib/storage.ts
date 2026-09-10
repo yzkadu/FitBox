@@ -46,6 +46,7 @@ function rowToSession(r: Record<string, unknown>): Session {
     finishedAt: (r.finished_at as string) ?? null,
     exercises: (r.exercises as Session['exercises']) ?? [],
     durationSeconds: (r.duration_seconds as number) ?? undefined,
+    rpe: (r.rpe as number) ?? undefined,
   };
 }
 

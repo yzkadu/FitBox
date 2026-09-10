@@ -68,6 +68,8 @@ export interface Session {
   finishedAt: string | null; // ISO, null while in progress
   exercises: SessionExercise[];
   durationSeconds?: number;
+  /** Esforço percebido (0-10) que a pessoa indica ao concluir o treino do dia */
+  rpe?: number;
 }
 
 export interface BodyMeasurement {
@@ -119,7 +121,10 @@ export const WEEKDAY_LABELS: Record<Weekday, string> = {
 };
 
 /** O que fazer em um dia da semana: treinar (um Workout específico), cardio, ou descansar */
-export type DaySchedule = { kind: 'treino'; workoutId: string } | { kind: 'cardio' } | { kind: 'descanso' };
+export type DaySchedule =
+  | { kind: 'treino'; workoutId: string }
+  | { kind: 'cardio'; suggestedDistanceKm?: number }
+  | { kind: 'descanso' };
 
 export type WeeklySchedule = Partial<Record<Weekday, DaySchedule>>;
 

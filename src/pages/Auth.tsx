@@ -43,7 +43,12 @@ export function Auth() {
     const { data, error } = await supabase.auth.signUp({
       email: email.trim(),
       password,
-      options: { data: { name: name.trim(), emoji } },
+      // `template` também vai nos metadados do usuário (não só na memória local):
+      // se a confirmação de e-mail estiver ligada, o cadastro e o primeiro login
+      // acontecem em "sessões" JS completamente separadas (a pessoa fecha o app,
+      // abre o e-mail, clica no link, volta e loga de novo) — então o App lê o
+      // template daqui na primeira vez que a conta carrega vazia.
+      options: { data: { name: name.trim(), emoji, template } },
     });
     setSubmitting(false);
     if (error) {

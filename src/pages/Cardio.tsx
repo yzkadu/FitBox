@@ -1,14 +1,23 @@
 import { useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
-import { Plus, Bike, Footprints, Trash2, Route as RouteIcon, Clock, Gauge } from 'lucide-react';
+import { Plus, Bike, Footprints, Trash2, Route as RouteIcon, Clock, Gauge, TrendingUp } from 'lucide-react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useAppData } from '../hooks/useAppData';
 import { addCardioLog, deleteCardioLog } from '../lib/actions';
 import { PageHeader, Card, Button, EmptyState, Pill } from '../components/ui';
 import { Sheet } from '../components/Sheet';
+import { chartColors, tooltipStyle } from '../lib/chartTheme';
+import { WEEKDAY_ORDER } from '../types';
 import type { CardioActivityType, CardioLog } from '../types';
 
 function todayIso() {
   return new Date().toISOString().slice(0, 10);
+}
+
+/** Date.getDay(): 0=domingo...6=sábado → nosso índice seg..dom (0..6) */
+function todayWeekdayKey() {
+  const jsDay = new Date().getDay();
+  return WEEKDAY_ORDER[(jsDay + 6) % 7];
 }
 
 /** Formata min/km a partir de duração e distância. */
@@ -26,8 +35,11 @@ const TYPE_META: Record<CardioActivityType, { label: string; icon: typeof Bike; 
 };
 
 export function Cardio() {
-  const { cardioLogs } = useAppData();
+  const { cardioLogs, weeklySchedule } = useAppData();
   const [sheetOpen, setSheetOpen] = useState(false);
+
+  const todaySchedule = weeklySchedule[todayWeekdayKey()];
+  const suggestedDistanceKm = todaySchedule?.kind === 'cardio' ? todaySchedule.suggestedDistanceKm : undefined;
 
   const [form, setForm] = useState({
     date: todayIso(),
@@ -39,7 +51,26 @@ export function Cardio() {
     notes: '',
   });
 
+  function openSheet() {
+    if (suggestedDistanceKm && form.date === todayIso() && !form.distanceKm) {
+      setForm((f) => ({ ...f, distanceKm: String(suggestedDistanceKm) }));
+    }
+    setSheetOpen(true);
+  }
+
   const sorted = cardioLogs.slice().sort((a, b) => b.date.localeCompare(a.date));
+
+  const runProgress = useMemo(() => {
+    return cardioLogs
+      .filter((c) => c.type === 'corrida' && c.distanceKm && c.distanceKm > 0)
+      .slice()
+      .sort((a, b) => a.date.localeCompare(b.date))
+      .map((c) => ({
+        date: new Date(c.date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
+        distanciaKm: c.distanceKm as number,
+        paceMin: Number((c.durationMin / (c.distanceKm as number)).toFixed(2)),
+      }));
+  }, [cardioLogs]);
 
   const stats = useMemo(() => {
     const totalKm = cardioLogs.reduce((sum, c) => sum + (c.distanceKm ?? 0), 0);
@@ -75,7 +106,7 @@ export function Cardio() {
         title="Cardio"
         right={
           <button
-            onClick={() => setSheetOpen(true)}
+            onClick={openSheet}
             aria-label="Registrar atividade"
             className="p-2 rounded-full"
             style={{ background: 'var(--brand-dim)', color: 'var(--brand)' }}
@@ -84,6 +115,15 @@ export function Cardio() {
           </button>
         }
       />
+
+      {suggestedDistanceKm && (
+        <Card className="mb-4 flex items-center gap-3" style={{ borderColor: 'var(--success)' }}>
+          <RouteIcon size={18} style={{ color: 'var(--success)' }} />
+          <p className="text-sm">
+            Meta de hoje: <span className="font-semibold">{suggestedDistanceKm} km</span>
+          </p>
+        </Card>
+      )}
 
       {cardioLogs.length > 0 && (
         <div className="grid grid-cols-3 gap-2.5 mb-5">
@@ -111,6 +151,75 @@ export function Cardio() {
         </div>
       )}
 
+      {runProgress.length >= 2 && (
+        <Card className="mb-5">
+          <p className="text-sm font-medium mb-3 flex items-center gap-1.5">
+            <TrendingUp size={15} style={{ color: 'var(--brand)' }} /> Progressão da corrida
+          </p>
+          <p className="text-xs mb-1" style={{ color: 'var(--text-faint)' }}>
+            Distância (km)
+          </p>
+          <div style={{ width: '100%', height: 140 }}>
+            <ResponsiveContainer>
+              <LineChart data={runProgress} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
+                <CartesianGrid stroke={chartColors.gridline} vertical={false} />
+                <XAxis dataKey="date" tick={{ fill: chartColors.axis, fontSize: 10 }} axisLine={{ stroke: chartColors.gridline }} tickLine={false} />
+                <YAxis tick={{ fill: chartColors.axis, fontSize: 11 }} axisLine={false} tickLine={false} width={30} domain={['auto', 'auto']} />
+                <Tooltip
+                  contentStyle={tooltipStyle}
+                  labelStyle={{ color: chartColors.textSecondary }}
+                  formatter={(value) => [`${value} km`, 'Distância']}
+                  cursor={{ stroke: chartColors.gridline }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="distanciaKm"
+                  stroke={chartColors.categorical.blue}
+                  strokeWidth={2}
+                  strokeLinecap="round"
+                  dot={{ r: 3, fill: chartColors.categorical.blue, strokeWidth: 0 }}
+                  activeDot={{ r: 5 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+          <p className="text-xs mb-1 mt-3" style={{ color: 'var(--text-faint)' }}>
+            Pace (min/km) — quanto menor, melhor
+          </p>
+          <div style={{ width: '100%', height: 140 }}>
+            <ResponsiveContainer>
+              <LineChart data={runProgress} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
+                <CartesianGrid stroke={chartColors.gridline} vertical={false} />
+                <XAxis dataKey="date" tick={{ fill: chartColors.axis, fontSize: 10 }} axisLine={{ stroke: chartColors.gridline }} tickLine={false} />
+                <YAxis
+                  tick={{ fill: chartColors.axis, fontSize: 11 }}
+                  axisLine={false}
+                  tickLine={false}
+                  width={30}
+                  reversed
+                  domain={['auto', 'auto']}
+                />
+                <Tooltip
+                  contentStyle={tooltipStyle}
+                  labelStyle={{ color: chartColors.textSecondary }}
+                  formatter={(value) => [`${value} min/km`, 'Pace']}
+                  cursor={{ stroke: chartColors.gridline }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="paceMin"
+                  stroke={chartColors.categorical.aqua}
+                  strokeWidth={2}
+                  strokeLinecap="round"
+                  dot={{ r: 3, fill: chartColors.categorical.aqua, strokeWidth: 0 }}
+                  activeDot={{ r: 5 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </Card>
+      )}
+
       <p className="text-sm font-semibold mb-2.5" style={{ color: 'var(--text-dim)' }}>
         Histórico
       </p>
@@ -120,7 +229,7 @@ export function Cardio() {
           title="Nenhuma atividade registrada"
           subtitle="Registre sua corrida ou pedalada para acompanhar seu treino híbrido."
           action={
-            <Button onClick={() => setSheetOpen(true)}>
+            <Button onClick={openSheet}>
               <span className="flex items-center gap-2">
                 <Plus size={16} /> Registrar atividade
               </span>

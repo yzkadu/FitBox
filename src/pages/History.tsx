@@ -90,6 +90,7 @@ export function History() {
                       month: 'short',
                     })}
                     {mins !== null && ` · ${mins} min`} · {totalSets} séries
+                    {s.rpe != null && ` · RPE ${s.rpe}`}
                   </p>
                 </div>
                 <ChevronDown
