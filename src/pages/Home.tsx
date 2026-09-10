@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Play, Flame, CalendarCheck, Plus, ArrowRight, Bot, Bike, BedDouble, ChevronDown } from 'lucide-react';
+import { Play, Flame, CalendarCheck, Plus, ArrowRight, Bot, Bike, BedDouble, ChevronDown, MessageCircle } from 'lucide-react';
 import { useAppData } from '../hooks/useAppData';
 import { useAuth } from '../hooks/useAuth';
 import { useProfile } from '../hooks/useProfile';
@@ -134,6 +134,23 @@ export function Home() {
           </div>
         </Card>
       )}
+
+      <Card
+        className="mb-4 flex items-center gap-3 cursor-pointer"
+        onClick={() => navigate('/treinador')}
+        style={{ borderColor: 'var(--brand)' }}
+      >
+        <div className="w-11 h-11 rounded-full flex items-center justify-center shrink-0" style={{ background: 'var(--brand-dim)' }}>
+          <MessageCircle size={19} style={{ color: 'var(--brand)' }} />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-xs font-semibold mb-0.5" style={{ color: 'var(--brand)' }}>
+            Treinador IA
+          </p>
+          <p className="text-sm font-medium">Pergunte qualquer coisa sobre seu treino</p>
+        </div>
+        <ArrowRight size={16} style={{ color: 'var(--text-faint)' }} />
+      </Card>
 
       {coachTip && coachExercise && (
         <Card
