@@ -24,8 +24,10 @@ export function seedPplHybridProgram() {
   const push = build('Push (Peito, Ombro, Tríceps)', '💪', [
     { id: 'ex-supino-reto-barra', sets: 4, reps: '8-10' },
     { id: 'ex-supino-inclinado-halter', sets: 3, reps: '10-12' },
+    { id: 'ex-supino-maquina', sets: 3, reps: '10-12' },
     { id: 'ex-desenvolvimento-militar', sets: 3, reps: '8-10' },
     { id: 'ex-elevacao-lateral', sets: 3, reps: '12-15' },
+    { id: 'ex-crucifixo-halter', sets: 3, reps: '12-15' },
     { id: 'ex-triceps-pulley', sets: 3, reps: '12-15' },
     { id: 'ex-triceps-testa', sets: 3, reps: '10-12' },
   ]);
@@ -33,25 +35,31 @@ export function seedPplHybridProgram() {
   const pull = build('Pull (Costas, Bíceps, Post. Ombro)', '🎯', [
     { id: 'ex-puxada-frente', sets: 4, reps: '8-10' },
     { id: 'ex-remada-curvada', sets: 3, reps: '8-10' },
+    { id: 'ex-remada-unilateral', sets: 3, reps: '10-12' },
     { id: 'ex-remada-baixa', sets: 3, reps: '10-12' },
     { id: 'ex-crucifixo-inverso', sets: 3, reps: '12-15' },
     { id: 'ex-rosca-direta', sets: 3, reps: '10-12' },
     { id: 'ex-rosca-martelo', sets: 3, reps: '12-15' },
+    { id: 'ex-rosca-scott', sets: 3, reps: '10-12' },
   ]);
 
   const legs = build('Legs (Quadríceps, Post. Coxa, Panturrilha, Glúteo)', '🦵', [
     { id: 'ex-agachamento-livre', sets: 4, reps: '6-8' },
-    { id: 'ex-leg-press', sets: 3, reps: '10-12' },
+    { id: 'ex-leg-press', sets: 4, reps: '10-12' },
     { id: 'ex-cadeira-extensora', sets: 3, reps: '12-15' },
     { id: 'ex-mesa-flexora', sets: 3, reps: '12-15' },
+    { id: 'ex-stiff-halter', sets: 3, reps: '10-12' },
     { id: 'ex-elevacao-pelvica', sets: 3, reps: '10-12' },
     { id: 'ex-panturrilha-em-pe', sets: 4, reps: '12-15' },
+    { id: 'ex-panturrilha-sentado', sets: 3, reps: '15-20' },
   ]);
 
   const upper = build('Upper — Treino de Campeão', '👑', [
     { id: 'ex-supino-reto-barra', sets: 3, reps: '8-10' },
     { id: 'ex-puxada-frente', sets: 3, reps: '8-10' },
     { id: 'ex-desenvolvimento-militar', sets: 3, reps: '10-12' },
+    { id: 'ex-remada-baixa', sets: 3, reps: '10-12' },
+    { id: 'ex-elevacao-lateral', sets: 3, reps: '12-15' },
     { id: 'ex-rosca-direta', sets: 3, reps: '10-12' },
     { id: 'ex-triceps-pulley', sets: 3, reps: '10-12' },
     { id: 'ex-abdominal-supra', sets: 3, reps: '15-20' },
@@ -60,8 +68,10 @@ export function seedPplHybridProgram() {
   const lower = build('Lower (ênfase posterior/glúteo)', '🔥', [
     { id: 'ex-elevacao-pelvica', sets: 4, reps: '8-10' },
     { id: 'ex-mesa-flexora', sets: 4, reps: '10-12' },
+    { id: 'ex-stiff-barra', sets: 3, reps: '10-12' },
     { id: 'ex-afundo', sets: 3, reps: '10-12' },
     { id: 'ex-cadeira-adutora', sets: 3, reps: '12-15' },
+    { id: 'ex-gluteo-cabo', sets: 3, reps: '12-15' },
     { id: 'ex-panturrilha-em-pe', sets: 4, reps: '12-15' },
   ]);
 
@@ -86,8 +96,10 @@ export function seedInferiorDuploHybridProgram() {
   const push = build('Push (Peito, Ombro, Tríceps)', '💪', [
     { id: 'ex-supino-reto-barra', sets: 4, reps: '8-10' },
     { id: 'ex-supino-inclinado-halter', sets: 3, reps: '10-12' },
+    { id: 'ex-supino-maquina', sets: 3, reps: '10-12' },
     { id: 'ex-desenvolvimento-militar', sets: 3, reps: '8-10' },
     { id: 'ex-elevacao-lateral', sets: 3, reps: '12-15' },
+    { id: 'ex-crucifixo-halter', sets: 3, reps: '12-15' },
     { id: 'ex-triceps-pulley', sets: 3, reps: '12-15' },
     { id: 'ex-triceps-testa', sets: 3, reps: '10-12' },
   ]);
@@ -95,18 +107,23 @@ export function seedInferiorDuploHybridProgram() {
   const pull = build('Pull (Costas, Bíceps)', '🎯', [
     { id: 'ex-puxada-frente', sets: 4, reps: '8-10' },
     { id: 'ex-remada-curvada', sets: 3, reps: '8-10' },
-    { id: 'ex-remada-baixa', sets: 3, reps: '10-12' },
+    { id: 'ex-remada-unilateral', sets: 3, reps: '10-12' },
+    { id: 'ex-puxada-supinada', sets: 3, reps: '10-12' },
     { id: 'ex-crucifixo-inverso', sets: 3, reps: '12-15' },
     { id: 'ex-rosca-direta', sets: 3, reps: '10-12' },
     { id: 'ex-rosca-martelo', sets: 3, reps: '12-15' },
+    { id: 'ex-rosca-scott', sets: 3, reps: '10-12' },
   ]);
 
   const inferior = build('Inferior (Quadríceps, Posterior, Panturrilha)', '🦵', [
     { id: 'ex-agachamento-livre', sets: 4, reps: '6-8' },
     { id: 'ex-leg-press', sets: 4, reps: '10-12' },
+    { id: 'ex-agachamento-hack', sets: 3, reps: '10-12' },
     { id: 'ex-cadeira-extensora', sets: 3, reps: '12-15' },
     { id: 'ex-mesa-flexora', sets: 3, reps: '12-15' },
+    { id: 'ex-stiff-halter', sets: 3, reps: '10-12' },
     { id: 'ex-panturrilha-em-pe', sets: 4, reps: '12-15' },
+    { id: 'ex-panturrilha-sentado', sets: 3, reps: '15-20' },
   ]);
 
   const superiorCompleto = build('Superior Completo', '👑', [
@@ -117,14 +134,17 @@ export function seedInferiorDuploHybridProgram() {
     { id: 'ex-elevacao-lateral', sets: 3, reps: '12-15' },
     { id: 'ex-rosca-direta', sets: 3, reps: '10-12' },
     { id: 'ex-triceps-pulley', sets: 3, reps: '10-12' },
+    { id: 'ex-triceps-testa', sets: 3, reps: '10-12' },
     { id: 'ex-abdominal-supra', sets: 3, reps: '15-20' },
   ]);
 
   const inferiorCompleto = build('Inferior Completo (Posterior, Glúteo)', '🔥', [
     { id: 'ex-elevacao-pelvica', sets: 4, reps: '8-10' },
     { id: 'ex-mesa-flexora', sets: 4, reps: '10-12' },
+    { id: 'ex-stiff-unilateral', sets: 3, reps: '10-12' },
     { id: 'ex-afundo', sets: 3, reps: '10-12' },
     { id: 'ex-cadeira-adutora', sets: 3, reps: '12-15' },
+    { id: 'ex-gluteo-cabo', sets: 3, reps: '12-15' },
     { id: 'ex-abducao-quadril', sets: 3, reps: '15-20' },
     { id: 'ex-panturrilha-em-pe', sets: 4, reps: '12-15' },
   ]);
