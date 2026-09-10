@@ -2,13 +2,15 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Play, Flame, CalendarCheck, Plus, ArrowRight, Bot, Bike, BedDouble, ChevronDown } from 'lucide-react';
 import { useAppData } from '../hooks/useAppData';
-import { useProfiles } from '../hooks/useProfiles';
+import { useAuth } from '../hooks/useAuth';
+import { useProfile } from '../hooks/useProfile';
 import { startSession } from '../lib/actions';
 import { getCurrentStreakWeeks, getTotalSessionsThisMonth } from '../lib/stats';
 import { getTopCoachTip } from '../lib/coach';
 import { WEEKDAY_ORDER } from '../types';
 import { Card, PageHeader, Button, EmptyState } from '../components/ui';
-import { ProfileSwitcherSheet } from '../components/ProfileSwitcherSheet';
+import { AccountSheet } from '../components/AccountSheet';
+import { ImportLocalDataBanner } from '../components/ImportLocalDataBanner';
 
 /** Date.getDay(): 0=domingo...6=sábado → nosso índice seg..dom (0..6) */
 function todayWeekdayKey() {
@@ -18,7 +20,8 @@ function todayWeekdayKey() {
 
 export function Home() {
   const { workouts, sessions, exercises, activeSessionId, weeklySchedule } = useAppData();
-  const { profiles, activeProfileId } = useProfiles();
+  const { user } = useAuth();
+  const profile = useProfile(user?.id);
   const navigate = useNavigate();
   const [switcherOpen, setSwitcherOpen] = useState(false);
 
@@ -29,7 +32,6 @@ export function Home() {
   const coachExercise = coachTip ? exercises.find((e) => e.id === coachTip.exerciseId) : null;
   const coachColor = coachTip?.action === 'increase' ? 'var(--success)' : coachTip?.action === 'deload' ? 'var(--warn)' : 'var(--text)';
 
-  const activeProfile = profiles.find((p) => p.id === activeProfileId);
   const todayKey = todayWeekdayKey();
   const todaySchedule = weeklySchedule[todayKey];
   const todayWorkout = todaySchedule?.kind === 'treino' ? workouts.find((w) => w.id === todaySchedule.workoutId) : null;
@@ -55,12 +57,14 @@ export function Home() {
             className="flex items-center gap-1.5 rounded-full pl-1 pr-2.5 py-1"
             style={{ background: 'var(--surface-2)' }}
           >
-            <span className="text-base">{activeProfile?.emoji ?? '💪'}</span>
-            <span className="text-xs font-medium max-w-[80px] truncate">{activeProfile?.name ?? 'Perfil'}</span>
+            <span className="text-base">{profile?.emoji ?? '💪'}</span>
+            <span className="text-xs font-medium max-w-[80px] truncate">{profile?.name ?? 'Conta'}</span>
             <ChevronDown size={13} style={{ color: 'var(--text-faint)' }} />
           </button>
         }
       />
+
+      {user && active.length === 0 && <ImportLocalDataBanner userId={user.id} />}
 
       {activeSessionId && (
         <Card className="mb-4 flex items-center justify-between" style={{ borderColor: 'var(--brand)' }}>
@@ -216,7 +220,13 @@ export function Home() {
         </div>
       )}
 
-      <ProfileSwitcherSheet open={switcherOpen} onClose={() => setSwitcherOpen(false)} />
+      <AccountSheet
+        open={switcherOpen}
+        onClose={() => setSwitcherOpen(false)}
+        name={profile?.name ?? 'Conta'}
+        emoji={profile?.emoji ?? '💪'}
+        email={user?.email}
+      />
     </div>
   );
 }

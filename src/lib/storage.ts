@@ -1,12 +1,15 @@
-import type { AppData } from '../types';
+import type {
+  AppData,
+  Workout,
+  Session,
+  Exercise,
+  BodyMeasurement,
+  BodyPhoto,
+  CardioLog,
+  WeeklySchedule,
+} from '../types';
 import { BUILTIN_EXERCISES } from './exercises';
-
-const LEGACY_STORAGE_KEY = 'fitbox.data.v1'; // pré-perfis, mantido só para migração
-export const PROFILES_KEY = 'fitbox.profiles.v1';
-
-export function dataKeyFor(profileId: string): string {
-  return `fitbox.data.v1.${profileId}`;
-}
+import { supabase } from './supabaseClient';
 
 export function emptyData(): AppData {
   return {
@@ -21,64 +24,75 @@ export function emptyData(): AppData {
   };
 }
 
-function normalize(parsed: Partial<AppData>): AppData {
-  const base = emptyData();
-  // Merge built-in exercises with any user additions already saved
-  const savedExercises = parsed.exercises ?? [];
-  const savedIds = new Set(savedExercises.map((e) => e.id));
-  const merged = [...savedExercises, ...base.exercises.filter((e) => !savedIds.has(e.id))];
+// ---------- Conversores linha do banco (snake_case) <-> objeto do app (camelCase) ----------
+
+function rowToWorkout(r: Record<string, unknown>): Workout {
   return {
-    exercises: merged,
-    workouts: parsed.workouts ?? [],
-    sessions: parsed.sessions ?? [],
-    measurements: parsed.measurements ?? [],
-    photos: parsed.photos ?? [],
-    cardioLogs: parsed.cardioLogs ?? [],
-    weeklySchedule: parsed.weeklySchedule ?? {},
-    activeSessionId: parsed.activeSessionId ?? null,
+    id: r.id as string,
+    name: r.name as string,
+    emoji: (r.emoji as string) ?? undefined,
+    exercises: (r.exercises as Workout['exercises']) ?? [],
+    createdAt: r.created_at as string,
+    archived: (r.archived as boolean) ?? false,
   };
 }
 
-function load(profileId: string): AppData {
-  try {
-    const raw = localStorage.getItem(dataKeyFor(profileId));
-    if (!raw) return emptyData();
-    return normalize(JSON.parse(raw) as Partial<AppData>);
-  } catch (e) {
-    console.error('Falha ao carregar dados do FitBox, iniciando vazio.', e);
-    return emptyData();
-  }
+function rowToSession(r: Record<string, unknown>): Session {
+  return {
+    id: r.id as string,
+    workoutId: (r.workout_id as string) ?? null,
+    workoutName: r.workout_name as string,
+    startedAt: r.started_at as string,
+    finishedAt: (r.finished_at as string) ?? null,
+    exercises: (r.exercises as Session['exercises']) ?? [],
+    durationSeconds: (r.duration_seconds as number) ?? undefined,
+  };
 }
 
-function save(profileId: string, data: AppData) {
-  try {
-    localStorage.setItem(dataKeyFor(profileId), JSON.stringify(data));
-  } catch (e) {
-    console.error('Falha ao salvar dados do FitBox.', e);
-  }
+function rowToCustomExercise(r: Record<string, unknown>): Exercise {
+  return { id: r.id as string, name: r.name as string, muscleGroup: r.muscle_group as Exercise['muscleGroup'], custom: true };
 }
 
-/** Dados legados (de antes dos perfis existirem), se houver. Usado só para migração. */
-export function readLegacyData(): AppData | null {
-  try {
-    const raw = localStorage.getItem(LEGACY_STORAGE_KEY);
-    if (!raw) return null;
-    return normalize(JSON.parse(raw) as Partial<AppData>);
-  } catch {
-    return null;
-  }
+function rowToMeasurement(r: Record<string, unknown>): BodyMeasurement {
+  return {
+    id: r.id as string,
+    date: r.date as string,
+    weightKg: (r.weight_kg as number) ?? undefined,
+    bodyFatPct: (r.body_fat_pct as number) ?? undefined,
+    chestCm: (r.chest_cm as number) ?? undefined,
+    waistCm: (r.waist_cm as number) ?? undefined,
+    hipCm: (r.hip_cm as number) ?? undefined,
+    armCm: (r.arm_cm as number) ?? undefined,
+    thighCm: (r.thigh_cm as number) ?? undefined,
+    calfCm: (r.calf_cm as number) ?? undefined,
+    notes: (r.notes as string) ?? undefined,
+  };
 }
 
-export function clearLegacyData() {
-  localStorage.removeItem(LEGACY_STORAGE_KEY);
+function rowToPhoto(r: Record<string, unknown>): BodyPhoto {
+  return { id: r.id as string, date: r.date as string, dataUrl: r.data_url as string, label: (r.label as BodyPhoto['label']) ?? undefined };
+}
+
+function rowToCardio(r: Record<string, unknown>): CardioLog {
+  return {
+    id: r.id as string,
+    date: r.date as string,
+    type: r.type as CardioLog['type'],
+    durationMin: Number(r.duration_min),
+    distanceKm: r.distance_km != null ? Number(r.distance_km) : undefined,
+    avgHeartRate: r.avg_heart_rate != null ? Number(r.avg_heart_rate) : undefined,
+    rpe: r.rpe != null ? Number(r.rpe) : undefined,
+    notes: (r.notes as string) ?? undefined,
+  };
 }
 
 type Listener = (data: AppData) => void;
 
 class Store {
   private data: AppData = emptyData();
-  private profileId: string | null = null;
+  private userId: string | null = null;
   private listeners = new Set<Listener>();
+  loading = false;
 
   getSnapshot = (): AppData => this.data;
 
@@ -91,42 +105,65 @@ class Store {
     this.listeners.forEach((l) => l(this.data));
   }
 
-  /** Carrega (ou troca para) os dados de um perfil específico. */
-  loadProfile(profileId: string) {
-    this.profileId = profileId;
-    this.data = load(profileId);
-    this.notify();
+  getUserId(): string | null {
+    return this.userId;
   }
 
-  /** Usa dados já prontos (ex: migração de dados legados) para o perfil ativo. */
-  hydrate(data: AppData) {
-    if (!this.profileId) return;
-    this.data = data;
-    save(this.profileId, this.data);
-    this.notify();
+  isLoading(): boolean {
+    return this.loading;
   }
 
-  update(updater: (draft: AppData) => AppData | void) {
-    if (!this.profileId) {
-      console.warn('Tentativa de atualizar dados sem um perfil ativo.');
-      return;
-    }
+  /** Mutação local otimista (o componente vê o resultado na hora); quem chama é
+   * responsável por também persistir a mudança no Supabase (ver actions.ts). */
+  update(mutator: (draft: AppData) => AppData | void) {
     const draft = structuredClone(this.data);
-    const result = updater(draft);
+    const result = mutator(draft);
     this.data = result ?? draft;
-    save(this.profileId, this.data);
     this.notify();
   }
 
-  exportJson(): string {
-    return JSON.stringify(this.data, null, 2);
+  /** Limpa os dados em memória (logout). */
+  clear() {
+    this.userId = null;
+    this.data = emptyData();
+    this.notify();
   }
 
-  importJson(json: string) {
-    if (!this.profileId) return;
-    const parsed = normalize(JSON.parse(json) as Partial<AppData>);
-    this.data = parsed;
-    save(this.profileId, this.data);
+  /** Carrega todos os dados do usuário logado a partir do Supabase. */
+  async loadForUser(userId: string) {
+    this.userId = userId;
+    this.loading = true;
+    this.notify();
+
+    const [workoutsRes, sessionsRes, customExRes, measurementsRes, photosRes, cardioRes, scheduleRes] = await Promise.all([
+      supabase.from('workouts').select('*').order('created_at', { ascending: true }),
+      supabase.from('sessions').select('*').order('started_at', { ascending: true }),
+      supabase.from('custom_exercises').select('*'),
+      supabase.from('measurements').select('*').order('date', { ascending: true }),
+      supabase.from('photos').select('*').order('date', { ascending: true }),
+      supabase.from('cardio_logs').select('*').order('date', { ascending: true }),
+      supabase.from('weekly_schedule').select('*').eq('user_id', userId).maybeSingle(),
+    ]);
+
+    for (const res of [workoutsRes, sessionsRes, customExRes, measurementsRes, photosRes, cardioRes, scheduleRes]) {
+      if (res.error) console.error('Falha ao carregar dados do FitBox:', res.error);
+    }
+
+    const customExercises = (customExRes.data ?? []).map(rowToCustomExercise);
+    const customIds = new Set(customExercises.map((e) => e.id));
+    const sessionsData = sessionsRes.data ?? [];
+
+    this.data = {
+      exercises: [...customExercises, ...BUILTIN_EXERCISES.filter((e) => !customIds.has(e.id))],
+      workouts: (workoutsRes.data ?? []).map(rowToWorkout),
+      sessions: sessionsData.map(rowToSession),
+      measurements: (measurementsRes.data ?? []).map(rowToMeasurement),
+      photos: (photosRes.data ?? []).map(rowToPhoto),
+      cardioLogs: (cardioRes.data ?? []).map(rowToCardio),
+      weeklySchedule: (scheduleRes.data?.schedule as WeeklySchedule) ?? {},
+      activeSessionId: (sessionsData.find((s) => !s.finished_at)?.id as string) ?? null,
+    };
+    this.loading = false;
     this.notify();
   }
 }

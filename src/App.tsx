@@ -1,4 +1,6 @@
+import { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { Dumbbell } from 'lucide-react';
 import { Layout } from './components/Layout';
 import { Home } from './pages/Home';
 import { Workouts } from './pages/Workouts';
@@ -9,15 +11,53 @@ import { ExerciseDetail } from './pages/ExerciseDetail';
 import { Progress } from './pages/Progress';
 import { BodyStats } from './pages/BodyStats';
 import { Cardio } from './pages/Cardio';
-import { ProfileGate } from './pages/ProfileGate';
-import { useProfiles } from './hooks/useProfiles';
+import { Auth } from './pages/Auth';
+import { useAuth } from './hooks/useAuth';
+import { store } from './lib/storage';
+import { applyProgramTemplate } from './lib/seedPrograms';
+import { takePendingTemplate } from './lib/pendingTemplate';
+
+function Splash() {
+  return (
+    <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg)' }}>
+      <div className="w-12 h-12 rounded-2xl flex items-center justify-center animate-pulse" style={{ background: 'var(--brand-dim)' }}>
+        <Dumbbell size={22} style={{ color: 'var(--brand)' }} />
+      </div>
+    </div>
+  );
+}
 
 export default function App() {
-  const { activeProfileId } = useProfiles();
+  const { session, authLoading } = useAuth();
+  const [dataReady, setDataReady] = useState(false);
 
-  if (!activeProfileId) {
-    return <ProfileGate />;
-  }
+  useEffect(() => {
+    if (!session) {
+      store.clear();
+      setDataReady(false);
+      return;
+    }
+    let cancelled = false;
+    setDataReady(false);
+    store.loadForUser(session.user.id).then(() => {
+      if (cancelled) return;
+      const snapshot = store.getSnapshot();
+      const isEmpty = snapshot.workouts.length === 0 && Object.keys(snapshot.weeklySchedule).length === 0;
+      const pendingTemplate = takePendingTemplate();
+      if (isEmpty && pendingTemplate && pendingTemplate !== 'blank') {
+        applyProgramTemplate(pendingTemplate);
+      }
+      setDataReady(true);
+    });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.user.id]);
+
+  if (authLoading) return <Splash />;
+  if (!session) return <Auth />;
+  if (!dataReady) return <Splash />;
 
   return (
     <BrowserRouter>
