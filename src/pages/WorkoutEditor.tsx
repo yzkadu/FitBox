@@ -93,7 +93,7 @@ export function WorkoutEditor() {
           }
         />
       ) : (
-        <div className="flex flex-col gap-2.5 pb-4">
+        <div className="flex flex-col gap-2.5 pb-40">
           {sorted.map((we) => {
             const ex = exerciseById.get(we.exerciseId);
             return (
