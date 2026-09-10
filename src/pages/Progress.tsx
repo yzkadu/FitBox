@@ -10,10 +10,14 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts';
+import { Target, Pencil, X } from 'lucide-react';
 import { useAppData } from '../hooks/useAppData';
 import { getWeeklyFrequency } from '../lib/stats';
-import { PageHeader, Card, EmptyState } from '../components/ui';
+import { assessWeightGoal } from '../lib/goal';
+import { setWeightGoal } from '../lib/actions';
+import { PageHeader, Card, EmptyState, Button } from '../components/ui';
 import { chartColors, seriesOrder, tooltipStyle } from '../lib/chartTheme';
+import type { BodyMeasurement, CardioLog, Session, WeeklySchedule, WeightGoal } from '../types';
 
 const MEASURE_FIELDS: { key: 'chestCm' | 'waistCm' | 'hipCm' | 'armCm' | 'thighCm'; label: string }[] = [
   { key: 'waistCm', label: 'Cintura' },
@@ -22,8 +26,167 @@ const MEASURE_FIELDS: { key: 'chestCm' | 'waistCm' | 'hipCm' | 'armCm' | 'thighC
   { key: 'thighCm', label: 'Coxa' },
 ];
 
+function todayIso() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+const VERDICT_COLOR: Record<string, string> = {
+  'no-caminho': 'var(--success)',
+  atencao: 'var(--warn)',
+  'fora-do-ritmo': 'var(--danger)',
+  cedo: 'var(--text-dim)',
+  'sem-dados': 'var(--text-dim)',
+};
+
+function WeightGoalCard({
+  goal,
+  measurements,
+  sessions,
+  cardioLogs,
+  weeklySchedule,
+}: {
+  goal: WeightGoal | null;
+  measurements: BodyMeasurement[];
+  sessions: Session[];
+  cardioLogs: CardioLog[];
+  weeklySchedule: WeeklySchedule;
+}) {
+  const [editing, setEditing] = useState(goal === null);
+  const lastWeight = measurements
+    .filter((m) => m.weightKg != null)
+    .slice()
+    .sort((a, b) => b.date.localeCompare(a.date))[0]?.weightKg;
+
+  const [form, setForm] = useState({
+    startWeightKg: goal ? String(goal.startWeightKg) : lastWeight != null ? String(lastWeight) : '',
+    targetLossKg: goal ? String(goal.targetLossKg) : '',
+    targetWeeks: goal ? String(goal.targetWeeks) : '',
+  });
+
+  function handleSave() {
+    const startWeightKg = Number(form.startWeightKg);
+    const targetLossKg = Number(form.targetLossKg);
+    const targetWeeks = Number(form.targetWeeks);
+    if (!startWeightKg || !targetLossKg || !targetWeeks) return;
+    setWeightGoal({ startWeightKg, targetLossKg, targetWeeks, startDate: goal?.startDate ?? todayIso() });
+    setEditing(false);
+  }
+
+  if (editing) {
+    return (
+      <Card className="mb-4">
+        <p className="text-sm font-medium mb-1 flex items-center gap-1.5">
+          <Target size={15} style={{ color: 'var(--brand)' }} /> Meta de perda de peso
+        </p>
+        <p className="text-xs mb-3" style={{ color: 'var(--text-faint)' }}>
+          Estimativa geral pra te ajudar a planejar — não substitui orientação médica ou nutricional.
+        </p>
+        <div className="grid grid-cols-2 gap-3 mb-3">
+          <label className="flex flex-col gap-1">
+            <span className="text-xs" style={{ color: 'var(--text-faint)' }}>
+              Peso atual (kg)
+            </span>
+            <input
+              type="number"
+              inputMode="decimal"
+              value={form.startWeightKg}
+              onChange={(e) => setForm({ ...form, startWeightKg: e.target.value })}
+              className="w-full rounded-lg px-3 py-2 text-sm"
+              style={{ background: 'var(--surface-2)' }}
+            />
+          </label>
+          <label className="flex flex-col gap-1">
+            <span className="text-xs" style={{ color: 'var(--text-faint)' }}>
+              Quer perder (kg)
+            </span>
+            <input
+              type="number"
+              inputMode="decimal"
+              value={form.targetLossKg}
+              onChange={(e) => setForm({ ...form, targetLossKg: e.target.value })}
+              placeholder="Ex: 5"
+              className="w-full rounded-lg px-3 py-2 text-sm"
+              style={{ background: 'var(--surface-2)' }}
+            />
+          </label>
+          <label className="flex flex-col gap-1 col-span-2">
+            <span className="text-xs" style={{ color: 'var(--text-faint)' }}>
+              Em quantas semanas (~)
+            </span>
+            <input
+              type="number"
+              inputMode="numeric"
+              value={form.targetWeeks}
+              onChange={(e) => setForm({ ...form, targetWeeks: e.target.value })}
+              placeholder="Ex: 10"
+              className="w-full rounded-lg px-3 py-2 text-sm"
+              style={{ background: 'var(--surface-2)' }}
+            />
+          </label>
+        </div>
+        <div className="flex gap-2">
+          <Button
+            full
+            disabled={!form.startWeightKg || !form.targetLossKg || !form.targetWeeks}
+            onClick={handleSave}
+          >
+            {goal ? 'Salvar alterações' : 'Definir meta'}
+          </Button>
+          {goal && (
+            <Button variant="secondary" onClick={() => setEditing(false)} className="!px-4">
+              Cancelar
+            </Button>
+          )}
+        </div>
+      </Card>
+    );
+  }
+
+  const assessment = assessWeightGoal(goal as WeightGoal, measurements, sessions, cardioLogs, weeklySchedule);
+  const g = goal as WeightGoal;
+  const targetWeightKg = g.startWeightKg - g.targetLossKg;
+
+  return (
+    <Card className="mb-4">
+      <div className="flex items-start justify-between mb-1">
+        <p className="text-sm font-medium flex items-center gap-1.5">
+          <Target size={15} style={{ color: 'var(--brand)' }} /> Meta de perda de peso
+        </p>
+        <div className="flex items-center gap-2">
+          <button onClick={() => setEditing(true)} style={{ color: 'var(--text-faint)' }}>
+            <Pencil size={14} />
+          </button>
+          <button onClick={() => setWeightGoal(null)} style={{ color: 'var(--text-faint)' }}>
+            <X size={15} />
+          </button>
+        </div>
+      </div>
+      <p className="text-xs mb-3" style={{ color: 'var(--text-faint)' }}>
+        {g.startWeightKg}kg → {targetWeightKg.toFixed(1)}kg em ~{g.targetWeeks} semanas ({assessment.targetWeeklyRateKg.toFixed(2)}kg/semana)
+      </p>
+
+      <p className="text-xs mb-3" style={{ color: 'var(--text-dim)' }}>
+        {assessment.pace.message}
+      </p>
+
+      <div
+        className="rounded-xl p-3 text-sm mb-2"
+        style={{ background: 'var(--surface-2)', color: VERDICT_COLOR[assessment.verdict] ?? 'var(--text)' }}
+      >
+        {assessment.verdictMessage}
+      </div>
+
+      {assessment.consistencyPct != null && (
+        <p className="text-xs" style={{ color: 'var(--text-faint)' }}>
+          Frequência de treino (últimas semanas) vs agenda planejada: {assessment.consistencyPct}%
+        </p>
+      )}
+    </Card>
+  );
+}
+
 export function Progress() {
-  const { sessions, measurements } = useAppData();
+  const { sessions, measurements, cardioLogs, weeklySchedule, weightGoal } = useAppData();
   const [activeFields, setActiveFields] = useState<Set<string>>(new Set(['waistCm']));
 
   const freq = useMemo(() => getWeeklyFrequency(sessions, 10), [sessions]);
@@ -57,10 +220,17 @@ export function Progress() {
 
   const hasAnyData = sessions.some((s) => s.finishedAt) || measurements.length > 0;
 
-  if (!hasAnyData) {
+  if (!hasAnyData && !weightGoal) {
     return (
-      <div className="px-4">
+      <div className="px-4 pb-6">
         <PageHeader title="Evolução" />
+        <WeightGoalCard
+          goal={weightGoal}
+          measurements={measurements}
+          sessions={sessions}
+          cardioLogs={cardioLogs}
+          weeklySchedule={weeklySchedule}
+        />
         <EmptyState title="Ainda sem dados" subtitle="Complete treinos e registre medidas para ver seus gráficos aqui." />
       </div>
     );
@@ -69,6 +239,14 @@ export function Progress() {
   return (
     <div className="px-4 pb-6">
       <PageHeader title="Evolução" />
+
+      <WeightGoalCard
+        goal={weightGoal}
+        measurements={measurements}
+        sessions={sessions}
+        cardioLogs={cardioLogs}
+        weeklySchedule={weeklySchedule}
+      />
 
       <Card className="mb-4">
         <p className="text-sm font-medium mb-3">Frequência de treino (10 semanas)</p>

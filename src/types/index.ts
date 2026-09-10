@@ -132,6 +132,14 @@ export type DaySchedule =
 
 export type WeeklySchedule = Partial<Record<Weekday, DaySchedule>>;
 
+/** Meta de perda de peso: quanto perder, em quanto tempo, a partir de quando. */
+export interface WeightGoal {
+  targetLossKg: number;
+  targetWeeks: number;
+  startWeightKg: number;
+  startDate: string; // ISO date (yyyy-mm-dd)
+}
+
 /** Um perfil = uma pessoa usando o app neste dispositivo. Cada perfil tem seus próprios dados. */
 export interface Profile {
   id: string;
@@ -148,5 +156,6 @@ export interface AppData {
   photos: BodyPhoto[];
   cardioLogs: CardioLog[];
   weeklySchedule: WeeklySchedule;
+  weightGoal: WeightGoal | null;
   activeSessionId: string | null;
 }

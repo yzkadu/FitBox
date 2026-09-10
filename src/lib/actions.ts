@@ -14,6 +14,7 @@ import type {
   CardioLog,
   Weekday,
   DaySchedule,
+  WeightGoal,
 } from '../types';
 
 // Toda ação muda o estado local na hora (otimista, pra UI responder instantaneamente)
@@ -530,4 +531,19 @@ export function setDaySchedule(weekday: Weekday, schedule: DaySchedule | null) {
     }
   });
   syncWeeklySchedule();
+}
+
+// ---------- Meta de peso ----------
+
+export function setWeightGoal(goal: WeightGoal | null) {
+  store.update((d) => {
+    d.weightGoal = goal;
+  });
+  const userId = requireUserId();
+  if (!userId) return;
+  if (goal === null) {
+    supabase.from('weight_goal').delete().eq('user_id', userId).then(logIfError('weight_goal.delete'));
+  } else {
+    supabase.from('weight_goal').upsert({ user_id: userId, goal }).then(logIfError('weight_goal.upsert'));
+  }
 }

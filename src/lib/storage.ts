@@ -7,6 +7,7 @@ import type {
   BodyPhoto,
   CardioLog,
   WeeklySchedule,
+  WeightGoal,
 } from '../types';
 import { BUILTIN_EXERCISES } from './exercises';
 import { supabase } from './supabaseClient';
@@ -20,6 +21,7 @@ export function emptyData(): AppData {
     photos: [],
     cardioLogs: [],
     weeklySchedule: {},
+    weightGoal: null,
     activeSessionId: null,
   };
 }
@@ -138,7 +140,7 @@ class Store {
     this.loading = true;
     this.notify();
 
-    const [workoutsRes, sessionsRes, customExRes, measurementsRes, photosRes, cardioRes, scheduleRes] = await Promise.all([
+    const [workoutsRes, sessionsRes, customExRes, measurementsRes, photosRes, cardioRes, scheduleRes, goalRes] = await Promise.all([
       supabase.from('workouts').select('*').order('created_at', { ascending: true }),
       supabase.from('sessions').select('*').order('started_at', { ascending: true }),
       supabase.from('custom_exercises').select('*'),
@@ -146,9 +148,10 @@ class Store {
       supabase.from('photos').select('*').order('date', { ascending: true }),
       supabase.from('cardio_logs').select('*').order('date', { ascending: true }),
       supabase.from('weekly_schedule').select('*').eq('user_id', userId).maybeSingle(),
+      supabase.from('weight_goal').select('*').eq('user_id', userId).maybeSingle(),
     ]);
 
-    for (const res of [workoutsRes, sessionsRes, customExRes, measurementsRes, photosRes, cardioRes, scheduleRes]) {
+    for (const res of [workoutsRes, sessionsRes, customExRes, measurementsRes, photosRes, cardioRes, scheduleRes, goalRes]) {
       if (res.error) console.error('Falha ao carregar dados do FitBox:', res.error);
     }
 
@@ -164,6 +167,7 @@ class Store {
       photos: (photosRes.data ?? []).map(rowToPhoto),
       cardioLogs: (cardioRes.data ?? []).map(rowToCardio),
       weeklySchedule: (scheduleRes.data?.schedule as WeeklySchedule) ?? {},
+      weightGoal: (goalRes.data?.goal as WeightGoal) ?? null,
       activeSessionId: (sessionsData.find((s) => !s.finished_at)?.id as string) ?? null,
     };
     this.loading = false;
