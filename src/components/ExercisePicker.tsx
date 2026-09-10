@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Search, Plus } from 'lucide-react';
 import { Sheet } from './Sheet';
 import { useAppData } from '../hooks/useAppData';
@@ -10,20 +10,40 @@ export function ExercisePicker({
   open,
   onClose,
   onSelect,
+  title = 'Escolher exercício',
+  defaultMuscleGroup,
+  excludeExerciseId,
 }: {
   open: boolean;
   onClose: () => void;
   onSelect: (exercise: Exercise) => void;
+  title?: string;
+  /** Pré-filtra pra esse grupo muscular (ex: ao trocar um exercício, começa no mesmo grupo). */
+  defaultMuscleGroup?: MuscleGroup;
+  /** Esconde esse exercício da lista (ex: o que está sendo trocado, pra não "trocar" por ele mesmo). */
+  excludeExerciseId?: string;
 }) {
   const { exercises } = useAppData();
   const [query, setQuery] = useState('');
+  const [groupFilter, setGroupFilter] = useState<MuscleGroup | 'todos'>(defaultMuscleGroup ?? 'todos');
   const [creating, setCreating] = useState(false);
   const [newName, setNewName] = useState('');
   const [newGroup, setNewGroup] = useState<MuscleGroup>('outro');
 
+  useEffect(() => {
+    if (open) {
+      setGroupFilter(defaultMuscleGroup ?? 'todos');
+      setQuery('');
+      setCreating(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, defaultMuscleGroup]);
+
   const grouped = useMemo(() => {
     const q = query.trim().toLowerCase();
-    const filtered = exercises.filter((e) => e.name.toLowerCase().includes(q));
+    const filtered = exercises.filter(
+      (e) => e.name.toLowerCase().includes(q) && e.id !== excludeExerciseId && (groupFilter === 'todos' || e.muscleGroup === groupFilter),
+    );
     const map = new Map<string, Exercise[]>();
     for (const group of MUSCLE_GROUP_ORDER) map.set(group, []);
     for (const ex of filtered) {
@@ -31,7 +51,7 @@ export function ExercisePicker({
       map.get(ex.muscleGroup)!.push(ex);
     }
     return Array.from(map.entries()).filter(([, list]) => list.length > 0);
-  }, [exercises, query]);
+  }, [exercises, query, groupFilter, excludeExerciseId]);
 
   function handleCreate() {
     if (!newName.trim()) return;
@@ -43,7 +63,7 @@ export function ExercisePicker({
   }
 
   return (
-    <Sheet open={open} onClose={onClose} title="Escolher exercício">
+    <Sheet open={open} onClose={onClose} title={title}>
       <div className="relative mb-3">
         <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-faint)' }} />
         <input
@@ -54,6 +74,32 @@ export function ExercisePicker({
           className="w-full rounded-xl pl-9 pr-3 py-2.5 text-sm"
           style={{ background: 'var(--surface-2)', color: 'var(--text)' }}
         />
+      </div>
+
+      <div className="flex gap-1.5 mb-3 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
+        <button
+          onClick={() => setGroupFilter('todos')}
+          className="shrink-0 text-xs px-2.5 py-1.5 rounded-full font-medium"
+          style={{
+            background: groupFilter === 'todos' ? 'var(--brand)' : 'var(--surface-2)',
+            color: groupFilter === 'todos' ? 'white' : 'var(--text-faint)',
+          }}
+        >
+          Todos
+        </button>
+        {MUSCLE_GROUP_ORDER.map((g) => (
+          <button
+            key={g}
+            onClick={() => setGroupFilter(g as MuscleGroup)}
+            className="shrink-0 text-xs px-2.5 py-1.5 rounded-full font-medium"
+            style={{
+              background: groupFilter === g ? 'var(--brand)' : 'var(--surface-2)',
+              color: groupFilter === g ? 'white' : 'var(--text-faint)',
+            }}
+          >
+            {MUSCLE_GROUP_LABELS[g]}
+          </button>
+        ))}
       </div>
 
       {!creating ? (

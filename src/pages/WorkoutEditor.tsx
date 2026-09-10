@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Plus, GripVertical, X, Play } from 'lucide-react';
+import { ArrowLeft, Plus, GripVertical, X, Play, Repeat } from 'lucide-react';
 import { useAppData } from '../hooks/useAppData';
 import {
   addExerciseToWorkout,
   removeExerciseFromWorkout,
   updateWorkoutExercise,
   updateWorkout,
+  replaceWorkoutExercise,
 } from '../lib/actions';
 import { startSession } from '../lib/actions';
 import { Card, Button, EmptyState } from '../components/ui';
@@ -20,6 +21,7 @@ export function WorkoutEditor() {
   const { workouts, exercises } = useAppData();
   const [pickerOpen, setPickerOpen] = useState(false);
   const [editingName, setEditingName] = useState(false);
+  const [substitutingEntryId, setSubstitutingEntryId] = useState<string | null>(null);
 
   const workout = workouts.find((w) => w.id === workoutId);
 
@@ -38,6 +40,15 @@ export function WorkoutEditor() {
     addExerciseToWorkout(workout!.id, ex.id);
     setPickerOpen(false);
   }
+
+  function handleSelectSubstitute(ex: Exercise) {
+    if (substitutingEntryId) replaceWorkoutExercise(workout!.id, substitutingEntryId, ex.id);
+    setSubstitutingEntryId(null);
+  }
+
+  const substitutingExercise = substitutingEntryId
+    ? exerciseById.get(workout.exercises.find((e) => e.id === substitutingEntryId)?.exerciseId ?? '')
+    : null;
 
   function handleStart() {
     const session = startSession(workout!);
@@ -86,15 +97,33 @@ export function WorkoutEditor() {
           {sorted.map((we) => {
             const ex = exerciseById.get(we.exerciseId);
             return (
-              <Card key={we.id} className="flex items-center gap-3">
-                <GripVertical size={16} style={{ color: 'var(--text-faint)' }} className="shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">{ex?.name ?? 'Exercício removido'}</p>
-                  <p className="text-xs" style={{ color: 'var(--text-faint)' }}>
-                    {ex ? MUSCLE_GROUP_LABELS[ex.muscleGroup] : ''}
-                  </p>
+              <Card key={we.id} className="flex flex-col gap-2.5">
+                <div className="flex items-center gap-3">
+                  <GripVertical size={16} style={{ color: 'var(--text-faint)' }} className="shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate">{ex?.name ?? 'Exercício removido'}</p>
+                    <p className="text-xs" style={{ color: 'var(--text-faint)' }}>
+                      {ex ? MUSCLE_GROUP_LABELS[ex.muscleGroup] : ''}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setSubstitutingEntryId(we.id)}
+                    style={{ color: 'var(--text-faint)' }}
+                    className="shrink-0"
+                    aria-label="Trocar exercício"
+                  >
+                    <Repeat size={16} />
+                  </button>
+                  <button
+                    onClick={() => removeExerciseFromWorkout(workout.id, we.id)}
+                    style={{ color: 'var(--text-faint)' }}
+                    className="shrink-0"
+                    aria-label="Remover exercício"
+                  >
+                    <X size={16} />
+                  </button>
                 </div>
-                <div className="flex items-center gap-1.5 shrink-0">
+                <div className="flex items-center gap-1.5 pl-7">
                   <input
                     type="number"
                     min={1}
@@ -114,13 +143,6 @@ export function WorkoutEditor() {
                     placeholder="reps"
                   />
                 </div>
-                <button
-                  onClick={() => removeExerciseFromWorkout(workout.id, we.id)}
-                  style={{ color: 'var(--text-faint)' }}
-                  className="shrink-0"
-                >
-                  <X size={16} />
-                </button>
               </Card>
             );
           })}
@@ -145,6 +167,15 @@ export function WorkoutEditor() {
       )}
 
       <ExercisePicker open={pickerOpen} onClose={() => setPickerOpen(false)} onSelect={handleSelectExercise} />
+
+      <ExercisePicker
+        open={substitutingEntryId !== null}
+        onClose={() => setSubstitutingEntryId(null)}
+        onSelect={handleSelectSubstitute}
+        title="Trocar exercício"
+        defaultMuscleGroup={substitutingExercise?.muscleGroup}
+        excludeExerciseId={substitutingExercise?.id}
+      />
     </div>
   );
 }

@@ -174,6 +174,17 @@ export function updateWorkoutExercise(
   syncWorkoutExercises(workoutId);
 }
 
+/** Troca o exercício de um item do treino (ex: agachamento livre -> leg press),
+ * mantendo séries/reps/notas/posição — só muda a QUAL exercício aponta. */
+export function replaceWorkoutExercise(workoutId: string, entryId: string, newExerciseId: string) {
+  store.update((d) => {
+    const w = d.workouts.find((w) => w.id === workoutId);
+    const entry = w?.exercises.find((e) => e.id === entryId);
+    if (entry) entry.exerciseId = newExerciseId;
+  });
+  syncWorkoutExercises(workoutId);
+}
+
 export function removeExerciseFromWorkout(workoutId: string, entryId: string) {
   store.update((d) => {
     const w = d.workouts.find((w) => w.id === workoutId);
