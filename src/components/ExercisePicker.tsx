@@ -42,7 +42,10 @@ export function ExercisePicker({
   const grouped = useMemo(() => {
     const q = query.trim().toLowerCase();
     const filtered = exercises.filter(
-      (e) => e.name.toLowerCase().includes(q) && e.id !== excludeExerciseId && (groupFilter === 'todos' || e.muscleGroup === groupFilter),
+      (e) =>
+        (e.name.toLowerCase().includes(q) || (e.equipment?.toLowerCase().includes(q) ?? false)) &&
+        e.id !== excludeExerciseId &&
+        (groupFilter === 'todos' || e.muscleGroup === groupFilter),
     );
     const map = new Map<string, Exercise[]>();
     for (const group of MUSCLE_GROUP_ORDER) map.set(group, []);
@@ -169,6 +172,11 @@ export function ExercisePicker({
                   style={{ background: 'var(--surface-2)', color: 'var(--text)' }}
                 >
                   {ex.name}
+                  {ex.equipment && (
+                    <span className="block text-xs mt-0.5" style={{ color: 'var(--text-faint)' }}>
+                      {ex.equipment}
+                    </span>
+                  )}
                 </button>
               ))}
             </div>

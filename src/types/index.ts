@@ -18,6 +18,8 @@ export interface Exercise {
   muscleGroup: MuscleGroup;
   /** true if user-created (not from the built-in catalog) */
   custom?: boolean;
+  /** equipamento usado (ex: "barra", "halteres", "cabo", "máquina") — opcional */
+  equipment?: string;
 }
 
 /** A single planned exercise entry inside a Workout template */
