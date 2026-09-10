@@ -49,7 +49,16 @@ export function buildCoachContext(data: AppData, profileName?: string): string {
     } else if (sched?.kind === 'descanso') {
       desc = 'descanso';
     }
-    lines.push(`- ${WEEKDAY_LABELS[day]}: ${desc}`);
+    lines.push(`- ${WEEKDAY_LABELS[day]} (código "${day}"): ${desc}`);
+  }
+
+  const activeWorkouts = workouts.filter((w) => !w.archived);
+  if (activeWorkouts.length > 0) {
+    lines.push('');
+    lines.push('Treinos cadastrados (use o id exato ao propor uma mudança de agenda):');
+    for (const w of activeWorkouts) {
+      lines.push(`- id "${w.id}" — "${w.name}" (${w.exercises.length} exercícios)`);
+    }
   }
 
   if (weightGoal) {

@@ -1,25 +1,48 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Bot, Send, Sparkles } from 'lucide-react';
+import { ArrowLeft, Bot, Send, Sparkles, Check, X as XIcon, CalendarClock } from 'lucide-react';
 import { useAppData } from '../hooks/useAppData';
 import { useAuth } from '../hooks/useAuth';
 import { useProfile } from '../hooks/useProfile';
+import { setDaySchedule } from '../lib/actions';
 import { buildCoachContext } from '../lib/aiCoachContext';
-import { askAiCoach, AiCoachError, type AiChatMessage } from '../lib/aiCoach';
+import { askAiCoach, AiCoachError, type AiChatMessage, type ScheduleProposal } from '../lib/aiCoach';
+import { WEEKDAY_LABELS } from '../types';
+import type { DaySchedule, Weekday, Workout } from '../types';
 
 const SUGGESTIONS = [
   'Como está minha evolução esse mês?',
   'O que eu treino hoje e com que carga?',
   'Estou estagnada em algum exercício?',
-  'Minha meta de peso está no ritmo certo?',
+  'Inclui natação no sábado no lugar do descanso',
 ];
+
+interface ChatEntry {
+  role: 'user' | 'assistant';
+  content: string;
+  proposal?: ScheduleProposal;
+  proposalStatus?: 'pending' | 'applied' | 'discarded';
+}
+
+function describeChange(weekday: Weekday, kind: string, workoutId: string | undefined, suggestedDistanceKm: number | undefined, workouts: Workout[]): string {
+  const dayLabel = WEEKDAY_LABELS[weekday];
+  if (kind === 'treino') {
+    const w = workouts.find((w) => w.id === workoutId);
+    return `${dayLabel}: treino "${w?.name ?? '?'}"`;
+  }
+  if (kind === 'cardio') {
+    return `${dayLabel}: cardio${suggestedDistanceKm ? ` (meta ${suggestedDistanceKm}km)` : ''}`;
+  }
+  return `${dayLabel}: descanso`;
+}
 
 export function AiCoach() {
   const navigate = useNavigate();
   const appData = useAppData();
+  const { workouts } = appData;
   const { user } = useAuth();
   const profile = useProfile(user?.id);
-  const [messages, setMessages] = useState<AiChatMessage[]>([]);
+  const [messages, setMessages] = useState<ChatEntry[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -34,18 +57,49 @@ export function AiCoach() {
     if (!q || loading) return;
     setError(null);
     setInput('');
-    const nextMessages: AiChatMessage[] = [...messages, { role: 'user', content: q }];
+    const nextMessages: ChatEntry[] = [...messages, { role: 'user', content: q }];
     setMessages(nextMessages);
     setLoading(true);
     try {
       const context = buildCoachContext(appData, profile?.name);
-      const reply = await askAiCoach(q, context, messages);
-      setMessages([...nextMessages, { role: 'assistant', content: reply }]);
+      const history: AiChatMessage[] = messages.map((m) => ({ role: m.role, content: m.content }));
+      const { reply, proposal } = await askAiCoach(q, context, history);
+      setMessages([
+        ...nextMessages,
+        {
+          role: 'assistant',
+          content: reply,
+          proposal: proposal ?? undefined,
+          proposalStatus: proposal ? 'pending' : undefined,
+        },
+      ]);
     } catch (err) {
       setError(err instanceof AiCoachError ? err.message : 'Não consegui falar com a IA agora. Tenta de novo.');
     } finally {
       setLoading(false);
     }
+  }
+
+  function applyProposal(index: number) {
+    const entry = messages[index];
+    if (!entry.proposal) return;
+    for (const change of entry.proposal.changes) {
+      if (change.kind === 'treino') {
+        if (!change.workoutId || !workouts.some((w) => w.id === change.workoutId)) continue; // treino inválido, pula essa mudança
+        setDaySchedule(change.weekday, { kind: 'treino', workoutId: change.workoutId });
+      } else if (change.kind === 'cardio') {
+        const schedule: DaySchedule = { kind: 'cardio' };
+        if (change.suggestedDistanceKm) schedule.suggestedDistanceKm = change.suggestedDistanceKm;
+        setDaySchedule(change.weekday, schedule);
+      } else {
+        setDaySchedule(change.weekday, { kind: 'descanso' });
+      }
+    }
+    setMessages((prev) => prev.map((m, i) => (i === index ? { ...m, proposalStatus: 'applied' } : m)));
+  }
+
+  function discardProposal(index: number) {
+    setMessages((prev) => prev.map((m, i) => (i === index ? { ...m, proposalStatus: 'discarded' } : m)));
   }
 
   return (
@@ -69,7 +123,8 @@ export function AiCoach() {
         {messages.length === 0 && (
           <div className="flex flex-col gap-2 mt-2">
             <p className="text-sm" style={{ color: 'var(--text-dim)' }}>
-              Pergunte qualquer coisa sobre seu treino, sua evolução ou sua meta. Algumas ideias:
+              Pergunte qualquer coisa sobre seu treino, sua evolução, sua meta — ou peça pra mudar algo na sua agenda.
+              Algumas ideias:
             </p>
             <div className="flex flex-col gap-2">
               {SUGGESTIONS.map((s) => (
@@ -88,7 +143,7 @@ export function AiCoach() {
         )}
 
         {messages.map((m, i) => (
-          <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+          <div key={i} className={`flex flex-col gap-2 ${m.role === 'user' ? 'items-end' : 'items-start'}`}>
             <div
               className="max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm whitespace-pre-wrap"
               style={
@@ -99,6 +154,50 @@ export function AiCoach() {
             >
               {m.content}
             </div>
+
+            {m.proposal && (
+              <div className="max-w-[92%] w-full rounded-2xl px-3.5 py-3 text-sm" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+                <div className="flex items-center gap-2 mb-2">
+                  <CalendarClock size={15} style={{ color: 'var(--brand)' }} />
+                  <p className="font-semibold text-xs" style={{ color: 'var(--brand)' }}>
+                    Proposta de mudança na agenda
+                  </p>
+                </div>
+                <ul className="flex flex-col gap-1 mb-3">
+                  {m.proposal.changes.map((c, ci) => (
+                    <li key={ci} className="text-xs" style={{ color: 'var(--text-dim)' }}>
+                      • {describeChange(c.weekday, c.kind, c.workoutId, c.suggestedDistanceKm, workouts)}
+                    </li>
+                  ))}
+                </ul>
+                {m.proposalStatus === 'applied' ? (
+                  <p className="text-xs font-medium flex items-center gap-1.5" style={{ color: 'var(--success)' }}>
+                    <Check size={14} /> Aplicado na sua agenda
+                  </p>
+                ) : m.proposalStatus === 'discarded' ? (
+                  <p className="text-xs" style={{ color: 'var(--text-faint)' }}>
+                    Descartado
+                  </p>
+                ) : (
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => applyProposal(i)}
+                      className="flex-1 flex items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-medium text-white"
+                      style={{ background: 'var(--brand)' }}
+                    >
+                      <Check size={13} /> Aplicar
+                    </button>
+                    <button
+                      onClick={() => discardProposal(i)}
+                      className="flex-1 flex items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-medium"
+                      style={{ background: 'var(--surface-2)', color: 'var(--text-dim)' }}
+                    >
+                      <XIcon size={13} /> Descartar
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         ))}
 

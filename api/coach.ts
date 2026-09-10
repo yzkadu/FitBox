@@ -37,7 +37,91 @@ Regras importantes:
   dor ou alimentação além do básico de treino, responda com cautela e sugira
   procurar um profissional.
 - Respostas curtas e diretas (poucos parágrafos ou uma lista curta), nunca um
-  ensaio.`;
+  ensaio.
+- Quando a pessoa pedir uma mudança concreta na AGENDA SEMANAL (trocar um dia
+  entre treino/cardio/descanso, incluir uma atividade tipo natação/corrida/bike
+  em algum dia, dar folga em outro), use a ferramenta
+  propose_schedule_changes para propor a mudança formalmente — não basta
+  descrever em texto o que a pessoa deveria fazer manualmente. Use sempre o id
+  exato de um treino existente (fornecido nos dados) quando kind for "treino".
+  Nunca invente um workoutId. A mudança só é aplicada de verdade depois que a
+  pessoa confirmar na tela — você nunca aplica nada sozinho.
+- Se o pedido não for sobre mudar a agenda (é só uma pergunta, ou é sobre
+  editar exercícios dentro de um treino específico), responda normalmente em
+  texto, sem usar a ferramenta — editar os exercícios de um treino ainda não é
+  suportado por essa ferramenta.`;
+
+const SCHEDULE_TOOL = {
+  name: 'propose_schedule_changes',
+  description:
+    'Propõe uma ou mais mudanças concretas na agenda semanal de treino da pessoa (o que fazer em cada dia: treino específico, cardio, ou descanso), para ela revisar e confirmar na tela antes de qualquer coisa ser aplicada de verdade.',
+  input_schema: {
+    type: 'object',
+    properties: {
+      summary: {
+        type: 'string',
+        description: 'Frase curta em português resumindo a proposta, para mostrar num card de confirmação.',
+      },
+      changes: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            weekday: {
+              type: 'string',
+              enum: ['seg', 'ter', 'qua', 'qui', 'sex', 'sab', 'dom'],
+              description: 'Código do dia da semana a alterar.',
+            },
+            kind: {
+              type: 'string',
+              enum: ['treino', 'cardio', 'descanso'],
+            },
+            workoutId: {
+              type: 'string',
+              description: 'Obrigatório quando kind="treino": o id exato de um treino existente, copiado dos dados fornecidos.',
+            },
+            suggestedDistanceKm: {
+              type: 'number',
+              description: 'Opcional, só quando kind="cardio": meta de distância sugerida em km.',
+            },
+          },
+          required: ['weekday', 'kind'],
+        },
+      },
+    },
+    required: ['summary', 'changes'],
+  },
+};
+
+interface ScheduleChangeRaw {
+  weekday?: unknown;
+  kind?: unknown;
+  workoutId?: unknown;
+  suggestedDistanceKm?: unknown;
+}
+
+const VALID_WEEKDAYS = new Set(['seg', 'ter', 'qua', 'qui', 'sex', 'sab', 'dom']);
+const VALID_KINDS = new Set(['treino', 'cardio', 'descanso']);
+
+function sanitizeProposal(input: unknown): { summary: string; changes: ScheduleChangeRaw[] } | null {
+  if (!input || typeof input !== 'object') return null;
+  const obj = input as { summary?: unknown; changes?: unknown };
+  const summary = typeof obj.summary === 'string' ? obj.summary.slice(0, 300) : '';
+  const rawChanges = Array.isArray(obj.changes) ? obj.changes : [];
+  const changes = rawChanges
+    .filter((c): c is ScheduleChangeRaw => !!c && typeof c === 'object')
+    .filter((c) => typeof c.weekday === 'string' && VALID_WEEKDAYS.has(c.weekday))
+    .filter((c) => typeof c.kind === 'string' && VALID_KINDS.has(c.kind))
+    .map((c) => ({
+      weekday: c.weekday,
+      kind: c.kind,
+      workoutId: typeof c.workoutId === 'string' ? c.workoutId.slice(0, 200) : undefined,
+      suggestedDistanceKm: typeof c.suggestedDistanceKm === 'number' ? c.suggestedDistanceKm : undefined,
+    }))
+    .slice(0, 7);
+  if (!summary || changes.length === 0) return null;
+  return { summary, changes };
+}
 
 interface ChatMessage {
   role: 'user' | 'assistant';
@@ -121,6 +205,7 @@ export default async function handler(req: Request): Promise<Response> {
         max_tokens: MAX_TOKENS,
         system: systemPrompt,
         messages,
+        tools: [SCHEDULE_TOOL],
       }),
     });
   } catch {
@@ -132,13 +217,24 @@ export default async function handler(req: Request): Promise<Response> {
     return json({ error: 'A IA não respondeu corretamente.', detail: detail.slice(0, 300) }, 502);
   }
 
-  const data = (await anthropicRes.json()) as { content?: Array<{ type?: string; text?: string }> };
-  const reply = Array.isArray(data.content)
-    ? data.content
-        .filter((block) => block?.type === 'text' && typeof block.text === 'string')
-        .map((block) => block.text)
-        .join('\n')
-    : '';
+  const data = (await anthropicRes.json()) as {
+    content?: Array<{ type?: string; text?: string; name?: string; input?: unknown }>;
+  };
 
-  return json({ reply: reply || 'Não consegui gerar uma resposta agora — tenta de novo em instantes.' }, 200);
+  const blocks = Array.isArray(data.content) ? data.content : [];
+  const reply = blocks
+    .filter((block) => block?.type === 'text' && typeof block.text === 'string')
+    .map((block) => block.text)
+    .join('\n');
+
+  const toolBlock = blocks.find((block) => block?.type === 'tool_use' && block.name === 'propose_schedule_changes');
+  const proposal = toolBlock ? sanitizeProposal(toolBlock.input) : null;
+
+  return json(
+    {
+      reply: reply || proposal?.summary || 'Não consegui gerar uma resposta agora — tenta de novo em instantes.',
+      proposal,
+    },
+    200,
+  );
 }

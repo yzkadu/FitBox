@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
-import { Plus, Bike, Footprints, Trash2, Route as RouteIcon, Clock, Gauge, TrendingUp } from 'lucide-react';
+import { Plus, Bike, Footprints, Waves, Trash2, Route as RouteIcon, Clock, Gauge, TrendingUp } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useAppData } from '../hooks/useAppData';
 import { addCardioLog, deleteCardioLog } from '../lib/actions';
@@ -33,6 +33,7 @@ function formatPace(durationMin: number, distanceKm?: number): string | null {
 const TYPE_META: Record<CardioActivityType, { label: string; icon: typeof Bike; color: string }> = {
   corrida: { label: 'Corrida', icon: Footprints, color: 'var(--brand)' },
   bike: { label: 'Bike', icon: Bike, color: 'var(--success)' },
+  natacao: { label: 'Natação', icon: Waves, color: 'var(--warn)' },
 };
 
 export function Cardio() {
@@ -251,7 +252,7 @@ export function Cardio() {
       <Sheet open={sheetOpen} onClose={() => setSheetOpen(false)} title="Registrar atividade">
         <div className="flex flex-col gap-3">
           <div className="flex gap-2">
-            {(['corrida', 'bike'] as CardioActivityType[]).map((t) => {
+            {(['corrida', 'bike', 'natacao'] as CardioActivityType[]).map((t) => {
               const meta = TYPE_META[t];
               const Icon = meta.icon;
               const active = form.type === t;

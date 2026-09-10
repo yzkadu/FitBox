@@ -5,7 +5,20 @@ import { useAppData } from '../hooks/useAppData';
 import { addMeasurement, deleteMeasurement, addPhoto, deletePhoto } from '../lib/actions';
 import { PageHeader, Card, Button, EmptyState, Pill } from '../components/ui';
 import { Sheet } from '../components/Sheet';
+import { BodySilhouette } from '../components/BodySilhouette';
+import type { SilhouetteGender } from '../components/BodySilhouette';
 import type { BodyPhoto } from '../types';
+
+const SILHOUETTE_GENDER_KEY = 'fitbox-silhouette-gender';
+
+function loadSilhouetteGender(): SilhouetteGender {
+  try {
+    const saved = localStorage.getItem(SILHOUETTE_GENDER_KEY);
+    return saved === 'masculino' || saved === 'feminino' ? saved : 'feminino';
+  } catch {
+    return 'feminino';
+  }
+}
 
 function todayIso() {
   return new Date().toISOString().slice(0, 10);
@@ -24,7 +37,17 @@ export function BodyStats() {
   const { measurements, photos } = useAppData();
   const [sheetOpen, setSheetOpen] = useState(false);
   const [viewingPhoto, setViewingPhoto] = useState<BodyPhoto | null>(null);
+  const [silhouetteGender, setSilhouetteGender] = useState<SilhouetteGender>(loadSilhouetteGender);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  function changeSilhouetteGender(g: SilhouetteGender) {
+    setSilhouetteGender(g);
+    try {
+      localStorage.setItem(SILHOUETTE_GENDER_KEY, g);
+    } catch {
+      // localStorage indisponível — segue só no estado da sessão
+    }
+  }
 
   const [form, setForm] = useState({
     date: todayIso(),
@@ -101,6 +124,37 @@ export function BodyStats() {
           </div>
         </Card>
       )}
+
+      <Card className="mb-4">
+        <div className="flex items-center justify-between mb-3">
+          <p className="text-sm font-semibold" style={{ color: 'var(--text-dim)' }}>
+            Silhueta atual
+          </p>
+          <div className="flex gap-1 rounded-full p-0.5" style={{ background: 'var(--surface-2)' }}>
+            {(['feminino', 'masculino'] as SilhouetteGender[]).map((g) => (
+              <button
+                key={g}
+                onClick={() => changeSilhouetteGender(g)}
+                className="text-xs px-2.5 py-1 rounded-full font-medium"
+                style={{
+                  background: silhouetteGender === g ? 'var(--brand)' : 'transparent',
+                  color: silhouetteGender === g ? 'white' : 'var(--text-faint)',
+                }}
+              >
+                {g === 'feminino' ? 'Feminino' : 'Masculino'}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="flex items-center justify-center py-2" style={{ height: 220 }}>
+          <BodySilhouette measurement={sortedMeasurements[0] ?? null} gender={silhouetteGender} />
+        </div>
+        <p className="text-xs text-center" style={{ color: 'var(--text-faint)' }}>
+          {sortedMeasurements[0]
+            ? `Ilustração aproximada com base nas medidas de ${new Date(sortedMeasurements[0].date).toLocaleDateString('pt-BR')} — não é uma imagem real do seu corpo.`
+            : 'Registre suas medidas (peito, cintura, quadril, braço, coxa, panturrilha) para a silhueta refletir seu corpo.'}
+        </p>
+      </Card>
 
       <div className="flex items-center justify-between mb-2">
         <p className="text-sm font-semibold" style={{ color: 'var(--text-dim)' }}>
