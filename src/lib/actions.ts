@@ -360,45 +360,95 @@ export function removeSetFromSessionExercise(sessionId: string, sessionExerciseI
   syncSessionExercises(sessionId);
 }
 
-export function finishSession(sessionId: string, rpe?: number, proofPhotoDataUrl?: string) {
-  let finishedAt = '';
-  let durationSeconds = 0;
+/** Remove um exercício inteiro de uma sessão — durante a execução do treino (a
+ * pessoa decidiu não fazer aquele exercício hoje) ou ao editar uma sessão já
+ * concluída no Histórico. */
+export function removeExerciseFromSession(sessionId: string, sessionExerciseId: string) {
   store.update((d) => {
     const s = d.sessions.find((s) => s.id === sessionId);
     if (!s) return;
-    s.finishedAt = new Date().toISOString();
-    s.durationSeconds = Math.round((Date.parse(s.finishedAt) - Date.parse(s.startedAt)) / 1000);
-    if (rpe != null) s.rpe = rpe;
-    if (proofPhotoDataUrl) s.proofPhotoDataUrl = proofPhotoDataUrl;
-    // Uma série só conta como realizada se tiver reps registradas (ou estiver
-    // marcada como concluída) — peso sozinho pode ser só o valor sugerido pelo
-    // treinador virtual, pré-preenchido mas nunca executado.
-    s.exercises.forEach((se) => {
-      se.sets = se.sets.filter((st) => st.completed || st.reps > 0);
-    });
-    s.exercises = s.exercises.filter((se) => se.sets.length > 0);
-    if (d.activeSessionId === sessionId) d.activeSessionId = null;
-    finishedAt = s.finishedAt;
-    durationSeconds = s.durationSeconds;
+    s.exercises = s.exercises.filter((se) => se.id !== sessionExerciseId);
   });
+  syncSessionExercises(sessionId);
+}
+
+/** Conclui a sessão. Diferente do resto do app (que aplica a mudança local
+ * primeiro e sincroniza em segundo plano), aqui a gravação no Supabase é
+ * aguardada ANTES de marcar a sessão como concluída localmente: se a gravação
+ * falhar (sem internet, coluna faltando por migração pendente, etc.), nada é
+ * perdido — a sessão continua ativa com todos os dados intactos, e quem chamou
+ * (a tela) pode mostrar o erro e deixar a pessoa tentar de novo. */
+export async function finishSession(
+  sessionId: string,
+  rpe?: number,
+  proofPhotoDataUrl?: string,
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const current = store.getSnapshot().sessions.find((s) => s.id === sessionId);
+  if (!current) return { ok: false, error: 'Sessão não encontrada.' };
+
+  const finishedAt = new Date().toISOString();
+  const durationSeconds = Math.round((Date.parse(finishedAt) - Date.parse(current.startedAt)) / 1000);
+  // Uma série só conta como realizada se tiver reps registradas (ou estiver
+  // marcada como concluída) — peso sozinho pode ser só o valor sugerido pelo
+  // treinador virtual, pré-preenchido mas nunca executado.
+  const trimmedExercises = current.exercises
+    .map((se) => ({ ...se, sets: se.sets.filter((st) => st.completed || st.reps > 0) }))
+    .filter((se) => se.sets.length > 0);
+
   const userId = requireUserId();
   if (userId) {
-    (async () => {
-      await pendingSessionInserts.get(sessionId);
-      const session = store.getSnapshot().sessions.find((s) => s.id === sessionId);
-      supabase
-        .from('sessions')
-        .update({
-          finished_at: finishedAt,
-          duration_seconds: durationSeconds,
-          exercises: session?.exercises ?? [],
-          rpe: session?.rpe ?? null,
-          proof_photo_data_url: session?.proofPhotoDataUrl ?? null,
-        })
-        .eq('id', sessionId)
-        .then(logIfError('sessions.finish'));
-    })();
+    await pendingSessionInserts.get(sessionId);
+    const { error } = await supabase
+      .from('sessions')
+      .update({
+        finished_at: finishedAt,
+        duration_seconds: durationSeconds,
+        exercises: trimmedExercises,
+        rpe: rpe ?? null,
+        proof_photo_data_url: proofPhotoDataUrl ?? null,
+      })
+      .eq('id', sessionId);
+    if (error) {
+      console.error('Falha ao sincronizar (sessions.finish):', error);
+      return { ok: false, error: error.message };
+    }
   }
+
+  store.update((d) => {
+    const s = d.sessions.find((s) => s.id === sessionId);
+    if (!s) return;
+    s.finishedAt = finishedAt;
+    s.durationSeconds = durationSeconds;
+    if (rpe != null) s.rpe = rpe;
+    if (proofPhotoDataUrl) s.proofPhotoDataUrl = proofPhotoDataUrl;
+    s.exercises = trimmedExercises;
+    if (d.activeSessionId === sessionId) d.activeSessionId = null;
+  });
+
+  return { ok: true };
+}
+
+/** Edita duração e/ou RPE de uma sessão já concluída (ex: corrigir um tempo
+ * errado depois do fato). Os exercícios/séries de uma sessão concluída já são
+ * editáveis diretamente pelas ações acima (updateSet, addSetToSessionExercise,
+ * removeSetFromSessionExercise, addExerciseToSession, removeExerciseFromSession
+ * — nenhuma delas depende do treino estar em andamento). */
+export function updateSessionMeta(sessionId: string, patch: { durationSeconds?: number; rpe?: number | null }) {
+  store.update((d) => {
+    const s = d.sessions.find((s) => s.id === sessionId);
+    if (!s) return;
+    if (patch.durationSeconds != null) s.durationSeconds = patch.durationSeconds;
+    if ('rpe' in patch) s.rpe = patch.rpe ?? undefined;
+  });
+  const userId = requireUserId();
+  if (!userId) return;
+  (async () => {
+    await pendingSessionInserts.get(sessionId);
+    const dbPatch: Record<string, unknown> = {};
+    if (patch.durationSeconds != null) dbPatch.duration_seconds = patch.durationSeconds;
+    if ('rpe' in patch) dbPatch.rpe = patch.rpe ?? null;
+    supabase.from('sessions').update(dbPatch).eq('id', sessionId).then(logIfError('sessions.updateMeta'));
+  })();
 }
 
 export async function discardSession(sessionId: string) {

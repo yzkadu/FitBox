@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronDown, Trophy, Trash2, Camera } from 'lucide-react';
+import { ChevronDown, Trophy, Trash2, Camera, Pencil } from 'lucide-react';
 import { useAppData } from '../hooks/useAppData';
 import { getPersonalRecord, getTrainedExerciseIds } from '../lib/stats';
 import { deleteSession } from '../lib/actions';
@@ -149,13 +149,22 @@ export function History() {
                         </button>
                       </div>
                     ) : (
-                      <button
-                        onClick={() => setConfirmDelete(s.id)}
-                        className="flex items-center gap-1.5 text-xs pt-1"
-                        style={{ color: 'var(--text-faint)' }}
-                      >
-                        <Trash2 size={12} /> Excluir sessão
-                      </button>
+                      <div className="flex items-center gap-4 pt-1">
+                        <button
+                          onClick={() => navigate(`/sessao/${s.id}/editar`)}
+                          className="flex items-center gap-1.5 text-xs"
+                          style={{ color: 'var(--brand)' }}
+                        >
+                          <Pencil size={12} /> Editar
+                        </button>
+                        <button
+                          onClick={() => setConfirmDelete(s.id)}
+                          className="flex items-center gap-1.5 text-xs"
+                          style={{ color: 'var(--text-faint)' }}
+                        >
+                          <Trash2 size={12} /> Excluir sessão
+                        </button>
+                      </div>
                     )}
                   </div>
                 </div>

@@ -6,6 +6,7 @@ import {
   addExerciseToSession,
   addSetToSessionExercise,
   removeSetFromSessionExercise,
+  removeExerciseFromSession,
   updateSet,
   finishSession,
   discardSession,
@@ -46,6 +47,9 @@ export function SessionExecution() {
   const [rpeSheetOpen, setRpeSheetOpen] = useState(false);
   const [selectedRpe, setSelectedRpe] = useState<number | null>(null);
   const [proofPhoto, setProofPhoto] = useState<string | undefined>(undefined);
+  const [finishing, setFinishing] = useState(false);
+  const [finishError, setFinishError] = useState<string | null>(null);
+  const [confirmRemoveExerciseId, setConfirmRemoveExerciseId] = useState<string | null>(null);
 
   const session = sessions.find((s) => s.id === sessionId);
   const elapsed = useElapsed(session?.startedAt ?? new Date().toISOString());
@@ -67,11 +71,19 @@ export function SessionExecution() {
     setConfirmDiscard(false);
     setSelectedRpe(null);
     setProofPhoto(undefined);
+    setFinishError(null);
     setRpeSheetOpen(true);
   }
 
-  function confirmFinish(rpe?: number) {
-    finishSession(session!.id, rpe, proofPhoto);
+  async function confirmFinish(rpe?: number) {
+    setFinishing(true);
+    setFinishError(null);
+    const result = await finishSession(session!.id, rpe, proofPhoto);
+    setFinishing(false);
+    if (!result.ok) {
+      setFinishError('Não foi possível salvar o treino agora (sem internet ou o servidor recusou). Nada foi perdido — tenta de novo.');
+      return;
+    }
     setRpeSheetOpen(false);
     navigate(`/`);
   }
@@ -141,6 +153,32 @@ export function SessionExecution() {
         </div>
       )}
 
+      {confirmRemoveExerciseId && (
+        <div className="fixed inset-0 z-30 flex items-center justify-center bg-black/60 px-6">
+          <div className="rounded-2xl p-5 w-full max-w-sm" style={{ background: 'var(--surface)' }}>
+            <p className="font-medium mb-1">Remover este exercício?</p>
+            <p className="text-sm mb-4" style={{ color: 'var(--text-dim)' }}>
+              As séries já registradas dele neste treino se perdem. Você pode adicioná-lo de volta depois, se mudar de ideia.
+            </p>
+            <div className="flex flex-col gap-2">
+              <Button
+                full
+                variant="danger"
+                onClick={() => {
+                  removeExerciseFromSession(session.id, confirmRemoveExerciseId);
+                  setConfirmRemoveExerciseId(null);
+                }}
+              >
+                Remover
+              </Button>
+              <Button full variant="secondary" onClick={() => setConfirmRemoveExerciseId(null)}>
+                Cancelar
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex-1 px-4 py-4 flex flex-col gap-4 pb-28">
         {session.exercises.length === 0 && (
           <p className="text-sm text-center py-8" style={{ color: 'var(--text-faint)' }}>
@@ -156,13 +194,21 @@ export function SessionExecution() {
             coach.action === 'increase' ? 'var(--success)' : coach.action === 'deload' ? 'var(--warn)' : 'var(--text-faint)';
           return (
             <div key={se.id} className="rounded-2xl border p-3.5" style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
-              <div className="flex items-baseline justify-between mb-1">
-                <p className="font-medium text-sm">{ex?.name ?? 'Exercício'}</p>
+              <div className="flex items-baseline justify-between gap-2 mb-1">
+                <p className="font-medium text-sm flex-1 min-w-0 truncate">{ex?.name ?? 'Exercício'}</p>
                 {lastSession && (
-                  <p className="text-xs" style={{ color: 'var(--text-faint)' }}>
+                  <p className="text-xs shrink-0" style={{ color: 'var(--text-faint)' }}>
                     último: {lastSession.bestSet?.weight}kg × {lastSession.bestSet?.reps}
                   </p>
                 )}
+                <button
+                  onClick={() => setConfirmRemoveExerciseId(se.id)}
+                  style={{ color: 'var(--text-faint)' }}
+                  className="shrink-0"
+                  aria-label="Remover exercício deste treino"
+                >
+                  <Trash2 size={14} />
+                </button>
               </div>
               {coach.action !== 'no-data' && (
                 <p className="text-xs mb-2 flex items-start gap-1" style={{ color: coachColor }}>
@@ -283,12 +329,18 @@ export function SessionExecution() {
             label="Foto do relógio/tracker (opcional, prova pro seu foguinho)"
           />
 
+          {finishError && (
+            <p className="text-xs rounded-xl px-3.5 py-2.5" style={{ background: '#ef444426', color: 'var(--danger)' }}>
+              {finishError}
+            </p>
+          )}
+
           <div className="flex flex-col gap-2">
-            <Button full disabled={selectedRpe === null} onClick={() => confirmFinish(selectedRpe ?? undefined)}>
-              Salvar treino
+            <Button full disabled={selectedRpe === null || finishing} onClick={() => confirmFinish(selectedRpe ?? undefined)}>
+              {finishing ? 'Salvando...' : 'Salvar treino'}
             </Button>
-            <Button full variant="secondary" onClick={() => confirmFinish(undefined)}>
-              Pular
+            <Button full variant="secondary" disabled={finishing} onClick={() => confirmFinish(undefined)}>
+              {finishing ? 'Salvando...' : 'Pular'}
             </Button>
           </div>
         </div>

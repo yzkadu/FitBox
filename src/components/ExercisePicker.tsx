@@ -53,6 +53,7 @@ export function ExercisePicker({
       if (!map.has(ex.muscleGroup)) map.set(ex.muscleGroup, []);
       map.get(ex.muscleGroup)!.push(ex);
     }
+    for (const list of map.values()) list.sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
     return Array.from(map.entries()).filter(([, list]) => list.length > 0);
   }, [exercises, query, groupFilter, excludeExerciseId]);
 
@@ -172,11 +173,10 @@ export function ExercisePicker({
                   style={{ background: 'var(--surface-2)', color: 'var(--text)' }}
                 >
                   {ex.name}
-                  {ex.equipment && (
-                    <span className="block text-xs mt-0.5" style={{ color: 'var(--text-faint)' }}>
-                      {ex.equipment}
-                    </span>
-                  )}
+                  <span className="block text-xs mt-0.5" style={{ color: 'var(--text-faint)' }}>
+                    {MUSCLE_GROUP_LABELS[ex.muscleGroup]}
+                    {ex.equipment ? ` • ${ex.equipment}` : ''}
+                  </span>
                 </button>
               ))}
             </div>

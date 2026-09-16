@@ -6,6 +6,7 @@ import { Home } from './pages/Home';
 import { Workouts } from './pages/Workouts';
 import { WorkoutEditor } from './pages/WorkoutEditor';
 import { SessionExecution } from './pages/SessionExecution';
+import { SessionEditor } from './pages/SessionEditor';
 import { History } from './pages/History';
 import { ExerciseDetail } from './pages/ExerciseDetail';
 import { Progress } from './pages/Progress';
@@ -80,6 +81,7 @@ export default function App() {
           <Route path="/treinador" element={<AiCoach />} />
         </Route>
         <Route path="/sessao/:sessionId" element={<SessionExecution />} />
+        <Route path="/sessao/:sessionId/editar" element={<SessionEditor />} />
       </Routes>
     </BrowserRouter>
   );
