@@ -4,29 +4,17 @@ import { ArrowLeft, Bot, Send, Sparkles, Check, X as XIcon, CalendarClock, Dumbb
 import { useAppData } from '../hooks/useAppData';
 import { useAuth } from '../hooks/useAuth';
 import { useProfile } from '../hooks/useProfile';
-import {
-  setDaySchedule,
-  createWorkout,
-  addExerciseToWorkout,
-  removeExerciseFromWorkout,
-  replaceWorkoutExercise,
-  updateWorkoutExercise,
-  addCustomExercise,
-} from '../lib/actions';
-import { findExerciseByName } from '../lib/exerciseMatch';
+import { applyScheduleProposal, applyNewWorkoutProposal, applyWorkoutEditProposal } from '../lib/aiProposalApply';
 import { buildCoachContext } from '../lib/aiCoachContext';
 import {
   askAiCoach,
   AiCoachError,
   type AiChatMessage,
   type AiProposal,
-  type ScheduleProposal,
-  type NewWorkoutProposal,
-  type WorkoutEditProposal,
   type WorkoutEditChangeProposal,
 } from '../lib/aiCoach';
 import { WEEKDAY_LABELS } from '../types';
-import type { DaySchedule, Weekday, Workout, Exercise } from '../types';
+import type { Weekday, Workout } from '../types';
 
 const SUGGESTIONS = [
   'Como está minha evolução esse mês?',
@@ -117,74 +105,16 @@ export function AiCoach() {
     }
   }
 
-  /** Resolve o nome (livre, em português) proposto pela IA pro exercício real
-   * do catálogo — ou cria um personalizado na hora, se não achar nada
-   * parecido, pra nunca perder silenciosamente o que a pessoa confirmou. */
-  function resolveExercise(name: string): Exercise {
-    return findExerciseByName(exercises, name) ?? addCustomExercise(name, 'outro');
-  }
-
-  function applySchedule(proposal: ScheduleProposal) {
-    for (const change of proposal.changes) {
-      if (change.kind === 'treino') {
-        if (!change.workoutId || !workouts.some((w) => w.id === change.workoutId)) continue; // treino inválido, pula essa mudança
-        setDaySchedule(change.weekday, { kind: 'treino', workoutId: change.workoutId });
-      } else if (change.kind === 'cardio') {
-        const schedule: DaySchedule = { kind: 'cardio' };
-        if (change.suggestedDistanceKm) schedule.suggestedDistanceKm = change.suggestedDistanceKm;
-        setDaySchedule(change.weekday, schedule);
-      } else {
-        setDaySchedule(change.weekday, { kind: 'descanso' });
-      }
-    }
-  }
-
-  function applyNewWorkout(proposal: NewWorkoutProposal): string {
-    const workout = createWorkout(proposal.name, proposal.emoji);
-    for (const item of proposal.exercises) {
-      const ex = resolveExercise(item.exerciseName);
-      addExerciseToWorkout(workout.id, ex.id, item.targetSets, item.targetReps);
-    }
-    return workout.id;
-  }
-
-  function applyWorkoutEdit(proposal: WorkoutEditProposal) {
-    for (const change of proposal.changes) {
-      if (change.action === 'add') {
-        if (!change.exerciseName) continue;
-        const ex = resolveExercise(change.exerciseName);
-        addExerciseToWorkout(proposal.workoutId, ex.id, change.targetSets ?? 3, change.targetReps ?? '10-12');
-      } else if (change.action === 'remove') {
-        if (!change.entryId) continue;
-        removeExerciseFromWorkout(proposal.workoutId, change.entryId);
-      } else if (change.action === 'replace') {
-        if (!change.entryId || !change.exerciseName) continue;
-        const ex = resolveExercise(change.exerciseName);
-        replaceWorkoutExercise(proposal.workoutId, change.entryId, ex.id);
-        const patch: { targetSets?: number; targetReps?: string } = {};
-        if (change.targetSets != null) patch.targetSets = change.targetSets;
-        if (change.targetReps != null) patch.targetReps = change.targetReps;
-        if (Object.keys(patch).length > 0) updateWorkoutExercise(proposal.workoutId, change.entryId, patch);
-      } else if (change.action === 'update_sets') {
-        if (!change.entryId) continue;
-        const patch: { targetSets?: number; targetReps?: string } = {};
-        if (change.targetSets != null) patch.targetSets = change.targetSets;
-        if (change.targetReps != null) patch.targetReps = change.targetReps;
-        if (Object.keys(patch).length > 0) updateWorkoutExercise(proposal.workoutId, change.entryId, patch);
-      }
-    }
-  }
-
   function applyProposal(index: number) {
     const entry = messages[index];
     if (!entry.proposal) return;
     let appliedWorkoutId: string | undefined;
     if (entry.proposal.kind === 'schedule') {
-      applySchedule(entry.proposal.data);
+      applyScheduleProposal(entry.proposal.data, workouts);
     } else if (entry.proposal.kind === 'newWorkout') {
-      appliedWorkoutId = applyNewWorkout(entry.proposal.data);
+      appliedWorkoutId = applyNewWorkoutProposal(entry.proposal.data, exercises);
     } else if (entry.proposal.kind === 'workoutEdit') {
-      applyWorkoutEdit(entry.proposal.data);
+      applyWorkoutEditProposal(entry.proposal.data, exercises);
     }
     setMessages((prev) => prev.map((m, i) => (i === index ? { ...m, proposalStatus: 'applied', appliedWorkoutId } : m)));
   }
