@@ -55,9 +55,17 @@ export function buildCoachContext(data: AppData, profileName?: string): string {
   const activeWorkouts = workouts.filter((w) => !w.archived);
   if (activeWorkouts.length > 0) {
     lines.push('');
-    lines.push('Treinos cadastrados (use o id exato ao propor uma mudança de agenda):');
+    lines.push(
+      'Treinos cadastrados (use o "id" exato ao propor mudança de agenda ou edição de treino; use o "entryId" de cada exercício exato ao propor remover/trocar/ajustar esse exercício específico):',
+    );
     for (const w of activeWorkouts) {
       lines.push(`- id "${w.id}" — "${w.name}" (${w.exercises.length} exercícios)`);
+      const sorted = [...w.exercises].sort((a, b) => a.order - b.order);
+      for (const we of sorted) {
+        const ex = exerciseById.get(we.exerciseId);
+        const name = ex ? `${ex.name} (${MUSCLE_GROUP_LABELS[ex.muscleGroup] ?? ex.muscleGroup})` : 'exercício removido';
+        lines.push(`  - entryId "${we.id}": ${name} — ${we.targetSets}x${we.targetReps}`);
+      }
     }
   }
 
