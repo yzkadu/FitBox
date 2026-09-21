@@ -37,6 +37,23 @@ export function getExerciseHistory(sessions: Session[], exerciseId: string): Exe
   return points.sort((a, b) => Date.parse(a.date) - Date.parse(b.date));
 }
 
+/** Séries (na ordem) do último treino finalizado em que esse exercício foi
+ * feito — usado durante a execução do treino pra mostrar "como foi da última
+ * vez" ao lado de cada série e permitir preencher rápido. Retorna null se o
+ * exercício nunca foi registrado antes. */
+export function getLastCompletedSets(sessions: Session[], exerciseId: string): SetLog[] | null {
+  const finished = sessions
+    .filter((s) => s.finishedAt)
+    .sort((a, b) => Date.parse(b.finishedAt as string) - Date.parse(a.finishedAt as string));
+  for (const s of finished) {
+    const se = s.exercises.find((e) => e.exerciseId === exerciseId);
+    if (!se) continue;
+    const completedSets = se.sets.filter((st) => st.reps > 0).sort((a, b) => a.setNumber - b.setNumber);
+    if (completedSets.length > 0) return completedSets;
+  }
+  return null;
+}
+
 export interface PersonalRecord {
   exerciseId: string;
   maxWeight: number;

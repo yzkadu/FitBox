@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { X, Plus, Check, Trash2, Clock, Bot } from 'lucide-react';
+import { X, Plus, Check, Trash2, Clock, Bot, Repeat, Calculator, TimerReset } from 'lucide-react';
 import { useAppData } from '../hooks/useAppData';
 import {
   addExerciseToSession,
@@ -11,8 +11,10 @@ import {
   finishSession,
   discardSession,
 } from '../lib/actions';
-import { getExerciseHistory } from '../lib/stats';
+import { getExerciseHistory, getLastCompletedSets } from '../lib/stats';
 import { getCoachSuggestion } from '../lib/coach';
+import { calculatePlates, BAR_WEIGHT_OPTIONS } from '../lib/plateCalculator';
+import { primeRestBeep, playRestBeep } from '../lib/restBeep';
 import { Button } from '../components/ui';
 import { ExercisePicker } from '../components/ExercisePicker';
 import { Sheet } from '../components/Sheet';
@@ -25,6 +27,24 @@ function rpeColor(v: number): string {
   if (v <= 6) return 'var(--brand)';
   if (v <= 8) return 'var(--warn)';
   return 'var(--danger)';
+}
+
+const DEFAULT_REST_SECONDS = 90;
+const BAR_WEIGHT_KEY = 'fitbox-bar-weight';
+
+function loadBarWeight(): number {
+  try {
+    const saved = Number(localStorage.getItem(BAR_WEIGHT_KEY));
+    return BAR_WEIGHT_OPTIONS.includes(saved as (typeof BAR_WEIGHT_OPTIONS)[number]) ? saved : 20;
+  } catch {
+    return 20;
+  }
+}
+
+function formatMMSS(totalSeconds: number): string {
+  const m = Math.floor(totalSeconds / 60);
+  const s = totalSeconds % 60;
+  return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
 function useElapsed(startedAt: string) {
@@ -51,8 +71,80 @@ export function SessionExecution() {
   const [finishError, setFinishError] = useState<string | null>(null);
   const [confirmRemoveExerciseId, setConfirmRemoveExerciseId] = useState<string | null>(null);
 
+  const [restTotal, setRestTotal] = useState<number | null>(null);
+  const [restRemaining, setRestRemaining] = useState<number | null>(null);
+  const [restDone, setRestDone] = useState(false);
+  const restBeepedRef = useRef(false);
+
+  const [plateSheetExerciseId, setPlateSheetExerciseId] = useState<string | null>(null);
+  const [plateWeight, setPlateWeight] = useState('');
+  const [barWeight, setBarWeight] = useState<number>(loadBarWeight);
+
   const session = sessions.find((s) => s.id === sessionId);
   const elapsed = useElapsed(session?.startedAt ?? new Date().toISOString());
+
+  // Timer de descanso: começa sozinho quando uma série é marcada como
+  // concluída, conta regressivamente, e avisa (som + vibração, quando
+  // suportado) quando chega a zero.
+  useEffect(() => {
+    if (restRemaining === null) return;
+    if (restRemaining <= 0) {
+      if (!restBeepedRef.current) {
+        restBeepedRef.current = true;
+        playRestBeep();
+        setRestDone(true);
+        const t = setTimeout(() => {
+          setRestRemaining(null);
+          setRestTotal(null);
+          setRestDone(false);
+        }, 2500);
+        return () => clearTimeout(t);
+      }
+      return;
+    }
+    const t = setTimeout(() => setRestRemaining((r) => (r !== null ? r - 1 : r)), 1000);
+    return () => clearTimeout(t);
+  }, [restRemaining]);
+
+  function startRestTimer(seconds: number) {
+    restBeepedRef.current = false;
+    setRestDone(false);
+    setRestTotal(seconds);
+    setRestRemaining(seconds);
+  }
+
+  function adjustRest(deltaSeconds: number) {
+    setRestRemaining((r) => (r !== null ? Math.max(0, r + deltaSeconds) : r));
+  }
+
+  function skipRest() {
+    setRestRemaining(null);
+    setRestTotal(null);
+    setRestDone(false);
+  }
+
+  function toggleSetCompleted(sessionExerciseId: string, setId: string, currentlyCompleted: boolean) {
+    const nowCompleted = !currentlyCompleted;
+    updateSet(session!.id, sessionExerciseId, setId, { completed: nowCompleted });
+    if (nowCompleted) {
+      primeRestBeep();
+      startRestTimer(DEFAULT_REST_SECONDS);
+    }
+  }
+
+  function openPlateCalculator(exerciseId: string, suggestedWeight: number) {
+    setPlateWeight(suggestedWeight > 0 ? String(suggestedWeight) : '');
+    setPlateSheetExerciseId(exerciseId);
+  }
+
+  function chooseBarWeight(w: number) {
+    setBarWeight(w);
+    try {
+      localStorage.setItem(BAR_WEIGHT_KEY, String(w));
+    } catch {
+      // localStorage indisponível — segue só no estado da sessão
+    }
+  }
 
   if (!session) {
     return (
@@ -189,6 +281,7 @@ export function SessionExecution() {
           const ex = exerciseById.get(se.exerciseId);
           const history = getExerciseHistory(sessions, se.exerciseId);
           const lastSession = history[history.length - 1];
+          const lastSets = getLastCompletedSets(sessions, se.exerciseId);
           const coach = getCoachSuggestion(sessions, se.exerciseId);
           const coachColor =
             coach.action === 'increase' ? 'var(--success)' : coach.action === 'deload' ? 'var(--warn)' : 'var(--text-faint)';
@@ -201,6 +294,14 @@ export function SessionExecution() {
                     último: {lastSession.bestSet?.weight}kg × {lastSession.bestSet?.reps}
                   </p>
                 )}
+                <button
+                  onClick={() => openPlateCalculator(se.exerciseId, lastSession?.bestSet?.weight ?? se.sets[0]?.weight ?? 0)}
+                  style={{ color: 'var(--text-faint)' }}
+                  className="shrink-0"
+                  aria-label="Calculadora de anilhas"
+                >
+                  <Calculator size={14} />
+                </button>
                 <button
                   onClick={() => setConfirmRemoveExerciseId(se.id)}
                   style={{ color: 'var(--text-faint)' }}
@@ -231,51 +332,66 @@ export function SessionExecution() {
                 <span />
               </div>
 
-              {se.sets.map((set) => (
-                <div key={set.id} className="grid grid-cols-[28px_1fr_1fr_32px_28px] gap-2 items-center mb-1.5">
-                  <span
-                    className="text-xs font-medium text-center rounded-lg py-2"
-                    style={{ background: 'var(--surface-2)', color: 'var(--text-dim)' }}
-                  >
-                    {set.setNumber}
-                  </span>
-                  <input
-                    type="number"
-                    inputMode="decimal"
-                    value={set.weight || ''}
-                    onChange={(e) => updateSet(session.id, se.id, set.id, { weight: Number(e.target.value) || 0 })}
-                    className="w-full min-w-0 rounded-lg py-2 text-center text-sm"
-                    style={{ background: 'var(--surface-2)' }}
-                    placeholder="0"
-                  />
-                  <input
-                    type="number"
-                    inputMode="numeric"
-                    value={set.reps || ''}
-                    onChange={(e) => updateSet(session.id, se.id, set.id, { reps: Number(e.target.value) || 0 })}
-                    className="w-full min-w-0 rounded-lg py-2 text-center text-sm"
-                    style={{ background: 'var(--surface-2)' }}
-                    placeholder="0"
-                  />
-                  <button
-                    onClick={() => updateSet(session.id, se.id, set.id, { completed: !set.completed })}
-                    className="w-8 h-8 rounded-lg flex items-center justify-center mx-auto"
-                    style={{
-                      background: set.completed ? 'var(--success)' : 'var(--surface-2)',
-                      color: set.completed ? '#06281d' : 'var(--text-faint)',
-                    }}
-                  >
-                    <Check size={15} strokeWidth={3} />
-                  </button>
-                  <button
-                    onClick={() => removeSetFromSessionExercise(session.id, se.id, set.id)}
-                    style={{ color: 'var(--text-faint)' }}
-                    className="flex items-center justify-center"
-                  >
-                    <Trash2 size={14} />
-                  </button>
-                </div>
-              ))}
+              {se.sets.map((set, setIndex) => {
+                const prevSet = lastSets?.[setIndex];
+                return (
+                  <div key={set.id} className="mb-1.5">
+                    <div className="grid grid-cols-[28px_1fr_1fr_32px_28px] gap-2 items-center">
+                      <span
+                        className="text-xs font-medium text-center rounded-lg py-2"
+                        style={{ background: 'var(--surface-2)', color: 'var(--text-dim)' }}
+                      >
+                        {set.setNumber}
+                      </span>
+                      <input
+                        type="number"
+                        inputMode="decimal"
+                        value={set.weight || ''}
+                        onChange={(e) => updateSet(session.id, se.id, set.id, { weight: Number(e.target.value) || 0 })}
+                        className="w-full min-w-0 rounded-lg py-2 text-center text-sm"
+                        style={{ background: 'var(--surface-2)' }}
+                        placeholder="0"
+                      />
+                      <input
+                        type="number"
+                        inputMode="numeric"
+                        value={set.reps || ''}
+                        onChange={(e) => updateSet(session.id, se.id, set.id, { reps: Number(e.target.value) || 0 })}
+                        className="w-full min-w-0 rounded-lg py-2 text-center text-sm"
+                        style={{ background: 'var(--surface-2)' }}
+                        placeholder="0"
+                      />
+                      <button
+                        onClick={() => toggleSetCompleted(se.id, set.id, set.completed)}
+                        className="w-8 h-8 rounded-lg flex items-center justify-center mx-auto"
+                        style={{
+                          background: set.completed ? 'var(--success)' : 'var(--surface-2)',
+                          color: set.completed ? '#06281d' : 'var(--text-faint)',
+                        }}
+                      >
+                        <Check size={15} strokeWidth={3} />
+                      </button>
+                      <button
+                        onClick={() => removeSetFromSessionExercise(session.id, se.id, set.id)}
+                        style={{ color: 'var(--text-faint)' }}
+                        className="flex items-center justify-center"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                    {prevSet && !set.completed && (
+                      <button
+                        onClick={() => updateSet(session.id, se.id, set.id, { weight: prevSet.weight, reps: prevSet.reps })}
+                        className="flex items-center gap-1 text-[11px] mt-1 pl-1"
+                        style={{ color: 'var(--text-faint)' }}
+                      >
+                        <Repeat size={10} />
+                        última vez: {prevSet.weight}kg × {prevSet.reps} — toque pra repetir
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
 
               <button
                 onClick={() => addSetToSessionExercise(session.id, se.id)}
@@ -298,6 +414,140 @@ export function SessionExecution() {
       </div>
 
       <ExercisePicker open={pickerOpen} onClose={() => setPickerOpen(false)} onSelect={handleAddExercise} />
+
+      {restRemaining !== null && restTotal !== null && (
+        <div className="fixed bottom-0 inset-x-0 z-20 px-4 pb-4 safe-bottom" style={{ background: 'linear-gradient(to top, var(--bg) 60%, transparent)' }}>
+          <div className="rounded-2xl px-4 py-3" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+            {restDone ? (
+              <p className="text-sm font-semibold text-center" style={{ color: 'var(--success)' }}>
+                Descanso concluído! 💪
+              </p>
+            ) : (
+              <>
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-xs font-medium flex items-center gap-1.5" style={{ color: 'var(--text-dim)' }}>
+                    <TimerReset size={14} style={{ color: 'var(--brand)' }} /> Descansando
+                  </p>
+                  <p className="text-lg font-semibold tabular-nums">{formatMMSS(restRemaining)}</p>
+                </div>
+                <div className="h-1.5 rounded-full overflow-hidden mb-3" style={{ background: 'var(--surface-2)' }}>
+                  <div
+                    className="h-full rounded-full"
+                    style={{
+                      background: 'var(--brand)',
+                      width: `${Math.min(100, Math.max(0, (restRemaining / restTotal) * 100))}%`,
+                      transition: 'width 1s linear',
+                    }}
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => adjustRest(-15)}
+                    className="flex-1 text-xs font-medium rounded-lg py-2"
+                    style={{ background: 'var(--surface-2)', color: 'var(--text-dim)' }}
+                  >
+                    −15s
+                  </button>
+                  <button
+                    onClick={() => adjustRest(15)}
+                    className="flex-1 text-xs font-medium rounded-lg py-2"
+                    style={{ background: 'var(--surface-2)', color: 'var(--text-dim)' }}
+                  >
+                    +15s
+                  </button>
+                  <button onClick={skipRest} className="flex-1 text-xs font-medium rounded-lg py-2 text-white" style={{ background: 'var(--brand)' }}>
+                    Pular
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      <Sheet open={plateSheetExerciseId !== null} onClose={() => setPlateSheetExerciseId(null)} title="Calculadora de anilhas">
+        {(() => {
+          const ex = plateSheetExerciseId ? exerciseById.get(plateSheetExerciseId) : undefined;
+          const target = Number(plateWeight) || 0;
+          const breakdown = calculatePlates(target, barWeight);
+          return (
+            <div className="flex flex-col gap-4">
+              {ex && (
+                <p className="text-sm" style={{ color: 'var(--text-dim)' }}>
+                  {ex.name}
+                </p>
+              )}
+              <div>
+                <p className="text-xs mb-1.5" style={{ color: 'var(--text-faint)' }}>
+                  Peso total na barra (kg)
+                </p>
+                <input
+                  autoFocus
+                  type="number"
+                  inputMode="decimal"
+                  value={plateWeight}
+                  onChange={(e) => setPlateWeight(e.target.value)}
+                  className="w-full rounded-xl px-3 py-2.5 text-sm"
+                  style={{ background: 'var(--surface-2)', color: 'var(--text)' }}
+                  placeholder="Ex: 60"
+                />
+              </div>
+              <div>
+                <p className="text-xs mb-1.5" style={{ color: 'var(--text-faint)' }}>
+                  Peso da barra
+                </p>
+                <div className="flex gap-2">
+                  {BAR_WEIGHT_OPTIONS.map((w) => (
+                    <button
+                      key={w}
+                      onClick={() => chooseBarWeight(w)}
+                      className="flex-1 text-xs font-medium rounded-lg py-2"
+                      style={{
+                        background: barWeight === w ? 'var(--brand)' : 'var(--surface-2)',
+                        color: barWeight === w ? 'white' : 'var(--text-dim)',
+                      }}
+                    >
+                      {w}kg
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {target > 0 && (
+                <div className="rounded-xl p-3.5" style={{ background: 'var(--surface-2)' }}>
+                  {breakdown.perSide.length === 0 ? (
+                    <p className="text-sm" style={{ color: 'var(--text-dim)' }}>
+                      Só a barra ({barWeight}kg) já cobre — sem anilhas.
+                    </p>
+                  ) : (
+                    <>
+                      <p className="text-xs mb-2" style={{ color: 'var(--text-faint)' }}>
+                        De cada lado da barra:
+                      </p>
+                      <div className="flex flex-wrap gap-1.5 mb-2">
+                        {breakdown.perSide.map((p, i) => (
+                          <span
+                            key={i}
+                            className="text-sm font-semibold px-2.5 py-1 rounded-lg"
+                            style={{ background: 'var(--brand-dim)', color: 'var(--brand)' }}
+                          >
+                            {p}kg
+                          </span>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                  {!breakdown.exact && (
+                    <p className="text-xs" style={{ color: 'var(--warn)' }}>
+                      Não fecha exato com anilhas padrão — mais próximo: {breakdown.totalWeight}kg.
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })()}
+      </Sheet>
 
       <Sheet open={rpeSheetOpen} onClose={() => setRpeSheetOpen(false)} title="Como foi o esforço hoje?">
         <div className="flex flex-col gap-4">

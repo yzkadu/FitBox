@@ -506,6 +506,29 @@ export function addMeasurement(m: Omit<BodyMeasurement, 'id'>): BodyMeasurement 
   return measurement;
 }
 
+export function updateMeasurement(id: string, patch: Partial<Omit<BodyMeasurement, 'id'>>) {
+  store.update((d) => {
+    const m = d.measurements.find((m) => m.id === id);
+    if (m) Object.assign(m, patch);
+    d.measurements.sort((a, b) => a.date.localeCompare(b.date));
+  });
+  const userId = requireUserId();
+  if (userId) {
+    const dbPatch: Record<string, unknown> = {};
+    if ('date' in patch) dbPatch.date = patch.date;
+    if ('weightKg' in patch) dbPatch.weight_kg = patch.weightKg ?? null;
+    if ('bodyFatPct' in patch) dbPatch.body_fat_pct = patch.bodyFatPct ?? null;
+    if ('chestCm' in patch) dbPatch.chest_cm = patch.chestCm ?? null;
+    if ('waistCm' in patch) dbPatch.waist_cm = patch.waistCm ?? null;
+    if ('hipCm' in patch) dbPatch.hip_cm = patch.hipCm ?? null;
+    if ('armCm' in patch) dbPatch.arm_cm = patch.armCm ?? null;
+    if ('thighCm' in patch) dbPatch.thigh_cm = patch.thighCm ?? null;
+    if ('calfCm' in patch) dbPatch.calf_cm = patch.calfCm ?? null;
+    if ('notes' in patch) dbPatch.notes = patch.notes ?? null;
+    supabase.from('measurements').update(dbPatch).eq('id', id).then(logIfError('measurements.update'));
+  }
+}
+
 export function deleteMeasurement(id: string) {
   store.update((d) => {
     d.measurements = d.measurements.filter((m) => m.id !== id);
