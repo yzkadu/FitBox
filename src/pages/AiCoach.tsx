@@ -188,7 +188,7 @@ export function AiCoach() {
                     {m.proposal.kind === 'workoutEdit' && <ListChecks size={15} style={{ color: 'var(--brand)' }} />}
                     <p className="font-semibold text-xs" style={{ color: 'var(--brand)' }}>
                       {m.proposal.kind === 'schedule' && 'Proposta de mudança na agenda'}
-                      {m.proposal.kind === 'newWorkout' && `Proposta de treino novo: ${m.proposal.data.emoji ?? ''} ${m.proposal.data.name}`}
+                      {m.proposal.kind === 'newWorkout' && `Proposta de treino novo: ${m.proposal.data.name}`}
                       {m.proposal.kind === 'workoutEdit' && `Proposta de edição${workoutForEdit ? `: "${workoutForEdit.name}"` : ''}`}
                     </p>
                   </div>

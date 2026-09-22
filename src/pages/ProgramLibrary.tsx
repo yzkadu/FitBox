@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronRight, Check } from 'lucide-react';
-import { PageHeader, Card, Button, Pill } from '../components/ui';
+import { PageHeader, Card, Button, Pill, AppIcon } from '../components/ui';
 import { Sheet } from '../components/Sheet';
 import {
   READY_PROGRAMS,
@@ -83,7 +83,12 @@ export function ProgramLibrary() {
         {filtered.map((p) => (
           <Card key={p.id} className="!p-0 overflow-hidden">
             <button onClick={() => openPreview(p)} className="w-full flex items-center gap-3 px-4 py-3.5 text-left">
-              <span className="text-2xl">{p.days[0]?.emoji ?? '💪'}</span>
+              <span
+                className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
+                style={{ background: 'var(--surface-2)', color: 'var(--text-dim)' }}
+              >
+                <AppIcon value={p.days[0]?.emoji} size={18} />
+              </span>
               <div className="flex-1 min-w-0">
                 <p className="font-medium text-sm">{p.title}</p>
                 <div className="flex flex-wrap gap-1 mt-1">
@@ -116,7 +121,7 @@ export function ProgramLibrary() {
             {preview.days.map((day, di) => (
               <div key={di}>
                 <p className="text-sm font-medium mb-1.5 flex items-center gap-1.5">
-                  <span>{day.emoji}</span> {day.name}
+                  <AppIcon value={day.emoji} size={15} /> {day.name}
                 </p>
                 <ul className="flex flex-col gap-1 mb-1">
                   {day.exercises.map((ex, ei) => (

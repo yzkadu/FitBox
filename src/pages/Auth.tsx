@@ -4,9 +4,8 @@ import { Dumbbell } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import { setPendingTemplate } from '../lib/pendingTemplate';
 import { PROGRAM_TEMPLATES, type ProgramTemplateId } from '../lib/seedPrograms';
-import { Button } from '../components/ui';
-
-const EMOJIS = ['💪', '🏋️', '🏃', '🚴', '🔥', '⚡', '🎯', '🦵'];
+import { Button, AppIcon } from '../components/ui';
+import { ICON_KEYS } from '../lib/workoutIcons';
 
 function friendlyError(message: string): string {
   if (/invalid login credentials/i.test(message)) return 'E-mail ou senha incorretos.';
@@ -22,7 +21,7 @@ export function Auth() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
-  const [emoji, setEmoji] = useState(EMOJIS[0]);
+  const [emoji, setEmoji] = useState<string>(ICON_KEYS[0]);
   const [template, setTemplate] = useState<ProgramTemplateId>('blank');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -111,15 +110,18 @@ export function Auth() {
                 Ícone
               </p>
               <div className="flex gap-2 flex-wrap">
-                {EMOJIS.map((e) => (
+                {ICON_KEYS.map((k) => (
                   <button
                     type="button"
-                    key={e}
-                    onClick={() => setEmoji(e)}
-                    className="w-10 h-10 rounded-xl text-lg flex items-center justify-center"
-                    style={{ background: emoji === e ? 'var(--brand)' : 'var(--surface-2)' }}
+                    key={k}
+                    onClick={() => setEmoji(k)}
+                    className="w-10 h-10 rounded-xl flex items-center justify-center"
+                    style={{
+                      background: emoji === k ? 'var(--brand)' : 'var(--surface-2)',
+                      color: emoji === k ? 'white' : 'var(--text-dim)',
+                    }}
                   >
-                    {e}
+                    <AppIcon value={k} size={18} />
                   </button>
                 ))}
               </div>

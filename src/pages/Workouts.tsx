@@ -8,12 +8,11 @@ import { createWorkout, deleteWorkout, setDaySchedule } from '../lib/actions';
 import { applyNewWorkoutProposal } from '../lib/aiProposalApply';
 import { buildCoachContext } from '../lib/aiCoachContext';
 import { askAiCoach, AiCoachError, type NewWorkoutProposal } from '../lib/aiCoach';
-import { PageHeader, Card, Button, EmptyState } from '../components/ui';
+import { PageHeader, Card, Button, EmptyState, AppIcon } from '../components/ui';
 import { KaduProgramBanner } from '../components/KaduProgramBanner';
+import { ICON_KEYS } from '../lib/workoutIcons';
 import { WEEKDAY_ORDER, WEEKDAY_LABELS } from '../types';
 import type { DaySchedule, Weekday } from '../types';
-
-const EMOJIS = ['💪', '🏋️', '🔥', '🦵', '🫁', '🏃', '⚡', '🎯'];
 
 const IA_SUGGESTIONS = [
   'Perna (quadríceps e posterior)',
@@ -70,12 +69,11 @@ function WeeklyScheduleEditor() {
               <option value={NONE_VALUE}>— Nenhum —</option>
               {active.map((w) => (
                 <option key={w.id} value={w.id}>
-                  {w.emoji ? `${w.emoji} ` : ''}
                   {w.name}
                 </option>
               ))}
-              <option value={CARDIO_VALUE}>🚴 Cardio (corrida/bike)</option>
-              <option value={REST_VALUE}>😴 Descanso</option>
+              <option value={CARDIO_VALUE}>Cardio (corrida/bike)</option>
+              <option value={REST_VALUE}>Descanso</option>
             </select>
           </div>
         ))}
@@ -93,7 +91,7 @@ export function Workouts() {
   const [creating, setCreating] = useState(false);
   const [mode, setMode] = useState<'manual' | 'ia'>('manual');
   const [name, setName] = useState('');
-  const [emoji, setEmoji] = useState(EMOJIS[0]);
+  const [emoji, setEmoji] = useState<string>(ICON_KEYS[0]);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   const [iaPrompt, setIaPrompt] = useState('');
@@ -230,16 +228,17 @@ export function Workouts() {
             <>
               <p className="text-sm font-medium mb-2">Novo treino</p>
               <div className="flex gap-2 mb-3">
-                {EMOJIS.map((e) => (
+                {ICON_KEYS.map((k) => (
                   <button
-                    key={e}
-                    onClick={() => setEmoji(e)}
-                    className="w-9 h-9 rounded-lg text-lg flex items-center justify-center"
+                    key={k}
+                    onClick={() => setEmoji(k)}
+                    className="w-9 h-9 rounded-lg flex items-center justify-center"
                     style={{
-                      background: emoji === e ? 'var(--brand)' : 'var(--surface-2)',
+                      background: emoji === k ? 'var(--brand)' : 'var(--surface-2)',
+                      color: emoji === k ? 'white' : 'var(--text-dim)',
                     }}
                   >
-                    {e}
+                    <AppIcon value={k} size={17} />
                   </button>
                 ))}
               </div>
@@ -263,8 +262,8 @@ export function Workouts() {
             </>
           ) : iaProposal ? (
             <>
-              <p className="text-sm font-medium mb-1">
-                {iaProposal.emoji ? `${iaProposal.emoji} ` : ''}
+              <p className="text-sm font-medium mb-1 flex items-center gap-1.5">
+                <AppIcon value={iaProposal.emoji} size={15} />
                 {iaProposal.name}
               </p>
               <p className="text-xs mb-2" style={{ color: 'var(--text-faint)' }}>
@@ -389,7 +388,12 @@ export function Workouts() {
                     onClick={() => navigate(`/treinos/${w.id}`)}
                     className="flex-1 flex items-center gap-3 px-4 py-3.5 text-left"
                   >
-                    <span className="text-2xl">{w.emoji ?? '💪'}</span>
+                    <span
+                      className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
+                      style={{ background: 'var(--surface-2)', color: 'var(--text-dim)' }}
+                    >
+                      <AppIcon value={w.emoji} size={18} />
+                    </span>
                     <div className="flex-1">
                       <p className="font-medium text-sm">{w.name}</p>
                       <p className="text-xs" style={{ color: 'var(--text-faint)' }}>

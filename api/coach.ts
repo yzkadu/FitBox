@@ -67,6 +67,11 @@ Regras importantes:
   de opinião, etc.), responda normalmente em texto, sem usar nenhuma
   ferramenta.`;
 
+// Mesmas 8 chaves de `src/lib/workoutIcons.ts` — duplicadas aqui de propósito
+// (não dá pra importar de `src/` nessa Edge Function separada) pra restringir
+// o que a IA pode propor como ícone do treino: uma chave, nunca um emoji.
+const ICON_KEYS = ['dumbbell', 'flame', 'target', 'footprints', 'zap', 'activity', 'crown', 'shield'];
+
 const SCHEDULE_TOOL = {
   name: 'propose_schedule_changes',
   description:
@@ -122,7 +127,9 @@ const NEW_WORKOUT_TOOL = {
       },
       emoji: {
         type: 'string',
-        description: 'Um emoji opcional que combine com o treino, ex: 🦵 ou 💪.',
+        enum: ICON_KEYS,
+        description:
+          'Ícone opcional que combine com o treino — uma destas chaves: dumbbell (peso/força geral), flame (intensidade), target (foco/objetivo), footprints (pernas/cardio), zap (explosão/potência), activity (atividade geral), crown (destaque/premium), shield (proteção/core). Nunca um emoji.',
       },
       exercises: {
         type: 'array',
@@ -233,7 +240,7 @@ function sanitizeNewWorkoutProposal(input: unknown): { name: string; emoji?: str
   if (!input || typeof input !== 'object') return null;
   const obj = input as { name?: unknown; emoji?: unknown; exercises?: unknown };
   const name = typeof obj.name === 'string' ? obj.name.slice(0, 60) : '';
-  const emoji = typeof obj.emoji === 'string' ? obj.emoji.slice(0, 8) : undefined;
+  const emoji = typeof obj.emoji === 'string' && ICON_KEYS.includes(obj.emoji) ? obj.emoji : undefined;
   const rawExercises = Array.isArray(obj.exercises) ? obj.exercises : [];
   const exercises = rawExercises
     .filter((e): e is Record<string, unknown> => !!e && typeof e === 'object')

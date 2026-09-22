@@ -64,7 +64,7 @@ export const READY_PROGRAMS: ReadyProgram[] = [
     days: [
       {
         name: 'A: Superior',
-        emoji: '💪',
+        emoji: 'dumbbell',
         exercises: [
           { id: 'ex-supino-reto-barra', sets: 4, reps: '8-10' },
           { id: 'ex-puxada-frente', sets: 4, reps: '8-10' },
@@ -76,7 +76,7 @@ export const READY_PROGRAMS: ReadyProgram[] = [
       },
       {
         name: 'B: Inferior',
-        emoji: '🦵',
+        emoji: 'footprints',
         exercises: [
           { id: 'ex-agachamento-livre', sets: 4, reps: '6-8' },
           { id: 'ex-leg-press', sets: 4, reps: '10-12' },
@@ -97,7 +97,7 @@ export const READY_PROGRAMS: ReadyProgram[] = [
     days: [
       {
         name: 'A: Push (Peito, Ombro, Tríceps)',
-        emoji: '💪',
+        emoji: 'dumbbell',
         exercises: [
           { id: 'ex-supino-reto-barra', sets: 4, reps: '8-10' },
           { id: 'ex-supino-inclinado-halter', sets: 3, reps: '10-12' },
@@ -109,7 +109,7 @@ export const READY_PROGRAMS: ReadyProgram[] = [
       },
       {
         name: 'B: Pull (Costas, Bíceps)',
-        emoji: '🎯',
+        emoji: 'target',
         exercises: [
           { id: 'ex-puxada-frente', sets: 4, reps: '8-10' },
           { id: 'ex-remada-curvada', sets: 3, reps: '8-10' },
@@ -121,7 +121,7 @@ export const READY_PROGRAMS: ReadyProgram[] = [
       },
       {
         name: 'C: Legs',
-        emoji: '🦵',
+        emoji: 'footprints',
         exercises: [
           { id: 'ex-agachamento-livre', sets: 4, reps: '6-8' },
           { id: 'ex-leg-press', sets: 4, reps: '10-12' },
@@ -142,7 +142,7 @@ export const READY_PROGRAMS: ReadyProgram[] = [
     days: [
       {
         name: 'Dia 1: Peito, Ombro e Tríceps',
-        emoji: '💪',
+        emoji: 'dumbbell',
         exercises: [
           { id: 'ex-supino-inclinado-halter', sets: 3, reps: '8' },
           { id: 'ex-supino-maquina', sets: 3, reps: '10' },
@@ -154,7 +154,7 @@ export const READY_PROGRAMS: ReadyProgram[] = [
       },
       {
         name: 'Dia 2: Costas e Bíceps',
-        emoji: '🎯',
+        emoji: 'target',
         exercises: [
           { id: 'ex-puxada-frente', sets: 3, reps: '12' },
           { id: 'ex-fedb-lying-t-bar-row', sets: 3, reps: '8' },
@@ -166,7 +166,7 @@ export const READY_PROGRAMS: ReadyProgram[] = [
       },
       {
         name: 'Dia 3: Pernas e Abdômen',
-        emoji: '🦵',
+        emoji: 'footprints',
         exercises: [
           { id: 'ex-passada-halteres', sets: 3, reps: '10 (cada perna)' },
           { id: 'ex-mesa-flexora', sets: 3, reps: '12' },
@@ -179,7 +179,7 @@ export const READY_PROGRAMS: ReadyProgram[] = [
       },
       {
         name: 'Dia 4: Peito e Ombro',
-        emoji: '🔥',
+        emoji: 'flame',
         exercises: [
           { id: 'ex-voador-peck-deck', sets: 3, reps: '15' },
           { id: 'ex-supino-maquina', sets: 3, reps: '8' },
@@ -200,7 +200,7 @@ export const READY_PROGRAMS: ReadyProgram[] = [
     days: [
       {
         name: 'Push (Peito, Ombro, Tríceps)',
-        emoji: '💪',
+        emoji: 'dumbbell',
         exercises: [
           { id: 'ex-supino-reto-barra', sets: 4, reps: '8-10' },
           { id: 'ex-supino-inclinado-halter', sets: 3, reps: '10-12' },
@@ -212,7 +212,7 @@ export const READY_PROGRAMS: ReadyProgram[] = [
       },
       {
         name: 'Pull (Costas, Bíceps)',
-        emoji: '🎯',
+        emoji: 'target',
         exercises: [
           { id: 'ex-puxada-frente', sets: 4, reps: '8-10' },
           { id: 'ex-remada-curvada', sets: 3, reps: '8-10' },
@@ -224,7 +224,7 @@ export const READY_PROGRAMS: ReadyProgram[] = [
       },
       {
         name: 'Legs',
-        emoji: '🦵',
+        emoji: 'footprints',
         exercises: [
           { id: 'ex-agachamento-livre', sets: 4, reps: '6-8' },
           { id: 'ex-leg-press', sets: 4, reps: '10-12' },
@@ -235,7 +235,7 @@ export const READY_PROGRAMS: ReadyProgram[] = [
       },
       {
         name: 'Upper — Treino de Campeão',
-        emoji: '👑',
+        emoji: 'crown',
         exercises: [
           { id: 'ex-supino-reto-barra', sets: 3, reps: '8-10' },
           { id: 'ex-puxada-frente', sets: 3, reps: '8-10' },
@@ -247,7 +247,7 @@ export const READY_PROGRAMS: ReadyProgram[] = [
       },
       {
         name: 'Lower (ênfase posterior/glúteo)',
-        emoji: '🔥',
+        emoji: 'flame',
         exercises: [
           { id: 'ex-elevacao-pelvica', sets: 4, reps: '8-10' },
           { id: 'ex-mesa-flexora', sets: 4, reps: '10-12' },
@@ -270,7 +270,7 @@ export const READY_PROGRAMS: ReadyProgram[] = [
     days: [
       {
         name: 'A: Full Body',
-        emoji: '🔥',
+        emoji: 'flame',
         exercises: [
           { id: 'ex-agachamento-livre', sets: 3, reps: '15' },
           { id: 'ex-supino-reto-halter', sets: 3, reps: '15' },
@@ -281,7 +281,7 @@ export const READY_PROGRAMS: ReadyProgram[] = [
       },
       {
         name: 'B: Full Body',
-        emoji: '🔥',
+        emoji: 'flame',
         exercises: [
           { id: 'ex-leg-press', sets: 3, reps: '15' },
           { id: 'ex-puxada-frente', sets: 3, reps: '15' },
@@ -302,7 +302,7 @@ export const READY_PROGRAMS: ReadyProgram[] = [
     days: [
       {
         name: 'A: Full Body',
-        emoji: '🔥',
+        emoji: 'flame',
         exercises: [
           { id: 'ex-agachamento-livre', sets: 3, reps: '15' },
           { id: 'ex-supino-maquina', sets: 3, reps: '15' },
@@ -313,7 +313,7 @@ export const READY_PROGRAMS: ReadyProgram[] = [
       },
       {
         name: 'B: Full Body',
-        emoji: '🔥',
+        emoji: 'flame',
         exercises: [
           { id: 'ex-leg-press', sets: 3, reps: '15' },
           { id: 'ex-puxada-frente', sets: 3, reps: '15' },
@@ -324,7 +324,7 @@ export const READY_PROGRAMS: ReadyProgram[] = [
       },
       {
         name: 'C: Full Body',
-        emoji: '🔥',
+        emoji: 'flame',
         exercises: [
           { id: 'ex-afundo', sets: 3, reps: '12 (cada perna)' },
           { id: 'ex-crossover', sets: 3, reps: '15' },
@@ -346,7 +346,7 @@ export const READY_PROGRAMS: ReadyProgram[] = [
     days: [
       {
         name: 'A: Puxar (Costas, Bíceps)',
-        emoji: '🎯',
+        emoji: 'target',
         exercises: [
           { id: 'ex-barra-fixa', sets: 4, reps: '6-10' },
           { id: 'ex-fedb-inverted-row', sets: 3, reps: '12' },
@@ -356,7 +356,7 @@ export const READY_PROGRAMS: ReadyProgram[] = [
       },
       {
         name: 'B: Empurrar + Pernas',
-        emoji: '💪',
+        emoji: 'dumbbell',
         exercises: [
           { id: 'ex-flexao', sets: 4, reps: '12-15' },
           { id: 'ex-fedb-decline-push-up', sets: 3, reps: '12' },
@@ -377,7 +377,7 @@ export const READY_PROGRAMS: ReadyProgram[] = [
     days: [
       {
         name: 'A: Push',
-        emoji: '💪',
+        emoji: 'dumbbell',
         exercises: [
           { id: 'ex-flexao', sets: 4, reps: '15' },
           { id: 'ex-fedb-push-up-wide', sets: 3, reps: '12' },
@@ -388,7 +388,7 @@ export const READY_PROGRAMS: ReadyProgram[] = [
       },
       {
         name: 'B: Pull',
-        emoji: '🎯',
+        emoji: 'target',
         exercises: [
           { id: 'ex-barra-fixa', sets: 4, reps: '6-10' },
           { id: 'ex-fedb-inverted-row', sets: 3, reps: '12' },
@@ -398,7 +398,7 @@ export const READY_PROGRAMS: ReadyProgram[] = [
       },
       {
         name: 'C: Legs + Core',
-        emoji: '🦵',
+        emoji: 'footprints',
         exercises: [
           { id: 'ex-agachamento-livre', sets: 4, reps: '20' },
           { id: 'ex-afundo', sets: 3, reps: '12 (cada perna)' },
@@ -419,7 +419,7 @@ export const READY_PROGRAMS: ReadyProgram[] = [
     days: [
       {
         name: 'Dia 1: Empurrar',
-        emoji: '💪',
+        emoji: 'dumbbell',
         exercises: [
           { id: 'ex-flexao', sets: 4, reps: '15' },
           { id: 'ex-fedb-push-up-wide', sets: 3, reps: '12' },
@@ -429,7 +429,7 @@ export const READY_PROGRAMS: ReadyProgram[] = [
       },
       {
         name: 'Dia 2: Puxar',
-        emoji: '🎯',
+        emoji: 'target',
         exercises: [
           { id: 'ex-barra-fixa', sets: 4, reps: '8' },
           { id: 'ex-fedb-wide-grip-rear-pull-up', sets: 3, reps: '8' },
@@ -439,7 +439,7 @@ export const READY_PROGRAMS: ReadyProgram[] = [
       },
       {
         name: 'Dia 3: Pernas',
-        emoji: '🦵',
+        emoji: 'footprints',
         exercises: [
           { id: 'ex-agachamento-livre', sets: 4, reps: '20' },
           { id: 'ex-afundo', sets: 3, reps: '12 (cada perna)' },
@@ -449,7 +449,7 @@ export const READY_PROGRAMS: ReadyProgram[] = [
       },
       {
         name: 'Dia 4: Core + Full Body',
-        emoji: '🔥',
+        emoji: 'flame',
         exercises: [
           { id: 'ex-prancha', sets: 3, reps: '45s' },
           { id: 'ex-fedb-russian-twist', sets: 3, reps: '20' },
@@ -471,7 +471,7 @@ export const READY_PROGRAMS: ReadyProgram[] = [
     days: [
       {
         name: 'Core',
-        emoji: '🧱',
+        emoji: 'shield',
         exercises: [
           { id: 'ex-abdominal-supra', sets: 3, reps: '15-20' },
           { id: 'ex-prancha', sets: 3, reps: '45s' },

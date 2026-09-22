@@ -41,7 +41,7 @@ export function importKaduProgram(exercises: Exercise[]): Workout[] {
   const existingVSitUps = exercises.find((e) => e.name.trim().toLowerCase() === 'v sit ups');
   const vSitUpsId = existingVSitUps?.id ?? addCustomExercise('V sit ups', 'abdomen').id;
 
-  const day1 = build('Dia 1: Peito, Ombro e Tríceps', '💪', [
+  const day1 = build('Dia 1: Peito, Ombro e Tríceps', 'dumbbell', [
     { id: 'ex-supino-inclinado-halter', sets: 3, reps: '8' }, // Incline db press
     { id: 'ex-supino-maquina', sets: 3, reps: '10' }, // Chest press machine
     { id: 'ex-voador-peck-deck', sets: 4, reps: '12' }, // Pec deck fly
@@ -50,7 +50,7 @@ export function importKaduProgram(exercises: Exercise[]): Workout[] {
     { id: 'ex-triceps-pulley', sets: 4, reps: '15' }, // Rope tricep extensions
   ]);
 
-  const day2 = build('Dia 2: Costas e Bíceps', '🎯', [
+  const day2 = build('Dia 2: Costas e Bíceps', 'target', [
     { id: 'ex-puxada-frente', sets: 3, reps: '12' }, // Lat pull-down
     { id: 'ex-fedb-lying-t-bar-row', sets: 3, reps: '8' }, // Chest supported row
     { id: 'ex-remada-baixa', sets: 3, reps: '13' }, // Close grip cable row
@@ -59,7 +59,7 @@ export function importKaduProgram(exercises: Exercise[]): Workout[] {
     { id: 'ex-fedb-spider-curl', sets: 4, reps: '15' }, // Spider curls
   ]);
 
-  const day3 = build('Dia 3: Pernas e Abdômen', '🦵', [
+  const day3 = build('Dia 3: Pernas e Abdômen', 'footprints', [
     { id: 'ex-passada-halteres', sets: 3, reps: '10 (cada perna)' }, // Walking lunges
     { id: 'ex-mesa-flexora', sets: 3, reps: '12' }, // Hamstring curl
     { id: 'ex-cadeira-extensora', sets: 3, reps: '12' }, // Leg extensions
@@ -70,7 +70,7 @@ export function importKaduProgram(exercises: Exercise[]): Workout[] {
     { id: vSitUpsId, sets: 3, reps: '10' }, // V sit ups
   ]);
 
-  const day4 = build('Dia 4: Peito e Ombro', '🔥', [
+  const day4 = build('Dia 4: Peito e Ombro', 'flame', [
     { id: 'ex-voador-peck-deck', sets: 3, reps: '15' }, // Pec deck fly
     { id: 'ex-supino-maquina', sets: 3, reps: '8' }, // Chest press machine
     { id: 'ex-crossover', sets: 4, reps: '12' }, // Cable fly

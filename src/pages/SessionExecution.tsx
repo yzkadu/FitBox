@@ -419,8 +419,8 @@ export function SessionExecution() {
         <div className="fixed bottom-0 inset-x-0 z-20 px-4 pb-4 safe-bottom" style={{ background: 'linear-gradient(to top, var(--bg) 60%, transparent)' }}>
           <div className="rounded-2xl px-4 py-3" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
             {restDone ? (
-              <p className="text-sm font-semibold text-center" style={{ color: 'var(--success)' }}>
-                Descanso concluído! 💪
+              <p className="text-sm font-semibold text-center flex items-center justify-center gap-1.5" style={{ color: 'var(--success)' }}>
+                <Check size={16} /> Descanso concluído!
               </p>
             ) : (
               <>

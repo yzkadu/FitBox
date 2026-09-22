@@ -8,7 +8,7 @@ import { startSession } from '../lib/actions';
 import { getCurrentStreakDays, getTotalSessionsThisMonth } from '../lib/stats';
 import { getTopCoachTip } from '../lib/coach';
 import { WEEKDAY_ORDER } from '../types';
-import { Card, PageHeader, Button, EmptyState } from '../components/ui';
+import { Card, PageHeader, Button, EmptyState, AppIcon } from '../components/ui';
 import { AccountSheet } from '../components/AccountSheet';
 import { ImportLocalDataBanner } from '../components/ImportLocalDataBanner';
 
@@ -50,14 +50,14 @@ export function Home() {
   return (
     <div className="px-4">
       <PageHeader
-        title="Olá 👋"
+        title="Olá"
         right={
           <button
             onClick={() => setSwitcherOpen(true)}
             className="flex items-center gap-1.5 rounded-full pl-1 pr-2.5 py-1"
             style={{ background: 'var(--surface-2)' }}
           >
-            <span className="text-base">{profile?.emoji ?? '💪'}</span>
+            <AppIcon value={profile?.emoji} size={15} />
             <span className="text-xs font-medium max-w-[80px] truncate">{profile?.name ?? 'Conta'}</span>
             <ChevronDown size={13} style={{ color: 'var(--text-faint)' }} />
           </button>
@@ -84,7 +84,12 @@ export function Home() {
 
       {!activeSessionId && todaySchedule?.kind === 'treino' && todayWorkout && (
         <Card className="mb-4 flex items-center gap-3" style={{ borderColor: 'var(--brand)' }}>
-          <span className="text-2xl">{todayWorkout.emoji ?? '💪'}</span>
+          <span
+            className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
+            style={{ background: 'var(--brand-dim)', color: 'var(--brand)' }}
+          >
+            <AppIcon value={todayWorkout.emoji} size={18} />
+          </span>
           <div className="flex-1 min-w-0">
             <p className="text-xs font-semibold mb-0.5" style={{ color: 'var(--brand)' }}>
               Treino de hoje
@@ -208,7 +213,12 @@ export function Home() {
         <div className="flex flex-col gap-2.5 pb-4">
           {active.map((w) => (
             <Card key={w.id} className="flex items-center gap-3">
-              <span className="text-2xl">{w.emoji ?? '💪'}</span>
+              <span
+                className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
+                style={{ background: 'var(--surface-2)', color: 'var(--text-dim)' }}
+              >
+                <AppIcon value={w.emoji} size={18} />
+              </span>
               <div className="flex-1 min-w-0">
                 <p className="font-medium text-sm truncate">{w.name}</p>
                 <p className="text-xs" style={{ color: 'var(--text-faint)' }}>
@@ -241,7 +251,7 @@ export function Home() {
         open={switcherOpen}
         onClose={() => setSwitcherOpen(false)}
         name={profile?.name ?? 'Conta'}
-        emoji={profile?.emoji ?? '💪'}
+        emoji={profile?.emoji}
         email={user?.email}
       />
     </div>

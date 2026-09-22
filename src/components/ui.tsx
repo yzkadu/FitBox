@@ -1,4 +1,23 @@
-import type { ButtonHTMLAttributes, HTMLAttributes, ReactNode } from 'react';
+import type { ButtonHTMLAttributes, CSSProperties, HTMLAttributes, ReactNode } from 'react';
+import { resolveIconKey, ICON_COMPONENTS } from '../lib/workoutIcons';
+
+/** Ícone de treino/perfil — substitui a exibição de emoji em qualquer lugar
+ * do app (ver `lib/workoutIcons.ts`). Aceita tanto uma icon key nova quanto
+ * um emoji antigo guardado antes dessa mudança. */
+export function AppIcon({
+  value,
+  size = 18,
+  className,
+  style,
+}: {
+  value?: string | null;
+  size?: number;
+  className?: string;
+  style?: CSSProperties;
+}) {
+  const Icon = ICON_COMPONENTS[resolveIconKey(value)];
+  return <Icon size={size} className={className} style={style} />;
+}
 
 export function Card({ children, className = '', ...rest }: HTMLAttributes<HTMLDivElement>) {
   return (

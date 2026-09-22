@@ -1,6 +1,7 @@
 import { LogOut } from 'lucide-react';
 import { Sheet } from './Sheet';
 import { supabase } from '../lib/supabaseClient';
+import { AppIcon } from './ui';
 
 export function AccountSheet({
   open,
@@ -12,13 +13,18 @@ export function AccountSheet({
   open: boolean;
   onClose: () => void;
   name: string;
-  emoji: string;
+  emoji?: string | null;
   email: string | undefined;
 }) {
   return (
     <Sheet open={open} onClose={onClose} title="Conta">
       <div className="flex items-center gap-3 mb-4">
-        <span className="text-2xl">{emoji}</span>
+        <span
+          className="w-11 h-11 rounded-full flex items-center justify-center shrink-0"
+          style={{ background: 'var(--brand-dim)', color: 'var(--brand)' }}
+        >
+          <AppIcon value={emoji} size={20} />
+        </span>
         <div className="min-w-0">
           <p className="text-sm font-medium truncate">{name}</p>
           {email && (

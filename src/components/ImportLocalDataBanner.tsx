@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Download } from 'lucide-react';
-import { Card, Button } from './ui';
+import { Card, Button, AppIcon } from './ui';
 import { findLocalBackups, importBackupToAccount, type LocalBackup } from '../lib/importLocal';
 import { store } from '../lib/storage';
 
@@ -43,8 +43,8 @@ export function ImportLocalDataBanner({ userId }: { userId: string }) {
       <div className="flex flex-col gap-2">
         {backups.map((b) => (
           <div key={b.profileId} className="flex items-center justify-between gap-2">
-            <span className="text-sm truncate">
-              {b.profile.emoji ?? '💪'} {b.profile.name}
+            <span className="text-sm truncate flex items-center gap-1.5">
+              <AppIcon value={b.profile.emoji} size={14} /> {b.profile.name}
             </span>
             <Button
               className="!px-3 !py-1.5 !text-xs shrink-0"
