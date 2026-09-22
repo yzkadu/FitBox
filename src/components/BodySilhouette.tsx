@@ -277,9 +277,95 @@ export function BodySilhouette({
   const leftArm = arm(-1);
   const rightArm = arm(1);
 
-  const isHighlightMode = !!highlightGroups && highlightGroups.length > 0;
+  // `isMapMode` liga o visual de "mapa muscular" (corpo neutro + linhas de
+  // anatomia sempre visíveis) sempre que a tela que usa o componente passou
+  // o prop `highlightGroups` (mesmo que a lista esteja vazia nesse momento —
+  // ex: nenhum treino agendado hoje). `isHighlightMode` (só os grupos com
+  // pelo menos 1 item) controla só a camada de destaque laranja por cima.
+  const isMapMode = highlightGroups !== undefined;
   const activeGroups = new Set(highlightGroups ?? []);
+  const isHighlightMode = activeGroups.size > 0;
   const availableGroups = view === 'frente' ? FRONT_GROUPS : BACK_GROUPS;
+
+  /** Curva suave entre dois pontos, com um "arco" (bow) perpendicular ao
+   * segmento — usado pra desenhar as linhas de anatomia (clavícula, contorno
+   * do peitoral, oblíquos, dorsais etc.) sem precisar de pontos de controle
+   * manuais em cada uma. */
+  function curve(x1: number, y1: number, x2: number, y2: number, bow: number): string {
+    const mx = (x1 + x2) / 2;
+    const my = (y1 + y2) / 2;
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const len = Math.hypot(dx, dy) || 1;
+    const nx = -dy / len;
+    const ny = dx / len;
+    const ctrlX = mx + nx * bow;
+    const ctrlY = my + ny * bow;
+    return `M ${x1.toFixed(1)} ${y1.toFixed(1)} Q ${ctrlX.toFixed(1)} ${ctrlY.toFixed(1)} ${x2.toFixed(1)} ${y2.toFixed(1)}`;
+  }
+
+  /** Linhas de anatomia (traço fino, sem preenchimento) sobre o corpo neutro
+   * do modo mapa muscular — deixa a figura inteira com cara de "carta
+   * anatômica" segmentada por grupo muscular (peito dividido, abdômen em
+   * gomos, dorsais, glúteos, coxas, panturrilhas etc.), sempre visível nessa
+   * vista, não só nos grupos destacados. Geometria 100% original, calculada
+   * a partir das mesmas variáveis de escala/layout do resto da figura — só a
+   * CONVENÇÃO visual (corpo neutro + linhas claras segmentando cada músculo)
+   * é inspirada em cartas anatômicas genéricas do gênero; nenhuma curva foi
+   * copiada de nenhuma referência específica. */
+  function anatomyLines(): { key: string; d: string }[] {
+    const lines: { key: string; d: string }[] = [];
+    const deltoid = (side: 1 | -1) => ({ x: cx + side * (shoulderHalf - 15), y: yShoulder + 12 });
+
+    if (view === 'frente') {
+      (['left', 'right'] as const).forEach((label, i) => {
+        const side = (i === 0 ? -1 : 1) as 1 | -1;
+        lines.push({ key: `clavicula-${label}`, d: curve(cx, yNeck + 14, cx + side * shoulderHalf * 0.65, yShoulder + 4, side * -6) });
+        lines.push({ key: `peitoral-${label}`, d: curve(cx + side * 8, yChest - 22, cx + side * chestHalf * 0.8, yChest + 10, side * 14) });
+        lines.push({ key: `obliquo-${label}`, d: curve(cx + side * waistHalf * 0.85, yWaist - 18, cx + side * hipHalf * 0.55, yHip - 8, side * 6) });
+        const d = deltoid(side);
+        lines.push({
+          key: `deltoide-${label}`,
+          d: `M ${(d.x - armHalf * 1.2).toFixed(1)} ${d.y.toFixed(1)} A ${(armHalf * 1.3).toFixed(1)} ${(armHalf * 1.1).toFixed(1)} 0 0 1 ${(d.x + armHalf * 1.2).toFixed(1)} ${d.y.toFixed(1)}`,
+        });
+        const bStart = armMidPoint(side, 0.15);
+        const bEnd = armMidPoint(side, 0.7);
+        lines.push({ key: `biceps-${label}`, d: curve(bStart.x, bStart.y, bEnd.x, bEnd.y, side * -8) });
+        const legCx = cx + side * legX;
+        lines.push({ key: `quad-in-${label}`, d: `M ${(legCx - thighHalf * 0.32).toFixed(1)} ${(yHip + 10).toFixed(1)} L ${(legCx - thighHalf * 0.18).toFixed(1)} ${(yKnee - 10).toFixed(1)}` });
+        lines.push({ key: `quad-out-${label}`, d: `M ${(legCx + thighHalf * 0.32).toFixed(1)} ${(yHip + 10).toFixed(1)} L ${(legCx + thighHalf * 0.18).toFixed(1)} ${(yKnee - 10).toFixed(1)}` });
+      });
+      lines.push({ key: 'esterno', d: `M ${cx.toFixed(1)} ${(yShoulder + 16).toFixed(1)} L ${cx.toFixed(1)} ${(yWaist - 12).toFixed(1)}` });
+      lines.push({ key: 'abdomen-centro', d: `M ${cx.toFixed(1)} ${(yChest + 18).toFixed(1)} L ${cx.toFixed(1)} ${(yWaist - 14).toFixed(1)}` });
+      for (let i = 1; i <= 3; i++) {
+        const y = yChest + 20 + (i * (yWaist - 14 - (yChest + 20))) / 4;
+        lines.push({ key: `abdomen-gomo-${i}`, d: `M ${(cx - waistHalf * 0.42).toFixed(1)} ${y.toFixed(1)} L ${(cx + waistHalf * 0.42).toFixed(1)} ${y.toFixed(1)}` });
+      }
+    } else {
+      (['left', 'right'] as const).forEach((label, i) => {
+        const side = (i === 0 ? -1 : 1) as 1 | -1;
+        lines.push({ key: `trapezio-${label}`, d: `M ${cx.toFixed(1)} ${(yNeck + 8).toFixed(1)} L ${(cx + side * shoulderHalf * 0.55).toFixed(1)} ${(yShoulder + 6).toFixed(1)}` });
+        lines.push({ key: `dorsal-${label}`, d: curve(cx + side * shoulderHalf * 0.7, yShoulder + 22, cx + side * waistHalf * 0.3, yWaist + 2, side * 10) });
+        lines.push({ key: `gluteo-${label}`, d: curve(cx + side * 4, yHip - 4, cx + side * hipHalf * 0.75, yHip + 20, side * 10) });
+        const tStart = armMidPoint(side, 0.15);
+        const tEnd = armMidPoint(side, 0.75);
+        lines.push({ key: `triceps-${label}`, d: curve(tStart.x, tStart.y, tEnd.x, tEnd.y, side * 10) });
+        const legCx = cx + side * legX;
+        lines.push({ key: `posterior-in-${label}`, d: `M ${(legCx - thighHalf * 0.3).toFixed(1)} ${(yHip + 10).toFixed(1)} L ${(legCx - thighHalf * 0.16).toFixed(1)} ${(yKnee - 10).toFixed(1)}` });
+        lines.push({ key: `posterior-out-${label}`, d: `M ${(legCx + thighHalf * 0.3).toFixed(1)} ${(yHip + 10).toFixed(1)} L ${(legCx + thighHalf * 0.16).toFixed(1)} ${(yKnee - 10).toFixed(1)}` });
+        lines.push({ key: `panturrilha-${label}`, d: `M ${legCx.toFixed(1)} ${(yKnee + 14).toFixed(1)} L ${legCx.toFixed(1)} ${(yAnkle - 10).toFixed(1)}` });
+        lines.push({ key: `gemeos-${label}`, d: curve(legCx - calfHalf * 0.6, yKnee + 20, legCx + calfHalf * 0.6, yKnee + 20, -14) });
+      });
+      lines.push({ key: 'coluna', d: `M ${cx.toFixed(1)} ${(yNeck + 14).toFixed(1)} L ${cx.toFixed(1)} ${(yHip - 16).toFixed(1)}` });
+      lines.push({
+        key: 'lombar',
+        d: `M ${cx.toFixed(1)} ${(yWaist - 6).toFixed(1)} L ${(cx + 10).toFixed(1)} ${(yWaist + 14).toFixed(1)} L ${cx.toFixed(1)} ${(yHip - 16).toFixed(1)} L ${(cx - 10).toFixed(1)} ${(yWaist + 14).toFixed(1)} Z`,
+      });
+    }
+    return lines;
+  }
+
+  const outlineLines = isMapMode ? anatomyLines() : [];
 
   /** Ponto no meio do "tubo" do braço (entre ombro e pulso), com o ângulo do
    * segmento — usado pra desenhar a região de bíceps/tríceps já alinhada
@@ -396,9 +482,15 @@ export function BodySilhouette({
   // contorno, uma vez sólido como base, e mais duas vezes com gradientes de
   // sombra/luz por cima — é isso que dá o acabamento "3D" sem desenhar
   // músculo por músculo.
+  // Cabelo: uma "touca" simples e original cobrindo o topo da cabeça — não
+  // copia nenhum penteado de referência, é só o suficiente pra ficar menos
+  // careca/abstrata sem desenhar um rosto (a figura continua sem feições).
+  const hair = `M ${(cx - 15).toFixed(1)} 28 A 15 21 0 0 1 ${(cx + 15).toFixed(1)} 28 Q ${(cx + 9).toFixed(1)} 18 ${cx.toFixed(1)} 20 Q ${(cx - 9).toFixed(1)} 18 ${(cx - 15).toFixed(1)} 28 Z`;
+
   const figure = (
     <>
       <ellipse cx={cx} cy={33} rx={16} ry={18} />
+      <path d={hair} />
       <path d={leftLeg} />
       <path d={rightLeg} />
       <ellipse cx={leftFoot.cx} cy={leftFoot.cy} rx={leftFoot.rx} ry={leftFoot.ry} />
@@ -441,12 +533,12 @@ export function BodySilhouette({
       {/* Brilho de contorno (glow) — mesma silhueta, só o traço, borrada e por trás de tudo.
           Na cor de marca (modo normal) ou numa cor neutra (modo mapa muscular, pra não
           competir com o laranja das regiões destacadas). */}
-      <g fill="none" stroke={isHighlightMode ? NEUTRAL_BODY_COLOR : 'var(--brand)'} strokeWidth={5} strokeOpacity={0.55} filter="url(#silhouette-glow)">
+      <g fill="none" stroke={isMapMode ? NEUTRAL_BODY_COLOR : 'var(--brand)'} strokeWidth={5} strokeOpacity={0.55} filter="url(#silhouette-glow)">
         {figure}
       </g>
 
       {/* Corpo sólido */}
-      <g fill={isHighlightMode ? NEUTRAL_BODY_COLOR : 'var(--brand)'} opacity={0.94}>
+      <g fill={isMapMode ? NEUTRAL_BODY_COLOR : 'var(--brand)'} opacity={0.94}>
         {figure}
       </g>
 
@@ -455,6 +547,18 @@ export function BodySilhouette({
 
       {/* Volume: luz por cima (cima/esquerda mais claro, simulando luz lateral) */}
       <g fill="url(#silhouette-light)">{figure}</g>
+
+      {/* Linhas de anatomia: segmentação de cada músculo (peito, abdômen,
+          dorsais, glúteos, coxas, panturrilhas etc.), sempre visíveis no modo
+          mapa muscular — não só nos grupos destacados — pra dar a leitura de
+          "carta anatômica" completa. Traço claro fino, sem preenchimento. */}
+      {isMapMode && outlineLines.length > 0 && (
+        <g fill="none" stroke="#ffffff" strokeOpacity={0.4} strokeWidth={1.1} strokeLinecap="round">
+          {outlineLines.map(({ key, d }) => (
+            <path key={key} d={d} />
+          ))}
+        </g>
+      )}
 
       {/* Mapa muscular: regiões destacadas em laranja por cima do corpo neutro,
           com um leve brilho próprio pra "saltar" da figura — só aparece quando
@@ -475,7 +579,7 @@ export function BodySilhouette({
       )}
 
       {/* Dedos das mãos, por cima de tudo pra ficarem nítidos */}
-      <g stroke={isHighlightMode ? NEUTRAL_BODY_COLOR : 'var(--brand)'} opacity={0.94}>
+      <g stroke={isMapMode ? NEUTRAL_BODY_COLOR : 'var(--brand)'} opacity={0.94}>
         {[leftHand, rightHand].map((h, i) => (
           <g key={i}>
             {h.fingers.map((f, fi) => (
