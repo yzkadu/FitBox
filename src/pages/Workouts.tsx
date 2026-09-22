@@ -9,6 +9,7 @@ import { applyNewWorkoutProposal } from '../lib/aiProposalApply';
 import { buildCoachContext } from '../lib/aiCoachContext';
 import { askAiCoach, AiCoachError, type NewWorkoutProposal } from '../lib/aiCoach';
 import { PageHeader, Card, Button, EmptyState } from '../components/ui';
+import { KaduProgramBanner } from '../components/KaduProgramBanner';
 import { WEEKDAY_ORDER, WEEKDAY_LABELS } from '../types';
 import type { DaySchedule, Weekday } from '../types';
 
@@ -180,6 +181,8 @@ export function Workouts() {
           </button>
         }
       />
+
+      <KaduProgramBanner workouts={workouts} exercises={exercises} />
 
       <WeeklyScheduleEditor />
 
