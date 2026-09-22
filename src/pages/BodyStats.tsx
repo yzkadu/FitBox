@@ -7,6 +7,7 @@ import { PageHeader, Card, Button, EmptyState, Pill } from '../components/ui';
 import { Sheet } from '../components/Sheet';
 import { BodySilhouette } from '../components/BodySilhouette';
 import type { SilhouetteGender } from '../components/BodySilhouette';
+import { BodyFatSlider } from '../components/BodyFatSlider';
 import type { BodyMeasurement, BodyPhoto } from '../types';
 
 const MEASURE_FIELD_DEFS: { key: keyof BodyMeasurement; label: string; unit: string }[] = [
@@ -73,6 +74,8 @@ export function BodyStats() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [viewingPhoto, setViewingPhoto] = useState<BodyPhoto | null>(null);
   const [silhouetteGender, setSilhouetteGender] = useState<SilhouetteGender>(loadSilhouetteGender);
+  const [silhouetteMode, setSilhouetteMode] = useState<'medidas' | 'explorar'>('medidas');
+  const [explorePct, setExplorePct] = useState<number | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   function changeSilhouetteGender(g: SilhouetteGender) {
@@ -88,6 +91,7 @@ export function BodyStats() {
 
   const sortedMeasurements = measurements.slice().sort((a, b) => b.date.localeCompare(a.date));
   const sortedPhotos = photos.slice().sort((a, b) => b.date.localeCompare(a.date));
+  const explorePctValue = explorePct ?? sortedMeasurements[0]?.bodyFatPct ?? 20;
 
   function num(v: string): number | undefined {
     const n = Number(v);
@@ -197,7 +201,7 @@ export function BodyStats() {
       <Card className="mb-4">
         <div className="flex items-center justify-between mb-3">
           <p className="text-sm font-semibold" style={{ color: 'var(--text-dim)' }}>
-            Silhueta atual
+            Silhueta {silhouetteMode === 'medidas' ? 'atual' : 'em exploração'}
           </p>
           <div className="flex gap-1 rounded-full p-0.5" style={{ background: 'var(--surface-2)' }}>
             {(['feminino', 'masculino'] as SilhouetteGender[]).map((g) => (
@@ -215,13 +219,43 @@ export function BodyStats() {
             ))}
           </div>
         </div>
-        <div className="flex items-center justify-center py-2" style={{ height: 220 }}>
-          <BodySilhouette measurement={sortedMeasurements[0] ?? null} gender={silhouetteGender} />
+
+        <div className="flex gap-1 rounded-full p-0.5 mb-3" style={{ background: 'var(--surface-2)' }}>
+          {(['medidas', 'explorar'] as const).map((mode) => (
+            <button
+              key={mode}
+              onClick={() => setSilhouetteMode(mode)}
+              className="flex-1 text-xs px-2.5 py-1.5 rounded-full font-medium"
+              style={{
+                background: silhouetteMode === mode ? 'var(--brand)' : 'transparent',
+                color: silhouetteMode === mode ? 'white' : 'var(--text-faint)',
+              }}
+            >
+              {mode === 'medidas' ? 'Minhas medidas' : 'Explorar'}
+            </button>
+          ))}
         </div>
+
+        <div className="flex items-center justify-center py-2" style={{ height: 220 }}>
+          {silhouetteMode === 'medidas' ? (
+            <BodySilhouette measurement={sortedMeasurements[0] ?? null} gender={silhouetteGender} />
+          ) : (
+            <BodySilhouette measurement={null} gender={silhouetteGender} bodyFatOverridePct={explorePctValue} />
+          )}
+        </div>
+
+        {silhouetteMode === 'explorar' && (
+          <div className="mb-2 px-1">
+            <BodyFatSlider value={explorePctValue} onChange={setExplorePct} />
+          </div>
+        )}
+
         <p className="text-xs text-center" style={{ color: 'var(--text-faint)' }}>
-          {sortedMeasurements[0]
-            ? `Ilustração aproximada com base nas medidas de ${new Date(sortedMeasurements[0].date).toLocaleDateString('pt-BR')} — não é uma imagem real do seu corpo.`
-            : 'Registre suas medidas (peito, cintura, quadril, braço, coxa, panturrilha) para a silhueta refletir seu corpo.'}
+          {silhouetteMode === 'explorar'
+            ? 'Prévia aproximada de como a silhueta muda com o % de gordura corporal — não é uma imagem real do seu corpo.'
+            : sortedMeasurements[0]
+              ? `Ilustração aproximada com base nas medidas de ${new Date(sortedMeasurements[0].date).toLocaleDateString('pt-BR')} — não é uma imagem real do seu corpo.`
+              : 'Registre suas medidas (peito, cintura, quadril, braço, coxa, panturrilha) para a silhueta refletir seu corpo.'}
         </p>
       </Card>
 
