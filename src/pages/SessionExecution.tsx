@@ -188,7 +188,7 @@ export function SessionExecution() {
   const anySetLogged = session.exercises.some((se) => se.sets.some((st) => st.completed || st.reps > 0));
 
   return (
-    <div className="min-h-screen flex flex-col safe-top" style={{ background: 'var(--bg)' }}>
+    <div className="min-h-screen flex flex-col" style={{ background: 'var(--bg)' }}>
       <div
         className="flex items-center justify-between px-4 py-3 border-b sticky top-0 z-10"
         style={{ background: 'var(--bg)', borderColor: 'var(--border)' }}
@@ -416,7 +416,10 @@ export function SessionExecution() {
       <ExercisePicker open={pickerOpen} onClose={() => setPickerOpen(false)} onSelect={handleAddExercise} />
 
       {restRemaining !== null && restTotal !== null && (
-        <div className="fixed bottom-0 inset-x-0 z-20 px-4 pb-4 safe-bottom" style={{ background: 'linear-gradient(to top, var(--bg) 60%, transparent)' }}>
+        <div
+          className="fixed inset-x-0 z-20 px-4 pb-3"
+          style={{ background: 'linear-gradient(to top, var(--bg) 60%, transparent)', bottom: 'calc(60px + env(safe-area-inset-bottom))' }}
+        >
           <div className="rounded-2xl px-4 py-3" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
             {restDone ? (
               <p className="text-sm font-semibold text-center flex items-center justify-center gap-1.5" style={{ color: 'var(--success)' }}>

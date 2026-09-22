@@ -81,8 +81,8 @@ export default function App() {
           <Route path="/cardio" element={<Cardio />} />
           <Route path="/programas" element={<ProgramLibrary />} />
           <Route path="/treinador" element={<AiCoach />} />
+          <Route path="/sessao/:sessionId" element={<SessionExecution />} />
         </Route>
-        <Route path="/sessao/:sessionId" element={<SessionExecution />} />
         <Route path="/sessao/:sessionId/editar" element={<SessionEditor />} />
       </Routes>
     </BrowserRouter>
