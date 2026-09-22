@@ -97,7 +97,7 @@ export interface BodyPhoto {
   label?: 'frente' | 'lado' | 'costas' | 'outro';
 }
 
-export type CardioActivityType = 'corrida' | 'bike' | 'natacao';
+export type CardioActivityType = 'corrida' | 'bike' | 'natacao' | 'eliptico' | 'corda' | 'remo' | 'escada';
 
 /** Uma atividade de cardio registrada manualmente (estilo Strava/Apple Fitness) */
 export interface CardioLog {

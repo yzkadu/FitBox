@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
-import { Plus, Bike, Footprints, Waves, Trash2, Route as RouteIcon, Clock, Gauge, TrendingUp } from 'lucide-react';
+import { Plus, Bike, Footprints, Waves, Trash2, Route as RouteIcon, Clock, Gauge, TrendingUp, Repeat, Zap, Anchor, Mountain } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useAppData } from '../hooks/useAppData';
 import { addCardioLog, deleteCardioLog } from '../lib/actions';
@@ -34,7 +34,13 @@ const TYPE_META: Record<CardioActivityType, { label: string; icon: typeof Bike; 
   corrida: { label: 'Corrida', icon: Footprints, color: 'var(--brand)' },
   bike: { label: 'Bike', icon: Bike, color: 'var(--success)' },
   natacao: { label: 'Natação', icon: Waves, color: 'var(--warn)' },
+  eliptico: { label: 'Elíptico', icon: Repeat, color: 'var(--brand)' },
+  corda: { label: 'Pular corda', icon: Zap, color: 'var(--warn)' },
+  remo: { label: 'Remo', icon: Anchor, color: 'var(--success)' },
+  escada: { label: 'Escada (stairmaster)', icon: Mountain, color: 'var(--danger)' },
 };
+
+const ALL_CARDIO_TYPES: CardioActivityType[] = ['corrida', 'bike', 'natacao', 'eliptico', 'corda', 'remo', 'escada'];
 
 export function Cardio() {
   const { cardioLogs, weeklySchedule } = useAppData();
@@ -251,8 +257,8 @@ export function Cardio() {
 
       <Sheet open={sheetOpen} onClose={() => setSheetOpen(false)} title="Registrar atividade">
         <div className="flex flex-col gap-3">
-          <div className="flex gap-2">
-            {(['corrida', 'bike', 'natacao'] as CardioActivityType[]).map((t) => {
+          <div className="flex flex-wrap gap-2">
+            {ALL_CARDIO_TYPES.map((t) => {
               const meta = TYPE_META[t];
               const Icon = meta.icon;
               const active = form.type === t;
@@ -260,13 +266,13 @@ export function Cardio() {
                 <button
                   key={t}
                   onClick={() => setForm({ ...form, type: t })}
-                  className="flex-1 flex items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-medium"
+                  className="flex items-center justify-center gap-1.5 rounded-xl py-2.5 px-3 text-xs font-medium"
                   style={{
                     background: active ? 'var(--brand-dim)' : 'var(--surface-2)',
                     color: active ? 'var(--brand)' : 'var(--text-dim)',
                   }}
                 >
-                  <Icon size={16} /> {meta.label}
+                  <Icon size={15} /> {meta.label}
                 </button>
               );
             })}

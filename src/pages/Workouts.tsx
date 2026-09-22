@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Dumbbell, ChevronRight, Trash2, CalendarDays, Bot, Check, X as XIcon, Sparkles } from 'lucide-react';
+import { Plus, Dumbbell, ChevronRight, Trash2, CalendarDays, Bot, Check, X as XIcon, Sparkles, LayoutGrid } from 'lucide-react';
 import { useAppData } from '../hooks/useAppData';
 import { useAuth } from '../hooks/useAuth';
 import { useProfile } from '../hooks/useProfile';
@@ -183,6 +183,21 @@ export function Workouts() {
       />
 
       <KaduProgramBanner workouts={workouts} exercises={exercises} />
+
+      <Card className="mb-4 !p-0 overflow-hidden">
+        <button onClick={() => navigate('/programas')} className="w-full flex items-center gap-3 px-4 py-3.5 text-left">
+          <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0" style={{ background: 'var(--brand-dim)' }}>
+            <LayoutGrid size={16} style={{ color: 'var(--brand)' }} />
+          </div>
+          <div className="flex-1">
+            <p className="font-medium text-sm">Programas prontos</p>
+            <p className="text-xs" style={{ color: 'var(--text-faint)' }}>
+              Hipertrofia, emagrecimento, calistenia — AB, ABC, ABCD, ABCDE
+            </p>
+          </div>
+          <ChevronRight size={18} style={{ color: 'var(--text-faint)' }} />
+        </button>
+      </Card>
 
       <WeeklyScheduleEditor />
 

@@ -12,6 +12,7 @@ import { ExerciseDetail } from './pages/ExerciseDetail';
 import { Progress } from './pages/Progress';
 import { BodyStats } from './pages/BodyStats';
 import { Cardio } from './pages/Cardio';
+import { ProgramLibrary } from './pages/ProgramLibrary';
 import { AiCoach } from './pages/AiCoach';
 import { Auth } from './pages/Auth';
 import { useAuth } from './hooks/useAuth';
@@ -78,6 +79,7 @@ export default function App() {
           <Route path="/evolucao" element={<Progress />} />
           <Route path="/medidas" element={<BodyStats />} />
           <Route path="/cardio" element={<Cardio />} />
+          <Route path="/programas" element={<ProgramLibrary />} />
           <Route path="/treinador" element={<AiCoach />} />
         </Route>
         <Route path="/sessao/:sessionId" element={<SessionExecution />} />
