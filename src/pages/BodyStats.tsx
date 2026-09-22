@@ -6,9 +6,10 @@ import { addMeasurement, updateMeasurement, deleteMeasurement, addPhoto, deleteP
 import { PageHeader, Card, Button, EmptyState, Pill } from '../components/ui';
 import { Sheet } from '../components/Sheet';
 import { BodySilhouette } from '../components/BodySilhouette';
-import type { SilhouetteGender } from '../components/BodySilhouette';
+import type { SilhouetteGender, SilhouetteView } from '../components/BodySilhouette';
 import { BodyFatSlider } from '../components/BodyFatSlider';
-import type { BodyMeasurement, BodyPhoto } from '../types';
+import type { BodyMeasurement, BodyPhoto, Weekday } from '../types';
+import { WEEKDAY_ORDER } from '../types';
 
 const MEASURE_FIELD_DEFS: { key: keyof BodyMeasurement; label: string; unit: string }[] = [
   { key: 'weightKg', label: '', unit: 'kg' },
@@ -34,6 +35,10 @@ function deltaLabel(curr: number, prev: number | undefined): string {
 
 const SILHOUETTE_GENDER_KEY = 'fitbox-silhouette-gender';
 
+/** Mesma cor de destaque usada no mapa muscular da BodySilhouette (laranja
+ * já usado nos gráficos do app), só pra colorir a legenda de texto abaixo. */
+const HIGHLIGHT_TEXT_COLOR = '#d95926';
+
 function loadSilhouetteGender(): SilhouetteGender {
   try {
     const saved = localStorage.getItem(SILHOUETTE_GENDER_KEY);
@@ -45,6 +50,11 @@ function loadSilhouetteGender(): SilhouetteGender {
 
 function todayIso() {
   return new Date().toISOString().slice(0, 10);
+}
+
+function todayWeekdayKey(): Weekday {
+  const jsDay = new Date().getDay();
+  return WEEKDAY_ORDER[(jsDay + 6) % 7];
 }
 
 function fileToDataUrl(file: File): Promise<string> {
@@ -69,14 +79,31 @@ const emptyForm = {
 };
 
 export function BodyStats() {
-  const { measurements, photos } = useAppData();
+  const { measurements, photos, weeklySchedule, workouts, exercises } = useAppData();
   const [sheetOpen, setSheetOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [viewingPhoto, setViewingPhoto] = useState<BodyPhoto | null>(null);
   const [silhouetteGender, setSilhouetteGender] = useState<SilhouetteGender>(loadSilhouetteGender);
   const [silhouetteMode, setSilhouetteMode] = useState<'medidas' | 'explorar'>('medidas');
+  const [silhouetteView, setSilhouetteView] = useState<SilhouetteView>('frente');
   const [explorePct, setExplorePct] = useState<number | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  // Grupo(s) muscular(es) do treino programado para hoje (agenda semanal),
+  // pra destacar no mapa muscular da silhueta — mesmo padrão usado na Home.
+  const todayKey = todayWeekdayKey();
+  const todaySchedule = weeklySchedule[todayKey];
+  const todayWorkout = todaySchedule?.kind === 'treino' ? workouts.find((w) => w.id === todaySchedule.workoutId) : null;
+  const exerciseById = new Map(exercises.map((ex) => [ex.id, ex]));
+  const todayMuscleGroups = todayWorkout
+    ? Array.from(
+        new Set(
+          todayWorkout.exercises
+            .map((we) => exerciseById.get(we.exerciseId)?.muscleGroup)
+            .filter((g): g is NonNullable<typeof g> => g != null)
+        )
+      )
+    : [];
 
   function changeSilhouetteGender(g: SilhouetteGender) {
     setSilhouetteGender(g);
@@ -220,27 +247,55 @@ export function BodyStats() {
           </div>
         </div>
 
-        <div className="flex gap-1 rounded-full p-0.5 mb-3" style={{ background: 'var(--surface-2)' }}>
-          {(['medidas', 'explorar'] as const).map((mode) => (
-            <button
-              key={mode}
-              onClick={() => setSilhouetteMode(mode)}
-              className="flex-1 text-xs px-2.5 py-1.5 rounded-full font-medium"
-              style={{
-                background: silhouetteMode === mode ? 'var(--brand)' : 'transparent',
-                color: silhouetteMode === mode ? 'white' : 'var(--text-faint)',
-              }}
-            >
-              {mode === 'medidas' ? 'Minhas medidas' : 'Explorar'}
-            </button>
-          ))}
+        <div className="flex items-center justify-between gap-2 mb-3">
+          <div className="flex gap-1 rounded-full p-0.5 flex-1" style={{ background: 'var(--surface-2)' }}>
+            {(['medidas', 'explorar'] as const).map((mode) => (
+              <button
+                key={mode}
+                onClick={() => setSilhouetteMode(mode)}
+                className="flex-1 text-xs px-2.5 py-1.5 rounded-full font-medium"
+                style={{
+                  background: silhouetteMode === mode ? 'var(--brand)' : 'transparent',
+                  color: silhouetteMode === mode ? 'white' : 'var(--text-faint)',
+                }}
+              >
+                {mode === 'medidas' ? 'Minhas medidas' : 'Explorar'}
+              </button>
+            ))}
+          </div>
+          <div className="flex gap-1 rounded-full p-0.5" style={{ background: 'var(--surface-2)' }}>
+            {(['frente', 'costas'] as SilhouetteView[]).map((v) => (
+              <button
+                key={v}
+                onClick={() => setSilhouetteView(v)}
+                className="text-xs px-2.5 py-1.5 rounded-full font-medium"
+                style={{
+                  background: silhouetteView === v ? 'var(--brand)' : 'transparent',
+                  color: silhouetteView === v ? 'white' : 'var(--text-faint)',
+                }}
+              >
+                {v === 'frente' ? 'Frente' : 'Costas'}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className="flex items-center justify-center py-2" style={{ height: 220 }}>
           {silhouetteMode === 'medidas' ? (
-            <BodySilhouette measurement={sortedMeasurements[0] ?? null} gender={silhouetteGender} />
+            <BodySilhouette
+              measurement={sortedMeasurements[0] ?? null}
+              gender={silhouetteGender}
+              view={silhouetteView}
+              highlightGroups={todayMuscleGroups}
+            />
           ) : (
-            <BodySilhouette measurement={null} gender={silhouetteGender} bodyFatOverridePct={explorePctValue} />
+            <BodySilhouette
+              measurement={null}
+              gender={silhouetteGender}
+              bodyFatOverridePct={explorePctValue}
+              view={silhouetteView}
+              highlightGroups={todayMuscleGroups}
+            />
           )}
         </div>
 
@@ -256,6 +311,12 @@ export function BodyStats() {
             : sortedMeasurements[0]
               ? `Ilustração aproximada com base nas medidas de ${new Date(sortedMeasurements[0].date).toLocaleDateString('pt-BR')} — não é uma imagem real do seu corpo.`
               : 'Registre suas medidas (peito, cintura, quadril, braço, coxa, panturrilha) para a silhueta refletir seu corpo.'}
+          {todayWorkout && (
+            <>
+              {' '}
+              <span style={{ color: HIGHLIGHT_TEXT_COLOR }}>Destacado em laranja: {todayWorkout.name} (treino de hoje).</span>
+            </>
+          )}
         </p>
       </Card>
 

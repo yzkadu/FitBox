@@ -22,9 +22,31 @@
 // cima (mais claro em cima/à esquerda) — sem precisar desenhar músculo por
 // músculo.
 
-import type { BodyMeasurement } from '../types';
+import type { ReactNode } from 'react';
+import type { BodyMeasurement, MuscleGroup } from '../types';
 
 export type SilhouetteGender = 'feminino' | 'masculino';
+
+/** Vista do mapa muscular — como a figura é abstrata (sem rosto nem detalhes
+ * frontais/traseiros), "frente" e "costas" reaproveitam exatamente o mesmo
+ * corpo; só muda o conjunto de regiões que pode ser destacado (ver
+ * `FRONT_GROUPS`/`BACK_GROUPS` abaixo) e um rótulo na tela. */
+export type SilhouetteView = 'frente' | 'costas';
+
+/** Cor de destaque do mapa muscular — reaproveita a mesma laranja já usada
+ * nos gráficos do app (chartTheme.ts), não uma cor nova. */
+const HIGHLIGHT_COLOR = '#d95926';
+/** Cor "neutra" do corpo quando o mapa muscular está ativo (em vez da cor de
+ * marca roxa) — só pra fazer a região destacada em laranja se sobressair,
+ * como numa ilustração anatômica. */
+const NEUTRAL_BODY_COLOR = '#585b70';
+
+/** Em que vista(s) cada grupo muscular tem uma região desenhável. Alguns
+ * grupos (ombro, perna) fazem sentido nas duas vistas; peito/bíceps/abdômen
+ * só têm região de frente, e costas/tríceps/glúteo só de costas — cardio e
+ * "outro" não têm uma região de músculo específica pra destacar. */
+const FRONT_GROUPS: MuscleGroup[] = ['peito', 'ombro', 'biceps', 'abdomen', 'perna'];
+const BACK_GROUPS: MuscleGroup[] = ['costas', 'ombro', 'triceps', 'perna', 'gluteo'];
 
 const REFERENCE: Record<SilhouetteGender, { chest: number; waist: number; hip: number; arm: number; thigh: number; calf: number }> = {
   masculino: { chest: 100, waist: 85, hip: 96, arm: 32, thigh: 56, calf: 37 },
@@ -146,12 +168,21 @@ export function BodySilhouette({
   measurement,
   gender,
   bodyFatOverridePct,
+  view = 'frente',
+  highlightGroups,
 }: {
   measurement: BodyMeasurement | null;
   gender: SilhouetteGender;
   /** Quando informado, ignora a medição real e desenha a partir desse % de
    * gordura corporal (modo "Explorar" / prévia ao vivo). */
   bodyFatOverridePct?: number;
+  /** Vista frente/costas do mapa muscular. Não afeta o corpo em si (que é
+   * abstrato, sem rosto) — só qual conjunto de regiões pode ser destacado. */
+  view?: SilhouetteView;
+  /** Quando informado (e não vazio), ativa o "modo mapa muscular": o corpo
+   * fica numa cor neutra e os grupos musculares desta lista aparecem
+   * destacados em laranja, na vista atual. */
+  highlightGroups?: MuscleGroup[];
 }) {
   const ref = REFERENCE[gender];
 
@@ -246,6 +277,120 @@ export function BodySilhouette({
   const leftArm = arm(-1);
   const rightArm = arm(1);
 
+  const isHighlightMode = !!highlightGroups && highlightGroups.length > 0;
+  const activeGroups = new Set(highlightGroups ?? []);
+  const availableGroups = view === 'frente' ? FRONT_GROUPS : BACK_GROUPS;
+
+  /** Ponto no meio do "tubo" do braço (entre ombro e pulso), com o ângulo do
+   * segmento — usado pra desenhar a região de bíceps/tríceps já alinhada
+   * com a diagonal do braço, em vez de uma elipse "reta" destoando da pose. */
+  function armMidPoint(side: 1 | -1, t: number) {
+    const shoulderPt = { x: cx + side * (shoulderHalf - 15), y: yShoulder + 12 };
+    const wrist = armWrist(side);
+    const angleDeg = (Math.atan2(wrist.y - shoulderPt.y, wrist.x - shoulderPt.x) * 180) / Math.PI;
+    return {
+      x: shoulderPt.x + (wrist.x - shoulderPt.x) * t,
+      y: shoulderPt.y + (wrist.y - shoulderPt.y) * t,
+      angleDeg,
+    };
+  }
+
+  /** Formas de cada grupo muscular (só as visíveis na vista atual), a partir
+   * das mesmas variáveis de layout/escala do resto da figura — por isso as
+   * regiões acompanham o corpo ao crescer/encolher junto com as medidas ou
+   * o % de gordura do modo Explorar. */
+  function regionShapes(group: MuscleGroup): { shape: ReactNode; key: string }[] {
+    switch (group) {
+      case 'peito':
+        return ([-1, 1] as const).map((side) => ({
+          key: `peito-${side}`,
+          shape: (
+            <ellipse
+              cx={cx + side * chestHalf * 0.42}
+              cy={yChest - 14}
+              rx={chestHalf * 0.44}
+              ry={18}
+            />
+          ),
+        }));
+      case 'ombro':
+        return ([-1, 1] as const).map((side) => ({
+          key: `ombro-${side}`,
+          shape: <circle cx={cx + side * (shoulderHalf - 15)} cy={yShoulder + 12} r={armHalf * 1.35} />,
+        }));
+      case 'biceps':
+      case 'triceps':
+        return ([-1, 1] as const).map((side) => {
+          const p = armMidPoint(side, 0.42);
+          return {
+            key: `${group}-${side}`,
+            shape: (
+              <ellipse
+                cx={p.x}
+                cy={p.y}
+                rx={armHalf * 1.5}
+                ry={armHalf * 0.85}
+                transform={`rotate(${p.angleDeg} ${p.x.toFixed(1)} ${p.y.toFixed(1)})`}
+              />
+            ),
+          };
+        });
+      case 'abdomen':
+        return [
+          {
+            key: 'abdomen',
+            shape: (
+              <rect
+                x={cx - waistHalf * 0.62}
+                y={yChest + 12}
+                width={waistHalf * 1.24}
+                height={yWaist - yChest - 6}
+                rx={10}
+              />
+            ),
+          },
+        ];
+      case 'costas':
+        return [
+          {
+            key: 'costas',
+            shape: (
+              <rect
+                x={cx - shoulderHalf * 0.72}
+                y={yShoulder + 4}
+                width={shoulderHalf * 1.44}
+                height={yWaist - yShoulder - 14}
+                rx={16}
+              />
+            ),
+          },
+        ];
+      case 'gluteo':
+        return ([-1, 1] as const).map((side) => ({
+          key: `gluteo-${side}`,
+          shape: <ellipse cx={cx + side * legX} cy={yHip + 12} rx={hipHalf * 0.42} ry={22} />,
+        }));
+      case 'perna':
+        return ([-1, 1] as const).map((side) => ({
+          key: `perna-${side}`,
+          shape: (
+            <ellipse
+              cx={cx + side * legX}
+              cy={(yHip + yKnee) / 2 + 4}
+              rx={thighHalf * 0.9}
+              ry={(yKnee - yHip) * 0.32}
+            />
+          ),
+        }));
+      default:
+        return [];
+    }
+  }
+
+  const highlightShapes = availableGroups
+    .filter((g) => activeGroups.has(g))
+    .flatMap((g) => regionShapes(g));
+
   // Um só grupo de "figuras" (cabeça + pernas + pés + tronco + braços + mãos)
   // reaproveitado três vezes: uma vez borrado por trás como brilho de
   // contorno, uma vez sólido como base, e mais duas vezes com gradientes de
@@ -293,13 +438,15 @@ export function BodySilhouette({
 
       <ellipse cx={110} cy={120} rx={100} ry={140} fill="url(#silhouette-backdrop)" />
 
-      {/* Brilho de contorno (glow) — mesma silhueta, só o traço, borrada e por trás de tudo */}
-      <g fill="none" stroke="var(--brand)" strokeWidth={5} strokeOpacity={0.55} filter="url(#silhouette-glow)">
+      {/* Brilho de contorno (glow) — mesma silhueta, só o traço, borrada e por trás de tudo.
+          Na cor de marca (modo normal) ou numa cor neutra (modo mapa muscular, pra não
+          competir com o laranja das regiões destacadas). */}
+      <g fill="none" stroke={isHighlightMode ? NEUTRAL_BODY_COLOR : 'var(--brand)'} strokeWidth={5} strokeOpacity={0.55} filter="url(#silhouette-glow)">
         {figure}
       </g>
 
       {/* Corpo sólido */}
-      <g fill="var(--brand)" opacity={0.94}>
+      <g fill={isHighlightMode ? NEUTRAL_BODY_COLOR : 'var(--brand)'} opacity={0.94}>
         {figure}
       </g>
 
@@ -309,8 +456,26 @@ export function BodySilhouette({
       {/* Volume: luz por cima (cima/esquerda mais claro, simulando luz lateral) */}
       <g fill="url(#silhouette-light)">{figure}</g>
 
+      {/* Mapa muscular: regiões destacadas em laranja por cima do corpo neutro,
+          com um leve brilho próprio pra "saltar" da figura — só aparece quando
+          `highlightGroups` foi passado. */}
+      {isHighlightMode && highlightShapes.length > 0 && (
+        <>
+          <g fill={HIGHLIGHT_COLOR} opacity={0.5} filter="url(#silhouette-glow)">
+            {highlightShapes.map(({ shape, key }) => (
+              <g key={key}>{shape}</g>
+            ))}
+          </g>
+          <g fill={HIGHLIGHT_COLOR} fillOpacity={0.88} stroke={HIGHLIGHT_COLOR} strokeOpacity={0.9} strokeWidth={1}>
+            {highlightShapes.map(({ shape, key }) => (
+              <g key={key}>{shape}</g>
+            ))}
+          </g>
+        </>
+      )}
+
       {/* Dedos das mãos, por cima de tudo pra ficarem nítidos */}
-      <g stroke="var(--brand)" opacity={0.94}>
+      <g stroke={isHighlightMode ? NEUTRAL_BODY_COLOR : 'var(--brand)'} opacity={0.94}>
         {[leftHand, rightHand].map((h, i) => (
           <g key={i}>
             {h.fingers.map((f, fi) => (
