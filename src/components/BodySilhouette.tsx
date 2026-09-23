@@ -248,24 +248,38 @@ export function BodySilhouette({
     return diagRibbonPath([shoulderPt, armWrist(side)]);
   }
 
-  /** Mão simplificada: uma "luva" arredondada + 3 dedos sugeridos como traços
-   * curtos, o suficiente pra não parecer um cano terminando em nada. */
+  /** Mão: uma "luva" alongada e ROTACIONADA pra acompanhar o ângulo real do
+   * antebraço (antes era uma elipse sempre na vertical, destoando da
+   * diagonal do braço — um dos motivos do visual "boneco de blocos") + 3
+   * dedos como traços curtos, apontando na continuação natural do braço. */
   function hand(side: 1 | -1) {
     const p = armWrist(side);
-    const baseAngle = side === -1 ? 200 : -20;
+    const shoulderPt = { x: cx + side * (shoulderHalf - 15), y: yShoulder + 12 };
+    const angleDeg = (Math.atan2(p.y - shoulderPt.y, p.x - shoulderPt.x) * 180) / Math.PI;
+    const baseAngle = angleDeg;
     const fingers = [-1, 0, 1].map((i) => {
-      const angle = ((baseAngle + i * 18) * Math.PI) / 180;
+      const angle = ((baseAngle + i * 16) * Math.PI) / 180;
       return {
-        x2: p.x + Math.cos(angle) * p.r * 2.1,
-        y2: p.y + Math.sin(angle) * p.r * 2.1,
+        x2: p.x + Math.cos(angle) * p.r * 2.2,
+        y2: p.y + Math.sin(angle) * p.r * 2.2,
       };
     });
-    return { p, fingers };
+    return { p, angleDeg, fingers };
   }
 
+  /** Pé: elipse alongada, virada levemente pra fora (ângulo natural de um
+   * pé parado), com um pequeno bico de dedos na ponta — em vez de um óvalo
+   * reto e simétrico, que lia como um "sapato de boneco de bloco". */
   function foot(side: 1 | -1) {
     const x = cx + side * legX;
-    return { cx: x + side * 5, cy: yAnkle + 9, rx: calfHalf * 1.3, ry: 7 };
+    const rotate = side * 14;
+    const cxF = x + side * 6;
+    const cyF = yAnkle + 9;
+    const rx = calfHalf * 1.55;
+    const ry = 6.5;
+    const rad = (rotate * Math.PI) / 180;
+    const toe = { x: cxF + Math.cos(rad) * rx * 0.92, y: cyF + Math.sin(rad) * rx * 0.92 };
+    return { cx: cxF, cy: cyF, rx, ry, rotate, toe };
   }
 
   const leftHand = hand(-1);
@@ -520,14 +534,24 @@ export function BodySilhouette({
       <path d={hair} />
       <path d={leftLeg} />
       <path d={rightLeg} />
-      <ellipse cx={leftFoot.cx} cy={leftFoot.cy} rx={leftFoot.rx} ry={leftFoot.ry} />
-      <ellipse cx={rightFoot.cx} cy={rightFoot.cy} rx={rightFoot.rx} ry={rightFoot.ry} />
+      {[leftFoot, rightFoot].map((f, i) => (
+        <g key={i}>
+          <ellipse cx={f.cx} cy={f.cy} rx={f.rx} ry={f.ry} transform={`rotate(${f.rotate} ${f.cx.toFixed(1)} ${f.cy.toFixed(1)})`} />
+          <circle cx={f.toe.x} cy={f.toe.y} r={f.ry * 0.62} />
+        </g>
+      ))}
       <path d={torso} />
       <path d={leftArm} />
       <path d={rightArm} />
       {[leftHand, rightHand].map((h, i) => (
         <g key={i}>
-          <ellipse cx={h.p.x} cy={h.p.y} rx={h.p.r * 1.1} ry={h.p.r * 1.3} />
+          <ellipse
+            cx={h.p.x}
+            cy={h.p.y}
+            rx={h.p.r * 1.35}
+            ry={h.p.r * 1.02}
+            transform={`rotate(${h.angleDeg.toFixed(1)} ${h.p.x.toFixed(1)} ${h.p.y.toFixed(1)})`}
+          />
         </g>
       ))}
     </>
@@ -565,6 +589,14 @@ export function BodySilhouette({
           <stop offset="48%" stopColor="#ffffff" stopOpacity={0.06} />
           <stop offset="100%" stopColor="#000000" stopOpacity={0.24} />
         </radialGradient>
+        {/* Desfoque leve aplicado às formas de músculo "sempre visíveis": sem
+            isso, cada forma fica com borda dura e lê como um adesivo colado
+            em cima do corpo (o efeito "boneco de blocos" que a usuária
+            reclamou) — borrando a borda, o relevo se funde na silhueta como
+            volume de músculo de verdade, não como uma peça separada. */}
+        <filter id="muscle-soft" x="-60%" y="-60%" width="220%" height="220%">
+          <feGaussianBlur stdDeviation="2.3" />
+        </filter>
       </defs>
 
       <ellipse cx={110} cy={120} rx={100} ry={140} fill="url(#silhouette-backdrop)" />
@@ -594,7 +626,7 @@ export function BodySilhouette({
           por cima marcando as bordas/divisões finas (clavícula, esterno,
           coluna etc.) que não têm uma "forma" própria. */}
       {isMapMode && neutralRegionShapes.length > 0 && (
-        <g fill="url(#muscle-bump)" stroke="#000000" strokeOpacity={0.22} strokeWidth={0.75}>
+        <g fill="url(#muscle-bump)" filter="url(#muscle-soft)">
           {neutralRegionShapes.map(({ shape, key }) => (
             <g key={key}>{shape}</g>
           ))}
