@@ -436,11 +436,13 @@ export function BodySilhouette({
         const shapes: { shape: ReactNode; key: string }[] = [];
         for (let r = 0; r < rows; r++) {
           for (let c = 0; c < 2; c++) {
-            const x = cx - abWidth / 2 + c * (colW + gapX);
-            const y = abTop + r * (rowH + gapY);
+            // Elipse em vez de retângulo — "bolha" de músculo arredondada,
+            // sem cara de bloco/pixel.
+            const ex = cx - abWidth / 2 + c * (colW + gapX) + colW / 2;
+            const ey = abTop + r * (rowH + gapY) + rowH / 2;
             shapes.push({
               key: `abdomen-${r}-${c}`,
-              shape: <rect x={x} y={y} width={colW} height={rowH} rx={4} />,
+              shape: <ellipse cx={ex} cy={ey} rx={colW / 2} ry={rowH / 2} />,
             });
           }
         }
@@ -551,6 +553,18 @@ export function BodySilhouette({
         <filter id="silhouette-glow" x="-40%" y="-40%" width="180%" height="180%">
           <feGaussianBlur stdDeviation="4.5" />
         </filter>
+        {/* Gradiente reaproveitado em CADA forma de músculo (não uma vez pro
+            corpo todo): como o SVG resolve um gradiente radial relativo à
+            caixa delimitadora de cada elemento que o usa, toda elipse/forma
+            de músculo ganha seu próprio "brilho" individual (mais claro no
+            canto superior-esquerdo, mais escuro na borda) — é isso que dá
+            volume/relevo a cada músculo em vez do visual "bloco liso" de
+            antes. */}
+        <radialGradient id="muscle-bump" cx="32%" cy="26%" r="80%">
+          <stop offset="0%" stopColor="#ffffff" stopOpacity={0.32} />
+          <stop offset="48%" stopColor="#ffffff" stopOpacity={0.06} />
+          <stop offset="100%" stopColor="#000000" stopOpacity={0.24} />
+        </radialGradient>
       </defs>
 
       <ellipse cx={110} cy={120} rx={100} ry={140} fill="url(#silhouette-backdrop)" />
@@ -573,26 +587,24 @@ export function BodySilhouette({
       {/* Volume: luz por cima (cima/esquerda mais claro, simulando luz lateral) */}
       <g fill="url(#silhouette-light)">{figure}</g>
 
-      {/* Linhas de anatomia: segmentação de cada músculo (peito, abdômen,
-          dorsais, glúteos, coxas, panturrilhas etc.), sempre visíveis no modo
-          mapa muscular — não só nos grupos destacados — pra dar a leitura de
-          "carta anatômica" completa. Traço claro fino, sem preenchimento. */}
-      {isMapMode && outlineLines.length > 0 && (
-        <g fill="none" stroke="#ffffff" strokeOpacity={0.4} strokeWidth={1.1} strokeLinecap="round">
-          {outlineLines.map(({ key, d }) => (
-            <path key={key} d={d} />
+      {/* Formas de cada músculo da vista atual, sempre visíveis (não só a
+          destacada) — cada uma com seu próprio relevo (gradiente radial),
+          não um tom chapado, pra parecer músculo esculpido em vez de bloco
+          liso. Renderizada ANTES das linhas de anatomia, pra elas ficarem
+          por cima marcando as bordas/divisões finas (clavícula, esterno,
+          coluna etc.) que não têm uma "forma" própria. */}
+      {isMapMode && neutralRegionShapes.length > 0 && (
+        <g fill="url(#muscle-bump)" stroke="#000000" strokeOpacity={0.22} strokeWidth={0.75}>
+          {neutralRegionShapes.map(({ shape, key }) => (
+            <g key={key}>{shape}</g>
           ))}
         </g>
       )}
 
-      {/* Formas de cada músculo da vista atual, sempre visíveis (não só a
-          destacada) — tom bem sutil (quase transparente) só pra dar volume/
-          "carve" a cada grupo, coberta pela camada de destaque em laranja
-          quando aquele grupo está selecionado. */}
-      {isMapMode && neutralRegionShapes.length > 0 && (
-        <g fill="#ffffff" fillOpacity={0.07} stroke="#ffffff" strokeOpacity={0.32} strokeWidth={1}>
-          {neutralRegionShapes.map(({ shape, key }) => (
-            <g key={key}>{shape}</g>
+      {isMapMode && outlineLines.length > 0 && (
+        <g fill="none" stroke="#ffffff" strokeOpacity={0.26} strokeWidth={0.9} strokeLinecap="round">
+          {outlineLines.map(({ key, d }) => (
+            <path key={key} d={d} />
           ))}
         </g>
       )}
@@ -608,6 +620,14 @@ export function BodySilhouette({
             ))}
           </g>
           <g fill={HIGHLIGHT_COLOR} fillOpacity={0.88} stroke={HIGHLIGHT_COLOR} strokeOpacity={0.9} strokeWidth={1}>
+            {highlightShapes.map(({ shape, key }) => (
+              <g key={key}>{shape}</g>
+            ))}
+          </g>
+          {/* Relevo por cima da cor de destaque — mesmo gradiente usado na
+              camada neutra, pra o músculo destacado também parecer esculpido
+              (não uma chapa lisa laranja). */}
+          <g fill="url(#muscle-bump)">
             {highlightShapes.map(({ shape, key }) => (
               <g key={key}>{shape}</g>
             ))}
