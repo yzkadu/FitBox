@@ -336,11 +336,9 @@ export function BodySilhouette({
         lines.push({ key: `quad-out-${label}`, d: `M ${(legCx + thighHalf * 0.32).toFixed(1)} ${(yHip + 10).toFixed(1)} L ${(legCx + thighHalf * 0.18).toFixed(1)} ${(yKnee - 10).toFixed(1)}` });
       });
       lines.push({ key: 'esterno', d: `M ${cx.toFixed(1)} ${(yShoulder + 16).toFixed(1)} L ${cx.toFixed(1)} ${(yWaist - 12).toFixed(1)}` });
-      lines.push({ key: 'abdomen-centro', d: `M ${cx.toFixed(1)} ${(yChest + 18).toFixed(1)} L ${cx.toFixed(1)} ${(yWaist - 14).toFixed(1)}` });
-      for (let i = 1; i <= 3; i++) {
-        const y = yChest + 20 + (i * (yWaist - 14 - (yChest + 20))) / 4;
-        lines.push({ key: `abdomen-gomo-${i}`, d: `M ${(cx - waistHalf * 0.42).toFixed(1)} ${y.toFixed(1)} L ${(cx + waistHalf * 0.42).toFixed(1)} ${y.toFixed(1)}` });
-      }
+      // Os "gomos" do abdômen agora são blocos de verdade (ver
+      // regionShapes('abdomen')), renderizados sempre que o mapa muscular
+      // está ativo — não precisam mais de linhas horizontais separadas aqui.
     } else {
       (['left', 'right'] as const).forEach((label, i) => {
         const side = (i === 0 ? -1 : 1) as 1 | -1;
@@ -421,36 +419,55 @@ export function BodySilhouette({
             ),
           };
         });
-      case 'abdomen':
-        return [
-          {
-            key: 'abdomen',
-            shape: (
-              <rect
-                x={cx - waistHalf * 0.62}
-                y={yChest + 12}
-                width={waistHalf * 1.24}
-                height={yWaist - yChest - 6}
-                rx={10}
-              />
-            ),
-          },
-        ];
+      case 'abdomen': {
+        // "Gomos" do abdômen como uma grade de blocos (3 linhas x 2 colunas,
+        // com um pequeno respiro entre eles) em vez de um retângulo único —
+        // dá a leitura de abdômen segmentado (six-pack) tanto destacado
+        // quanto na camada neutra sempre visível, geometria 100% calculada a
+        // partir das mesmas variáveis de layout do resto da figura.
+        const abTop = yChest + 16;
+        const abBottom = yWaist - 12;
+        const abWidth = waistHalf * 1.18;
+        const rows = 3;
+        const gapY = 4;
+        const gapX = 5;
+        const rowH = (abBottom - abTop - gapY * (rows - 1)) / rows;
+        const colW = (abWidth - gapX) / 2;
+        const shapes: { shape: ReactNode; key: string }[] = [];
+        for (let r = 0; r < rows; r++) {
+          for (let c = 0; c < 2; c++) {
+            const x = cx - abWidth / 2 + c * (colW + gapX);
+            const y = abTop + r * (rowH + gapY);
+            shapes.push({
+              key: `abdomen-${r}-${c}`,
+              shape: <rect x={x} y={y} width={colW} height={rowH} rx={4} />,
+            });
+          }
+        }
+        return shapes;
+      }
       case 'costas':
-        return [
-          {
-            key: 'costas',
+        // Dorsais como duas "asas" diagonais (afuniladas em direção à
+        // cintura), em vez de um bloco retangular único — mais perto da
+        // forma real do latíssimo do dorso, ainda 100% original.
+        return ([-1, 1] as const).map((side) => {
+          const wingCx = cx + side * shoulderHalf * 0.46;
+          const wingCy = (yShoulder + yWaist) / 2 + 6;
+          const rx = shoulderHalf * 0.4;
+          const ry = (yWaist - yShoulder) * 0.46;
+          return {
+            key: `costas-${side}`,
             shape: (
-              <rect
-                x={cx - shoulderHalf * 0.72}
-                y={yShoulder + 4}
-                width={shoulderHalf * 1.44}
-                height={yWaist - yShoulder - 14}
-                rx={16}
+              <ellipse
+                cx={wingCx}
+                cy={wingCy}
+                rx={rx}
+                ry={ry}
+                transform={`rotate(${side * 16} ${wingCx.toFixed(1)} ${wingCy.toFixed(1)})`}
               />
             ),
-          },
-        ];
+          };
+        });
       case 'gluteo':
         return ([-1, 1] as const).map((side) => ({
           key: `gluteo-${side}`,
@@ -476,6 +493,14 @@ export function BodySilhouette({
   const highlightShapes = availableGroups
     .filter((g) => activeGroups.has(g))
     .flatMap((g) => regionShapes(g));
+
+  // Camada "neutra": as formas de TODOS os grupos musculares da vista atual
+  // (não só o destacado), sempre visíveis enquanto o mapa muscular está
+  // ativo — é o que dá a leitura de corpo inteiro sempre segmentado por
+  // músculo (peito, abdômen em gomos, dorsais, glúteos, coxas etc.), igual à
+  // convenção de carta anatômica que a usuária pediu, com tom bem sutil pra
+  // não competir com a cor de destaque quando um grupo é selecionado.
+  const neutralRegionShapes = isMapMode ? availableGroups.flatMap((g) => regionShapes(g)) : [];
 
   // Um só grupo de "figuras" (cabeça + pernas + pés + tronco + braços + mãos)
   // reaproveitado três vezes: uma vez borrado por trás como brilho de
@@ -556,6 +581,18 @@ export function BodySilhouette({
         <g fill="none" stroke="#ffffff" strokeOpacity={0.4} strokeWidth={1.1} strokeLinecap="round">
           {outlineLines.map(({ key, d }) => (
             <path key={key} d={d} />
+          ))}
+        </g>
+      )}
+
+      {/* Formas de cada músculo da vista atual, sempre visíveis (não só a
+          destacada) — tom bem sutil (quase transparente) só pra dar volume/
+          "carve" a cada grupo, coberta pela camada de destaque em laranja
+          quando aquele grupo está selecionado. */}
+      {isMapMode && neutralRegionShapes.length > 0 && (
+        <g fill="#ffffff" fillOpacity={0.07} stroke="#ffffff" strokeOpacity={0.32} strokeWidth={1}>
+          {neutralRegionShapes.map(({ shape, key }) => (
+            <g key={key}>{shape}</g>
           ))}
         </g>
       )}
