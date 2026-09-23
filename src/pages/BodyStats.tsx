@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import type { ChangeEvent, ReactNode } from 'react';
-import { Plus, Camera, Trash2, Pencil, Scale, X, TrendingUp, TrendingDown } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Plus, Camera, Trash2, Pencil, Scale, X, TrendingUp, TrendingDown, ChevronRight } from 'lucide-react';
 import { useAppData } from '../hooks/useAppData';
 import { addMeasurement, updateMeasurement, deleteMeasurement, addPhoto, deletePhoto } from '../lib/actions';
 import { PageHeader, Card, Button, EmptyState, Pill } from '../components/ui';
@@ -79,6 +80,7 @@ const emptyForm = {
 };
 
 export function BodyStats() {
+  const navigate = useNavigate();
   const { measurements, photos, weeklySchedule, workouts, exercises } = useAppData();
   const [sheetOpen, setSheetOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -318,6 +320,14 @@ export function BodyStats() {
             </>
           )}
         </p>
+
+        <button
+          onClick={() => navigate('/musculos')}
+          className="w-full flex items-center justify-center gap-1 mt-3 text-xs font-medium"
+          style={{ color: 'var(--brand)' }}
+        >
+          Ver mapa muscular completo (todos os grupos) <ChevronRight size={13} />
+        </button>
       </Card>
 
       <div className="flex items-center justify-between mb-2">
