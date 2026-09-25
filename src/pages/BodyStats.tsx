@@ -1,13 +1,14 @@
 import { useRef, useState } from 'react';
 import type { ChangeEvent, ReactNode } from 'react';
-import { Plus, Camera, Trash2, Pencil, Scale, X, TrendingUp, TrendingDown } from 'lucide-react';
+import { Plus, Camera, Trash2, Pencil, Scale, X, TrendingUp, TrendingDown, Activity, ChevronRight } from 'lucide-react';
 import { useAppData } from '../hooks/useAppData';
+import { useAuth } from '../hooks/useAuth';
+import { useProfile } from '../hooks/useProfile';
 import { addMeasurement, updateMeasurement, deleteMeasurement, addPhoto, deletePhoto } from '../lib/actions';
+import { calcImc, classifyImc, healthyWeightRangeKg } from '../lib/imc';
 import { PageHeader, Card, Button, EmptyState, Pill } from '../components/ui';
 import { Sheet } from '../components/Sheet';
-import { BodySilhouette } from '../components/BodySilhouette';
-import type { SilhouetteGender } from '../components/BodySilhouette';
-import { BodyFatSlider } from '../components/BodyFatSlider';
+import { AccountSheet } from '../components/AccountSheet';
 import type { BodyMeasurement, BodyPhoto } from '../types';
 
 const MEASURE_FIELD_DEFS: { key: keyof BodyMeasurement; label: string; unit: string }[] = [
@@ -15,8 +16,12 @@ const MEASURE_FIELD_DEFS: { key: keyof BodyMeasurement; label: string; unit: str
   { key: 'bodyFatPct', label: '% gordura', unit: '%' },
   { key: 'waistCm', label: 'cintura', unit: 'cm' },
   { key: 'chestCm', label: 'peito', unit: 'cm' },
-  { key: 'armCm', label: 'braço', unit: 'cm' },
-  { key: 'thighCm', label: 'coxa', unit: 'cm' },
+  { key: 'armLeftCm', label: 'braço esq.', unit: 'cm' },
+  { key: 'armRightCm', label: 'braço dir.', unit: 'cm' },
+  { key: 'armCm', label: 'braço', unit: 'cm' }, // medições antigas, sem separação
+  { key: 'thighLeftCm', label: 'coxa esq.', unit: 'cm' },
+  { key: 'thighRightCm', label: 'coxa dir.', unit: 'cm' },
+  { key: 'thighCm', label: 'coxa', unit: 'cm' }, // medições antigas, sem separação
   { key: 'hipCm', label: 'quadril', unit: 'cm' },
   { key: 'calfCm', label: 'panturrilha', unit: 'cm' },
 ];
@@ -30,17 +35,6 @@ function deltaLabel(curr: number, prev: number | undefined): string {
   const rounded = Math.round(diff * 10) / 10;
   const sign = rounded > 0 ? '+' : '';
   return ` (${sign}${rounded})`;
-}
-
-const SILHOUETTE_GENDER_KEY = 'fitbox-silhouette-gender';
-
-function loadSilhouetteGender(): SilhouetteGender {
-  try {
-    const saved = localStorage.getItem(SILHOUETTE_GENDER_KEY);
-    return saved === 'masculino' || saved === 'feminino' ? saved : 'feminino';
-  } catch {
-    return 'feminino';
-  }
 }
 
 function todayIso() {
@@ -63,35 +57,27 @@ const emptyForm = {
   chestCm: '',
   waistCm: '',
   hipCm: '',
-  armCm: '',
-  thighCm: '',
+  armLeftCm: '',
+  armRightCm: '',
+  thighLeftCm: '',
+  thighRightCm: '',
   calfCm: '',
 };
 
 export function BodyStats() {
   const { measurements, photos } = useAppData();
+  const { user } = useAuth();
+  const [profile, refetchProfile] = useProfile(user?.id);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [viewingPhoto, setViewingPhoto] = useState<BodyPhoto | null>(null);
-  const [silhouetteGender, setSilhouetteGender] = useState<SilhouetteGender>(loadSilhouetteGender);
-  const [silhouetteMode, setSilhouetteMode] = useState<'medidas' | 'explorar'>('medidas');
-  const [explorePct, setExplorePct] = useState<number | null>(null);
+  const [accountSheetOpen, setAccountSheetOpen] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
-
-  function changeSilhouetteGender(g: SilhouetteGender) {
-    setSilhouetteGender(g);
-    try {
-      localStorage.setItem(SILHOUETTE_GENDER_KEY, g);
-    } catch {
-      // localStorage indisponível — segue só no estado da sessão
-    }
-  }
 
   const [form, setForm] = useState(emptyForm);
 
   const sortedMeasurements = measurements.slice().sort((a, b) => b.date.localeCompare(a.date));
   const sortedPhotos = photos.slice().sort((a, b) => b.date.localeCompare(a.date));
-  const explorePctValue = explorePct ?? sortedMeasurements[0]?.bodyFatPct ?? 20;
 
   function num(v: string): number | undefined {
     const n = Number(v);
@@ -113,8 +99,10 @@ export function BodyStats() {
       chestCm: m.chestCm?.toString() ?? '',
       waistCm: m.waistCm?.toString() ?? '',
       hipCm: m.hipCm?.toString() ?? '',
-      armCm: m.armCm?.toString() ?? '',
-      thighCm: m.thighCm?.toString() ?? '',
+      armLeftCm: m.armLeftCm?.toString() ?? '',
+      armRightCm: m.armRightCm?.toString() ?? '',
+      thighLeftCm: m.thighLeftCm?.toString() ?? '',
+      thighRightCm: m.thighRightCm?.toString() ?? '',
       calfCm: m.calfCm?.toString() ?? '',
     });
     setSheetOpen(true);
@@ -128,8 +116,10 @@ export function BodyStats() {
       chestCm: num(form.chestCm),
       waistCm: num(form.waistCm),
       hipCm: num(form.hipCm),
-      armCm: num(form.armCm),
-      thighCm: num(form.thighCm),
+      armLeftCm: num(form.armLeftCm),
+      armRightCm: num(form.armRightCm),
+      thighLeftCm: num(form.thighLeftCm),
+      thighRightCm: num(form.thighRightCm),
       calfCm: num(form.calfCm),
     };
     if (editingId) {
@@ -151,7 +141,7 @@ export function BodyStats() {
   }
 
   const weightEntries = sortedMeasurements.filter((m) => m.weightKg != null);
-  const latestWeight = weightEntries[0]?.weightKg;
+  const latestWeight = weightEntries[0]?.weightKg ?? profile?.initialWeightKg ?? undefined;
   const trendCutoff = Date.now() - 28 * 24 * 60 * 60 * 1000;
   const baselineWeightEntry =
     weightEntries.find((m) => Date.parse(m.date) <= trendCutoff) ?? weightEntries[weightEntries.length - 1];
@@ -159,6 +149,11 @@ export function BodyStats() {
     weightEntries[0] && baselineWeightEntry && baselineWeightEntry.id !== weightEntries[0].id
       ? Math.round((weightEntries[0].weightKg! - baselineWeightEntry.weightKg!) * 10) / 10
       : null;
+
+  const heightCm = profile?.heightCm ?? null;
+  const imc = heightCm && latestWeight != null ? calcImc(latestWeight, heightCm) : null;
+  const imcClass = imc != null ? classifyImc(imc) : null;
+  const healthyRange = heightCm ? healthyWeightRangeKg(heightCm) : null;
 
   return (
     <div className="px-4">
@@ -199,64 +194,38 @@ export function BodyStats() {
       )}
 
       <Card className="mb-4">
-        <div className="flex items-center justify-between mb-3">
-          <p className="text-sm font-semibold" style={{ color: 'var(--text-dim)' }}>
-            Silhueta {silhouetteMode === 'medidas' ? 'atual' : 'em exploração'}
-          </p>
-          <div className="flex gap-1 rounded-full p-0.5" style={{ background: 'var(--surface-2)' }}>
-            {(['feminino', 'masculino'] as SilhouetteGender[]).map((g) => (
-              <button
-                key={g}
-                onClick={() => changeSilhouetteGender(g)}
-                className="text-xs px-2.5 py-1 rounded-full font-medium"
-                style={{
-                  background: silhouetteGender === g ? 'var(--brand)' : 'transparent',
-                  color: silhouetteGender === g ? 'white' : 'var(--text-faint)',
-                }}
-              >
-                {g === 'feminino' ? 'Feminino' : 'Masculino'}
-              </button>
-            ))}
-          </div>
+        <div className="flex items-center gap-2 mb-1">
+          <Activity size={16} style={{ color: 'var(--brand)' }} />
+          <p className="text-sm font-semibold">IMC (Índice de Massa Corporal)</p>
         </div>
 
-        <div className="flex gap-1 rounded-full p-0.5 mb-3" style={{ background: 'var(--surface-2)' }}>
-          {(['medidas', 'explorar'] as const).map((mode) => (
-            <button
-              key={mode}
-              onClick={() => setSilhouetteMode(mode)}
-              className="flex-1 text-xs px-2.5 py-1.5 rounded-full font-medium"
-              style={{
-                background: silhouetteMode === mode ? 'var(--brand)' : 'transparent',
-                color: silhouetteMode === mode ? 'white' : 'var(--text-faint)',
-              }}
-            >
-              {mode === 'medidas' ? 'Minhas medidas' : 'Explorar'}
-            </button>
-          ))}
-        </div>
-
-        <div className="flex items-center justify-center py-2" style={{ height: 220 }}>
-          {silhouetteMode === 'medidas' ? (
-            <BodySilhouette measurement={sortedMeasurements[0] ?? null} gender={silhouetteGender} />
-          ) : (
-            <BodySilhouette measurement={null} gender={silhouetteGender} bodyFatOverridePct={explorePctValue} />
-          )}
-        </div>
-
-        {silhouetteMode === 'explorar' && (
-          <div className="mb-2 px-1">
-            <BodyFatSlider value={explorePctValue} onChange={setExplorePct} />
-          </div>
+        {imc != null && imcClass ? (
+          <>
+            <div className="flex items-end gap-2 mt-1">
+              <p className="text-2xl font-semibold leading-none">{imc.toFixed(1)}</p>
+              <Pill tone="default" style={{ color: imcClass.colorVar, marginBottom: 1 }}>
+                {imcClass.label}
+              </Pill>
+            </div>
+            {healthyRange && (
+              <p className="text-xs mt-2" style={{ color: 'var(--text-faint)' }}>
+                Faixa considerada normal pra {heightCm}cm: {healthyRange[0]}–{healthyRange[1]}kg.
+              </p>
+            )}
+            <p className="text-[11px] mt-1.5" style={{ color: 'var(--text-faint)' }}>
+              Referência informativa (fórmula padrão da OMS) — não substitui avaliação profissional.
+            </p>
+          </>
+        ) : (
+          <button onClick={() => setAccountSheetOpen(true)} className="w-full text-left mt-1.5">
+            <p className="text-xs" style={{ color: 'var(--text-dim)' }}>
+              Complete sua altura e idade pra ver seu IMC calculado automaticamente aqui.
+            </p>
+            <span className="text-xs font-medium flex items-center gap-0.5 mt-1.5" style={{ color: 'var(--brand)' }}>
+              Completar perfil <ChevronRight size={13} />
+            </span>
+          </button>
         )}
-
-        <p className="text-xs text-center" style={{ color: 'var(--text-faint)' }}>
-          {silhouetteMode === 'explorar'
-            ? 'Prévia aproximada de como a silhueta muda com o % de gordura corporal — não é uma imagem real do seu corpo.'
-            : sortedMeasurements[0]
-              ? `Ilustração aproximada com base nas medidas de ${new Date(sortedMeasurements[0].date).toLocaleDateString('pt-BR')} — não é uma imagem real do seu corpo.`
-              : 'Registre suas medidas (peito, cintura, quadril, braço, coxa, panturrilha) para a silhueta refletir seu corpo.'}
-        </p>
       </Card>
 
       <div className="flex items-center justify-between mb-2">
@@ -303,6 +272,10 @@ export function BodyStats() {
                   </p>
                   <div className="flex flex-wrap gap-1.5">
                     {MEASURE_FIELD_DEFS.map(({ key, label, unit }) => {
+                      // Evita duplicar braço/coxa: só mostra o campo antigo (sem
+                      // lado) se a medição não tiver os novos campos esquerdo/direito.
+                      if (key === 'armCm' && (m.armLeftCm != null || m.armRightCm != null)) return null;
+                      if (key === 'thighCm' && (m.thighLeftCm != null || m.thighRightCm != null)) return null;
                       const value = m[key] as number | undefined;
                       if (value == null) return null;
                       const prevValue = prev?.[key] as number | undefined;
@@ -365,14 +338,20 @@ export function BodyStats() {
             <Field label="Quadril (cm)">
               <input type="number" inputMode="decimal" value={form.hipCm} onChange={(e) => setForm({ ...form, hipCm: e.target.value })} className="w-full rounded-lg px-3 py-2 text-sm" style={{ background: 'var(--surface-2)' }} />
             </Field>
-            <Field label="Braço (cm)">
-              <input type="number" inputMode="decimal" value={form.armCm} onChange={(e) => setForm({ ...form, armCm: e.target.value })} className="w-full rounded-lg px-3 py-2 text-sm" style={{ background: 'var(--surface-2)' }} />
-            </Field>
-            <Field label="Coxa (cm)">
-              <input type="number" inputMode="decimal" value={form.thighCm} onChange={(e) => setForm({ ...form, thighCm: e.target.value })} className="w-full rounded-lg px-3 py-2 text-sm" style={{ background: 'var(--surface-2)' }} />
-            </Field>
             <Field label="Panturrilha (cm)">
               <input type="number" inputMode="decimal" value={form.calfCm} onChange={(e) => setForm({ ...form, calfCm: e.target.value })} className="w-full rounded-lg px-3 py-2 text-sm" style={{ background: 'var(--surface-2)' }} />
+            </Field>
+            <Field label="Braço esquerdo (cm)">
+              <input type="number" inputMode="decimal" value={form.armLeftCm} onChange={(e) => setForm({ ...form, armLeftCm: e.target.value })} className="w-full rounded-lg px-3 py-2 text-sm" style={{ background: 'var(--surface-2)' }} />
+            </Field>
+            <Field label="Braço direito (cm)">
+              <input type="number" inputMode="decimal" value={form.armRightCm} onChange={(e) => setForm({ ...form, armRightCm: e.target.value })} className="w-full rounded-lg px-3 py-2 text-sm" style={{ background: 'var(--surface-2)' }} />
+            </Field>
+            <Field label="Coxa esquerda (cm)">
+              <input type="number" inputMode="decimal" value={form.thighLeftCm} onChange={(e) => setForm({ ...form, thighLeftCm: e.target.value })} className="w-full rounded-lg px-3 py-2 text-sm" style={{ background: 'var(--surface-2)' }} />
+            </Field>
+            <Field label="Coxa direita (cm)">
+              <input type="number" inputMode="decimal" value={form.thighRightCm} onChange={(e) => setForm({ ...form, thighRightCm: e.target.value })} className="w-full rounded-lg px-3 py-2 text-sm" style={{ background: 'var(--surface-2)' }} />
             </Field>
           </div>
           <Button full onClick={handleSave} className="mt-2">
@@ -380,6 +359,20 @@ export function BodyStats() {
           </Button>
         </div>
       </Sheet>
+
+      <AccountSheet
+        open={accountSheetOpen}
+        onClose={() => setAccountSheetOpen(false)}
+        name={profile?.name ?? 'Conta'}
+        emoji={profile?.emoji}
+        email={user?.email}
+        userId={user?.id}
+        heightCm={profile?.heightCm ?? null}
+        age={profile?.age ?? null}
+        gender={profile?.gender ?? null}
+        initialWeightKg={profile?.initialWeightKg ?? null}
+        onSaved={refetchProfile}
+      />
 
       {viewingPhoto && (
         <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/90 px-4" onClick={() => setViewingPhoto(null)}>

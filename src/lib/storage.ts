@@ -68,6 +68,10 @@ function rowToMeasurement(r: Record<string, unknown>): BodyMeasurement {
     hipCm: (r.hip_cm as number) ?? undefined,
     armCm: (r.arm_cm as number) ?? undefined,
     thighCm: (r.thigh_cm as number) ?? undefined,
+    armLeftCm: (r.arm_left_cm as number) ?? undefined,
+    armRightCm: (r.arm_right_cm as number) ?? undefined,
+    thighLeftCm: (r.thigh_left_cm as number) ?? undefined,
+    thighRightCm: (r.thigh_right_cm as number) ?? undefined,
     calfCm: (r.calf_cm as number) ?? undefined,
     notes: (r.notes as string) ?? undefined,
   };

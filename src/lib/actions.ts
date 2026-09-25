@@ -498,6 +498,10 @@ export function addMeasurement(m: Omit<BodyMeasurement, 'id'>): BodyMeasurement 
         hip_cm: measurement.hipCm,
         arm_cm: measurement.armCm,
         thigh_cm: measurement.thighCm,
+        arm_left_cm: measurement.armLeftCm,
+        arm_right_cm: measurement.armRightCm,
+        thigh_left_cm: measurement.thighLeftCm,
+        thigh_right_cm: measurement.thighRightCm,
         calf_cm: measurement.calfCm,
         notes: measurement.notes,
       })
@@ -523,6 +527,10 @@ export function updateMeasurement(id: string, patch: Partial<Omit<BodyMeasuremen
     if ('hipCm' in patch) dbPatch.hip_cm = patch.hipCm ?? null;
     if ('armCm' in patch) dbPatch.arm_cm = patch.armCm ?? null;
     if ('thighCm' in patch) dbPatch.thigh_cm = patch.thighCm ?? null;
+    if ('armLeftCm' in patch) dbPatch.arm_left_cm = patch.armLeftCm ?? null;
+    if ('armRightCm' in patch) dbPatch.arm_right_cm = patch.armRightCm ?? null;
+    if ('thighLeftCm' in patch) dbPatch.thigh_left_cm = patch.thighLeftCm ?? null;
+    if ('thighRightCm' in patch) dbPatch.thigh_right_cm = patch.thighRightCm ?? null;
     if ('calfCm' in patch) dbPatch.calf_cm = patch.calfCm ?? null;
     if ('notes' in patch) dbPatch.notes = patch.notes ?? null;
     supabase.from('measurements').update(dbPatch).eq('id', id).then(logIfError('measurements.update'));
@@ -630,4 +638,30 @@ export function setWeightGoal(goal: WeightGoal | null) {
   } else {
     supabase.from('weight_goal').upsert({ user_id: userId, goal }).then(logIfError('weight_goal.upsert'));
   }
+}
+
+// ---------- Dados básicos do perfil (altura/idade/sexo/peso inicial p/ IMC) ----------
+
+export interface ProfileBasicsPatch {
+  heightCm?: number | null;
+  age?: number | null;
+  gender?: 'masculino' | 'feminino' | null;
+  initialWeightKg?: number | null;
+}
+
+/** Perfil não faz parte do store otimista (é carregado à parte por `useProfile`),
+ * então essa gravação aguarda a confirmação do Supabase e devolve o resultado —
+ * quem chama decide como reagir a um erro (mostrar mensagem, manter sheet aberto, etc). */
+export async function updateProfileBasics(userId: string, patch: ProfileBasicsPatch): Promise<{ ok: true } | { ok: false; error: string }> {
+  const dbPatch: Record<string, unknown> = {};
+  if ('heightCm' in patch) dbPatch.height_cm = patch.heightCm ?? null;
+  if ('age' in patch) dbPatch.age = patch.age ?? null;
+  if ('gender' in patch) dbPatch.gender = patch.gender ?? null;
+  if ('initialWeightKg' in patch) dbPatch.initial_weight_kg = patch.initialWeightKg ?? null;
+  const { error } = await supabase.from('profiles').update(dbPatch).eq('id', userId);
+  if (error) {
+    console.error('Falha ao sincronizar (profiles.updateBasics):', error);
+    return { ok: false, error: error.message };
+  }
+  return { ok: true };
 }

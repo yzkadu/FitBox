@@ -21,7 +21,7 @@ function todayWeekdayKey() {
 export function Home() {
   const { workouts, sessions, exercises, activeSessionId, weeklySchedule, cardioLogs } = useAppData();
   const { user } = useAuth();
-  const profile = useProfile(user?.id);
+  const [profile, refetchProfile] = useProfile(user?.id);
   const navigate = useNavigate();
   const [switcherOpen, setSwitcherOpen] = useState(false);
 
@@ -253,6 +253,12 @@ export function Home() {
         name={profile?.name ?? 'Conta'}
         emoji={profile?.emoji}
         email={user?.email}
+        userId={user?.id}
+        heightCm={profile?.heightCm ?? null}
+        age={profile?.age ?? null}
+        gender={profile?.gender ?? null}
+        initialWeightKg={profile?.initialWeightKg ?? null}
+        onSaved={refetchProfile}
       />
     </div>
   );

@@ -89,7 +89,16 @@ export function EmptyState({ title, subtitle, action }: { title: string; subtitl
   );
 }
 
-export function Pill({ children, tone = 'default' }: { children: ReactNode; tone?: 'default' | 'brand' | 'success' | 'warn' }) {
+export function Pill({
+  children,
+  tone = 'default',
+  style,
+}: {
+  children: ReactNode;
+  tone?: 'default' | 'brand' | 'success' | 'warn';
+  /** Sobrescreve background/color pontualmente (ex: cor dinâmica de classificação de IMC) */
+  style?: CSSProperties;
+}) {
   const bg = {
     default: 'var(--surface-2)',
     brand: 'var(--brand-dim)',
@@ -103,7 +112,7 @@ export function Pill({ children, tone = 'default' }: { children: ReactNode; tone
     warn: 'var(--warn)',
   }[tone];
   return (
-    <span className="text-xs px-2 py-1 rounded-full font-medium" style={{ background: bg, color }}>
+    <span className="text-xs px-2 py-1 rounded-full font-medium" style={{ background: bg, color, ...style }}>
       {children}
     </span>
   );

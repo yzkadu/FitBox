@@ -86,7 +86,7 @@ export function Workouts() {
   const appData = useAppData();
   const { workouts, exercises } = appData;
   const { user } = useAuth();
-  const profile = useProfile(user?.id);
+  const [profile] = useProfile(user?.id);
   const navigate = useNavigate();
   const [creating, setCreating] = useState(false);
   const [mode, setMode] = useState<'manual' | 'ia'>('manual');

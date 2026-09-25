@@ -23,6 +23,10 @@ export function Auth() {
   const [name, setName] = useState('');
   const [emoji, setEmoji] = useState<string>(ICON_KEYS[0]);
   const [template, setTemplate] = useState<ProgramTemplateId>('blank');
+  const [heightCm, setHeightCm] = useState('');
+  const [age, setAge] = useState('');
+  const [gender, setGender] = useState<'masculino' | 'feminino'>('feminino');
+  const [initialWeightKg, setInitialWeightKg] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
@@ -47,7 +51,17 @@ export function Auth() {
       // acontecem em "sessões" JS completamente separadas (a pessoa fecha o app,
       // abre o e-mail, clica no link, volta e loga de novo) — então o App lê o
       // template daqui na primeira vez que a conta carrega vazia.
-      options: { data: { name: name.trim(), emoji, template } },
+      options: {
+        data: {
+          name: name.trim(),
+          emoji,
+          template,
+          heightCm: heightCm.trim(),
+          age: age.trim(),
+          gender,
+          initialWeightKg: initialWeightKg.trim(),
+        },
+      },
     });
     setSubmitting(false);
     if (error) {
@@ -72,7 +86,10 @@ export function Auth() {
     else handleSignup();
   }
 
-  const canSubmit = mode === 'login' ? email.trim() && password : email.trim() && password.length >= 6 && name.trim();
+  const canSubmit =
+    mode === 'login'
+      ? email.trim() && password
+      : email.trim() && password.length >= 6 && name.trim() && heightCm.trim() && age.trim();
 
   return (
     <div className="min-h-screen flex flex-col justify-center px-5 py-10 safe-top safe-bottom" style={{ background: 'var(--bg)' }}>
@@ -125,6 +142,60 @@ export function Auth() {
                   </button>
                 ))}
               </div>
+            </div>
+
+            <div>
+              <p className="text-xs mb-1.5" style={{ color: 'var(--text-faint)' }}>
+                Seus dados (pra calcular seu IMC automaticamente)
+              </p>
+              <div className="grid grid-cols-2 gap-2.5">
+                <input
+                  type="number"
+                  inputMode="decimal"
+                  value={heightCm}
+                  onChange={(e) => setHeightCm(e.target.value)}
+                  placeholder="Altura (cm)"
+                  className="w-full rounded-xl px-3 py-2.5 text-sm"
+                  style={{ background: 'var(--surface-2)', color: 'var(--text)' }}
+                />
+                <input
+                  type="number"
+                  inputMode="numeric"
+                  value={age}
+                  onChange={(e) => setAge(e.target.value)}
+                  placeholder="Idade"
+                  className="w-full rounded-xl px-3 py-2.5 text-sm"
+                  style={{ background: 'var(--surface-2)', color: 'var(--text)' }}
+                />
+                <input
+                  type="number"
+                  inputMode="decimal"
+                  value={initialWeightKg}
+                  onChange={(e) => setInitialWeightKg(e.target.value)}
+                  placeholder="Peso atual (kg)"
+                  className="w-full rounded-xl px-3 py-2.5 text-sm"
+                  style={{ background: 'var(--surface-2)', color: 'var(--text)' }}
+                />
+                <div className="flex gap-1 rounded-xl p-1" style={{ background: 'var(--surface-2)' }}>
+                  {(['feminino', 'masculino'] as const).map((g) => (
+                    <button
+                      type="button"
+                      key={g}
+                      onClick={() => setGender(g)}
+                      className="flex-1 text-xs rounded-lg font-medium"
+                      style={{
+                        background: gender === g ? 'var(--brand)' : 'transparent',
+                        color: gender === g ? 'white' : 'var(--text-faint)',
+                      }}
+                    >
+                      {g === 'feminino' ? 'Feminino' : 'Masculino'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <p className="text-[11px] mt-1.5" style={{ color: 'var(--text-faint)' }}>
+                Peso é opcional aqui — dá pra registrar (e atualizar) depois em Medidas.
+              </p>
             </div>
           </>
         )}

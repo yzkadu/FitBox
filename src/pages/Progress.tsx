@@ -1,29 +1,34 @@
 import { useMemo, useState } from 'react';
+import type { ReactNode } from 'react';
 import {
   BarChart,
   Bar,
-  LineChart,
-  Line,
+  AreaChart,
+  Area,
+  ReferenceArea,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
 } from 'recharts';
-import { Target, Pencil, X } from 'lucide-react';
+import { Target, Pencil, X, Flame, CalendarCheck, Scale, Activity } from 'lucide-react';
 import { useAppData } from '../hooks/useAppData';
-import { getWeeklyFrequency } from '../lib/stats';
+import { useAuth } from '../hooks/useAuth';
+import { useProfile } from '../hooks/useProfile';
+import { getWeeklyFrequency, getCurrentStreakDays, getTotalSessionsThisMonth } from '../lib/stats';
 import { assessWeightGoal } from '../lib/goal';
 import { setWeightGoal } from '../lib/actions';
-import { PageHeader, Card, EmptyState, Button } from '../components/ui';
+import { calcImc, classifyImc, healthyWeightRangeKg } from '../lib/imc';
+import { PageHeader, Card, EmptyState, Button, Pill } from '../components/ui';
 import { chartColors, seriesOrder, tooltipStyle } from '../lib/chartTheme';
 import type { BodyMeasurement, CardioLog, Session, WeeklySchedule, WeightGoal } from '../types';
 
-const MEASURE_FIELDS: { key: 'chestCm' | 'waistCm' | 'hipCm' | 'armCm' | 'thighCm'; label: string }[] = [
+const MEASURE_FIELDS: { key: 'chestCm' | 'waistCm' | 'hipCm' | 'armLeftCm' | 'thighLeftCm'; label: string }[] = [
   { key: 'waistCm', label: 'Cintura' },
   { key: 'chestCm', label: 'Peito' },
-  { key: 'armCm', label: 'Braço' },
-  { key: 'thighCm', label: 'Coxa' },
+  { key: 'armLeftCm', label: 'Braço' },
+  { key: 'thighLeftCm', label: 'Coxa' },
 ];
 
 function todayIso() {
@@ -37,6 +42,37 @@ const VERDICT_COLOR: Record<string, string> = {
   cedo: 'var(--text-dim)',
   'sem-dados': 'var(--text-dim)',
 };
+
+/** Tile compacto de estatística — usado na fileira de resumo no topo da Evolução. */
+function StatTile({
+  icon,
+  label,
+  value,
+  sub,
+  subTone,
+}: {
+  icon: ReactNode;
+  label: string;
+  value: string;
+  sub?: string;
+  subTone?: 'up' | 'down' | 'neutral';
+}) {
+  const subColor = subTone === 'up' ? 'var(--success)' : subTone === 'down' ? 'var(--danger)' : 'var(--text-faint)';
+  return (
+    <Card className="!p-3 flex-1 min-w-0">
+      <div className="flex items-center gap-1.5 mb-1.5" style={{ color: 'var(--text-faint)' }}>
+        {icon}
+        <p className="text-[11px] font-medium leading-tight">{label}</p>
+      </div>
+      <p className="text-lg font-semibold leading-none truncate">{value}</p>
+      {sub && (
+        <p className="text-[11px] mt-1 font-medium" style={{ color: subColor }}>
+          {sub}
+        </p>
+      )}
+    </Card>
+  );
+}
 
 function WeightGoalCard({
   goal,
@@ -187,6 +223,8 @@ function WeightGoalCard({
 
 export function Progress() {
   const { sessions, measurements, cardioLogs, weeklySchedule, weightGoal } = useAppData();
+  const { user } = useAuth();
+  const [profile] = useProfile(user?.id);
   const [activeFields, setActiveFields] = useState<Set<string>>(new Set(['waistCm']));
 
   const freq = useMemo(() => getWeeklyFrequency(sessions, 10), [sessions]);
@@ -195,9 +233,21 @@ export function Progress() {
     treinos: f.count,
   }));
 
-  const weightData = measurements
-    .filter((m) => m.weightKg != null)
-    .map((m) => ({ date: new Date(m.date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }), peso: m.weightKg }));
+  const sortedByDate = measurements.slice().sort((a, b) => a.date.localeCompare(b.date));
+  const weightEntries = sortedByDate.filter((m) => m.weightKg != null);
+  const weightData = weightEntries.map((m) => ({
+    date: new Date(m.date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
+    peso: m.weightKg,
+  }));
+
+  const heightCm = profile?.heightCm ?? null;
+  const imcData = heightCm
+    ? weightEntries.map((m) => ({
+        date: new Date(m.date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
+        imc: Math.round(calcImc(m.weightKg!, heightCm) * 10) / 10,
+      }))
+    : [];
+  const healthyRange = heightCm ? healthyWeightRangeKg(heightCm) : null;
 
   const measureData = measurements.map((m) => {
     const point: Record<string, number | string> = {
@@ -217,6 +267,21 @@ export function Progress() {
       return next;
     });
   }
+
+  // ---------- Resumo do topo ----------
+  const streakDays = getCurrentStreakDays(sessions, cardioLogs, weeklySchedule);
+  const monthCount = getTotalSessionsThisMonth(sessions);
+  const trendCutoff = Date.now() - 28 * 24 * 60 * 60 * 1000;
+  const baselineWeightEntry =
+    weightEntries.slice().reverse().find((m) => Date.parse(m.date) <= trendCutoff) ?? weightEntries[0];
+  const latestWeightEntry = weightEntries[weightEntries.length - 1];
+  const weightTrendKg =
+    latestWeightEntry && baselineWeightEntry && baselineWeightEntry.id !== latestWeightEntry.id
+      ? Math.round((latestWeightEntry.weightKg! - baselineWeightEntry.weightKg!) * 10) / 10
+      : null;
+  const latestWeight = latestWeightEntry?.weightKg ?? profile?.initialWeightKg ?? undefined;
+  const currentImc = heightCm && latestWeight != null ? calcImc(latestWeight, heightCm) : null;
+  const currentImcClass = currentImc != null ? classifyImc(currentImc) : null;
 
   const hasAnyData = sessions.some((s) => s.finishedAt) || measurements.length > 0;
 
@@ -239,6 +304,32 @@ export function Progress() {
   return (
     <div className="px-4 pb-6">
       <PageHeader title="Evolução" />
+
+      <div className="grid grid-cols-2 gap-2.5 mb-4">
+        <StatTile
+          icon={<Flame size={13} />}
+          label="Sequência"
+          value={`${streakDays} dia${streakDays === 1 ? '' : 's'}`}
+        />
+        <StatTile icon={<CalendarCheck size={13} />} label="Treinos/mês" value={String(monthCount)} />
+        <StatTile
+          icon={<Scale size={13} />}
+          label="Peso"
+          value={latestWeight != null ? `${latestWeight}kg` : '—'}
+          sub={
+            weightTrendKg != null && weightTrendKg !== 0
+              ? `${weightTrendKg > 0 ? '+' : ''}${weightTrendKg}kg em ~28d`
+              : undefined
+          }
+          subTone={weightTrendKg != null ? (weightTrendKg > 0 ? 'down' : 'up') : 'neutral'}
+        />
+        <StatTile
+          icon={<Activity size={13} />}
+          label="IMC"
+          value={currentImc != null ? currentImc.toFixed(1) : '—'}
+          sub={currentImcClass?.label}
+        />
+      </div>
 
       <WeightGoalCard
         goal={weightGoal}
@@ -273,7 +364,13 @@ export function Progress() {
           <p className="text-sm font-medium mb-3">Peso corporal (kg)</p>
           <div style={{ width: '100%', height: 180 }}>
             <ResponsiveContainer>
-              <LineChart data={weightData} margin={{ top: 4, right: 8, bottom: 0, left: 4 }}>
+              <AreaChart data={weightData} margin={{ top: 4, right: 8, bottom: 0, left: 4 }}>
+                <defs>
+                  <linearGradient id="weightFill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={chartColors.categorical.violet} stopOpacity={0.35} />
+                    <stop offset="100%" stopColor={chartColors.categorical.violet} stopOpacity={0} />
+                  </linearGradient>
+                </defs>
                 <CartesianGrid stroke={chartColors.gridline} vertical={false} />
                 <XAxis dataKey="date" tick={{ fill: chartColors.axis, fontSize: 11 }} axisLine={{ stroke: chartColors.gridline }} tickLine={false} />
                 <YAxis tick={{ fill: chartColors.axis, fontSize: 11 }} axisLine={false} tickLine={false} width={38} domain={['auto', 'auto']} />
@@ -283,18 +380,78 @@ export function Progress() {
                   formatter={(value) => [`${value}kg`, 'Peso']}
                   cursor={{ stroke: chartColors.gridline }}
                 />
-                <Line
+                <Area
                   type="monotone"
                   dataKey="peso"
                   stroke={chartColors.categorical.violet}
                   strokeWidth={2}
                   strokeLinecap="round"
+                  fill="url(#weightFill)"
                   dot={{ r: 3, fill: chartColors.categorical.violet, strokeWidth: 0 }}
                   activeDot={{ r: 5 }}
                 />
-              </LineChart>
+              </AreaChart>
             </ResponsiveContainer>
           </div>
+        </Card>
+      )}
+
+      {imcData.length > 0 && healthyRange && (
+        <Card className="mb-4">
+          <div className="flex items-center justify-between mb-1">
+            <p className="text-sm font-medium">Evolução do IMC</p>
+            {currentImcClass && (
+              <Pill tone="default" style={{ color: currentImcClass.colorVar }}>
+                {currentImcClass.label}
+              </Pill>
+            )}
+          </div>
+          <p className="text-xs mb-3" style={{ color: 'var(--text-faint)' }}>
+            Faixa sombreada = considerada normal pra {heightCm}cm ({healthyRange[0]}–{healthyRange[1]}kg)
+          </p>
+          <div style={{ width: '100%', height: 180 }}>
+            <ResponsiveContainer>
+              <AreaChart data={imcData} margin={{ top: 4, right: 8, bottom: 0, left: 4 }}>
+                <defs>
+                  <linearGradient id="imcFill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={chartColors.categorical.aqua} stopOpacity={0.35} />
+                    <stop offset="100%" stopColor={chartColors.categorical.aqua} stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid stroke={chartColors.gridline} vertical={false} />
+                <XAxis dataKey="date" tick={{ fill: chartColors.axis, fontSize: 11 }} axisLine={{ stroke: chartColors.gridline }} tickLine={false} />
+                <YAxis tick={{ fill: chartColors.axis, fontSize: 11 }} axisLine={false} tickLine={false} width={38} domain={['auto', 'auto']} />
+                <ReferenceArea y1={18.5} y2={24.9} fill={chartColors.status.good} fillOpacity={0.08} strokeOpacity={0} />
+                <Tooltip
+                  contentStyle={tooltipStyle}
+                  labelStyle={{ color: chartColors.textSecondary }}
+                  formatter={(value) => [value, 'IMC']}
+                  cursor={{ stroke: chartColors.gridline }}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="imc"
+                  stroke={chartColors.categorical.aqua}
+                  strokeWidth={2}
+                  strokeLinecap="round"
+                  fill="url(#imcFill)"
+                  dot={{ r: 3, fill: chartColors.categorical.aqua, strokeWidth: 0 }}
+                  activeDot={{ r: 5 }}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </Card>
+      )}
+
+      {!heightCm && (
+        <Card className="mb-4">
+          <p className="text-sm font-medium mb-1 flex items-center gap-1.5">
+            <Activity size={15} style={{ color: 'var(--brand)' }} /> Evolução do IMC
+          </p>
+          <p className="text-xs" style={{ color: 'var(--text-faint)' }}>
+            Complete sua altura em Conta (toque no seu perfil no topo da Home) pra ver esse gráfico aqui.
+          </p>
         </Card>
       )}
 
@@ -323,25 +480,26 @@ export function Progress() {
           </div>
           <div style={{ width: '100%', height: 200 }}>
             <ResponsiveContainer>
-              <LineChart data={measureData} margin={{ top: 4, right: 8, bottom: 0, left: 4 }}>
+              <AreaChart data={measureData} margin={{ top: 4, right: 8, bottom: 0, left: 4 }}>
                 <CartesianGrid stroke={chartColors.gridline} vertical={false} />
                 <XAxis dataKey="date" tick={{ fill: chartColors.axis, fontSize: 11 }} axisLine={{ stroke: chartColors.gridline }} tickLine={false} />
                 <YAxis tick={{ fill: chartColors.axis, fontSize: 11 }} axisLine={false} tickLine={false} width={38} domain={['auto', 'auto']} />
                 <Tooltip contentStyle={tooltipStyle} labelStyle={{ color: chartColors.textSecondary }} cursor={{ stroke: chartColors.gridline }} />
                 {MEASURE_FIELDS.filter((f) => activeFields.has(f.key)).map((f) => (
-                  <Line
+                  <Area
                     key={f.key}
                     type="monotone"
                     dataKey={f.key}
                     name={f.label}
                     stroke={seriesOrder[MEASURE_FIELDS.findIndex((x) => x.key === f.key) % seriesOrder.length]}
+                    fill="none"
                     strokeWidth={2}
                     strokeLinecap="round"
                     dot={{ r: 3, strokeWidth: 0 }}
                     connectNulls
                   />
                 ))}
-              </LineChart>
+              </AreaChart>
             </ResponsiveContainer>
           </div>
         </Card>

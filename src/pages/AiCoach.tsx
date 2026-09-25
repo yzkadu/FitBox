@@ -66,7 +66,7 @@ export function AiCoach() {
   const appData = useAppData();
   const { workouts, exercises } = appData;
   const { user } = useAuth();
-  const profile = useProfile(user?.id);
+  const [profile] = useProfile(user?.id);
   const [messages, setMessages] = useState<ChatEntry[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);

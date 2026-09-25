@@ -84,8 +84,14 @@ export interface BodyMeasurement {
   chestCm?: number;
   waistCm?: number;
   hipCm?: number;
+  /** @deprecated braço não é mais registrado como valor único — ver armLeftCm/armRightCm. Mantido só pra exibir medições antigas. */
   armCm?: number;
+  /** @deprecated coxa não é mais registrada como valor único — ver thighLeftCm/thighRightCm. Mantido só pra exibir medições antigas. */
   thighCm?: number;
+  armLeftCm?: number;
+  armRightCm?: number;
+  thighLeftCm?: number;
+  thighRightCm?: number;
   calfCm?: number;
   notes?: string;
 }
