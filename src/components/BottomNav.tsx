@@ -13,7 +13,7 @@ const tabs = [
 export function BottomNav() {
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 mx-auto max-w-[560px] safe-bottom border-t"
+      className="lg:hidden fixed bottom-0 left-0 right-0 mx-auto max-w-[560px] safe-bottom border-t"
       style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}
     >
       <div className="flex justify-around items-stretch">

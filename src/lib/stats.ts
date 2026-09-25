@@ -188,6 +188,43 @@ export function getCurrentStreakDays(sessions: Session[], cardioLogs: CardioLog[
   return streak;
 }
 
+/** Início (segunda-feira, 00:00) da semana atual. */
+function startOfCurrentWeek(): Date {
+  return startOfWeek(new Date());
+}
+
+/** Quantos treinos de força foram concluídos na semana atual (seg–dom). */
+export function getSessionsThisWeek(sessions: Session[]): number {
+  const start = startOfCurrentWeek();
+  return sessions.filter((s) => s.finishedAt && new Date(s.finishedAt) >= start).length;
+}
+
+/** Volume total (kg × reps, somando todas as séries concluídas) da semana atual. */
+export function getVolumeThisWeek(sessions: Session[]): number {
+  const start = startOfCurrentWeek();
+  let volume = 0;
+  for (const s of sessions) {
+    if (!s.finishedAt || new Date(s.finishedAt) < start) continue;
+    for (const se of s.exercises) {
+      for (const st of se.sets) {
+        if (st.reps > 0) volume += st.weight * st.reps;
+      }
+    }
+  }
+  return Math.round(volume);
+}
+
+/** Tempo total treinado (em minutos) na semana atual. */
+export function getTrainingMinutesThisWeek(sessions: Session[]): number {
+  const start = startOfCurrentWeek();
+  let seconds = 0;
+  for (const s of sessions) {
+    if (!s.finishedAt || new Date(s.finishedAt) < start) continue;
+    seconds += s.durationSeconds ?? 0;
+  }
+  return Math.round(seconds / 60);
+}
+
 export function getTotalSessionsThisMonth(sessions: Session[]): number {
   const now = new Date();
   return sessions.filter((s) => {

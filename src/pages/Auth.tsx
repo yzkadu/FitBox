@@ -213,7 +213,10 @@ export function Auth() {
   const canSubmit = mode === 'login' ? email.trim() && password : step < LAST_STEP ? canContinue(step) : canSubmitSignup;
 
   return (
-    <div className="min-h-screen flex flex-col px-5 py-8 safe-top safe-bottom" style={{ background: 'var(--bg)' }}>
+    <div
+      className="min-h-screen flex flex-col px-5 py-8 safe-top safe-bottom mx-auto max-w-[560px] w-full"
+      style={{ background: 'var(--bg)' }}
+    >
       {mode === 'login' ? (
         <div className="flex-1 flex flex-col justify-center">
           <div className="text-center mb-6">

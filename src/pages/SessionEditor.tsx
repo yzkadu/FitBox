@@ -63,7 +63,10 @@ export function SessionEditor() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col safe-top" style={{ background: 'var(--bg)' }}>
+    <div
+      className="min-h-screen flex flex-col safe-top mx-auto max-w-[560px] w-full"
+      style={{ background: 'var(--bg)' }}
+    >
       <div
         className="flex items-center gap-2 px-4 py-3 border-b sticky top-0 z-10"
         style={{ background: 'var(--bg)', borderColor: 'var(--border)' }}
