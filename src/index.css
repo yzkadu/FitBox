@@ -34,10 +34,27 @@
   --gold-dim: #f5c45126;
   --danger: #f87171;
 
+  --r-xs: 8px;
   --r-sm: 10px;
   --r-md: 16px;
   --r-lg: 24px;
   --r-xl: 32px;
+  --r-pill: 999px;
+
+  /* v17 — brief visual "cinematográfico": fontes de display/marca novas,
+     superfícies de vidro pro hero, e tokens de movimento — tudo aditivo,
+     nada aqui muda o valor de um token que já existia. */
+  --font-display: 'Prata', Georgia, serif;
+  --font-brand: 'Poppins', 'Hanken Grotesk', sans-serif;
+
+  --glass: rgba(20, 23, 31, 0.66);
+  --glass-strong: rgba(24, 28, 38, 0.82);
+
+  --ease-cinematic: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur-fast: 200ms;
+  --dur-medium: 320ms;
+  --dur-cinematic: 700ms;
+  --dur-hero: 1000ms;
 
   color-scheme: dark;
   font-family: 'Hanken Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Inter, sans-serif;
@@ -119,6 +136,158 @@ body {
 ::-webkit-scrollbar {
   width: 0px;
   height: 0px;
+}
+
+/* v17 — Hero cinematográfico (tela de entrada / login). Só usado em
+   Auth.tsx no estado "login"; o quiz de cadastro continua com o visual
+   de formulário normal, que precisa ser rápido de preencher. */
+.hero {
+  position: relative;
+  min-height: 100svh;
+  min-height: 100dvh;
+  width: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(ellipse 120% 80% at 50% -10%, #1c1530 0%, var(--bg-0) 55%), var(--bg-0);
+}
+
+.hero__vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 70% 55% at 50% 8%, var(--brand-glow) 0%, transparent 60%),
+    radial-gradient(ellipse 100% 60% at 50% 100%, rgba(0, 0, 0, 0.55) 0%, transparent 70%);
+}
+
+.hero__content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  width: 100%;
+  max-width: 420px;
+  padding: 0 24px;
+}
+
+.hero__eyebrow {
+  font-family: var(--font-brand);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--brand-2);
+  opacity: 0;
+  animation: heroFade var(--dur-cinematic) var(--ease-cinematic) 80ms forwards;
+}
+
+.hero__title {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(48px, 13vw, 88px);
+  line-height: 0.98;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  margin: 10px 0 0;
+  opacity: 0;
+  animation: heroRise var(--dur-hero) var(--ease-cinematic) 200ms forwards;
+}
+
+.hero__rule {
+  width: 56px;
+  height: 3px;
+  border-radius: var(--r-pill);
+  background: var(--brand);
+  margin: 18px 0;
+  transform: scaleX(0);
+  animation: heroDraw var(--dur-cinematic) var(--ease-cinematic) 480ms forwards;
+}
+
+.hero__desc {
+  font-size: 14px;
+  color: var(--text-dim);
+  max-width: 320px;
+  opacity: 0;
+  animation: heroFade var(--dur-cinematic) var(--ease-cinematic) 620ms forwards;
+}
+
+.hero__panel {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 360px;
+  margin-top: 28px;
+  padding: 20px;
+  border-radius: var(--r-xl);
+  background: var(--glass);
+  border: 1px solid var(--border-soft);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  opacity: 0;
+  animation: heroSettle var(--dur-cinematic) var(--ease-cinematic) 760ms forwards;
+}
+
+.hero__side {
+  display: none;
+}
+
+@media (min-width: 900px) {
+  .hero__side {
+    display: block;
+    position: absolute;
+    top: 50%;
+    width: 200px;
+    height: 260px;
+    border-radius: var(--r-xl);
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
+    box-shadow: 0 0 48px var(--brand-glow), 0 30px 80px rgba(0, 0, 0, 0.32);
+    opacity: 0;
+    animation: heroFade var(--dur-cinematic) var(--ease-cinematic) 900ms forwards;
+  }
+
+  .hero__side--left {
+    left: -60px;
+    transform: translateY(-50%) rotate(-8deg);
+  }
+
+  .hero__side--right {
+    right: -60px;
+    transform: translateY(-50%) rotate(8deg);
+  }
+}
+
+@keyframes heroFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes heroRise {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes heroDraw {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+@keyframes heroSettle {
+  from { opacity: 0; transform: translateY(10px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero__eyebrow, .hero__title, .hero__rule, .hero__desc, .hero__panel, .hero__side {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
 }
 
 input, textarea, select, button {

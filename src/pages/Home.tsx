@@ -33,15 +33,23 @@ function formatMinutes(mins: number): string {
   return m === 0 ? `${h}h` : `${h}h${String(m).padStart(2, '0')}`;
 }
 
-function StatTile({ icon, value, label, color }: { icon: ReactNode; value: string | number; label: string; color?: string }) {
+/** Métrica tipográfica (número grande + rótulo discreto), sem card em volta —
+ * pedido do brief visual v17: "não embrulhe todo número num card idêntico". */
+function Metric({ icon, value, label, color }: { icon: ReactNode; value: string | number; label: string; color?: string }) {
   return (
-    <Card className="flex flex-col items-center py-4">
-      <span style={{ color: color ?? 'var(--text-dim)' }}>{icon}</span>
-      <p className="text-xl lg:text-2xl font-semibold mt-1 tabular-nums">{value}</p>
-      <p className="text-[11px] text-center leading-tight mt-0.5" style={{ color: 'var(--text-faint)' }}>
-        {label}
-      </p>
-    </Card>
+    <div className="flex items-center gap-2">
+      <span className="shrink-0" style={{ color: color ?? 'var(--text-faint)' }}>
+        {icon}
+      </span>
+      <div className="min-w-0">
+        <p className="text-lg lg:text-2xl font-semibold tabular-nums leading-none" style={{ fontFamily: 'var(--font-brand)' }}>
+          {value}
+        </p>
+        <p className="text-[11px] leading-tight mt-1 truncate" style={{ color: 'var(--text-faint)' }}>
+          {label}
+        </p>
+      </div>
+    </div>
   );
 }
 
@@ -80,10 +88,16 @@ export function Home() {
     <div className="px-4 lg:px-0">
       <div className="flex items-center justify-between pt-5 pb-4 lg:pt-0 lg:pb-6">
         <div className="min-w-0">
-          <p className="text-xs font-medium capitalize" style={{ color: 'var(--text-faint)' }}>
+          <p
+            className="text-[11px] font-semibold uppercase tracking-[0.18em] truncate"
+            style={{ color: 'var(--brand-2)', fontFamily: 'var(--font-brand)' }}
+          >
             {new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}
           </p>
-          <h1 className="text-xl lg:text-2xl font-semibold mt-0.5 truncate">
+          <h1
+            className="text-3xl lg:text-4xl mt-1 truncate"
+            style={{ fontFamily: 'var(--font-display)', fontWeight: 400, letterSpacing: '-0.01em' }}
+          >
             {greeting()}
             {profile?.name ? `, ${profile.name.split(' ')[0]}` : ''}
           </h1>
@@ -217,11 +231,14 @@ export function Home() {
         </div>
       </div>
 
-      <div className="grid grid-cols-4 gap-2 lg:gap-3 mb-5">
-        <StatTile icon={<Flame size={18} />} value={streak} label={`dia${streak !== 1 ? 's' : ''} seguidos`} color="var(--warn)" />
-        <StatTile icon={<Play size={18} />} value={weekSessions} label="treinos/semana" color="var(--success)" />
-        <StatTile icon={<Zap size={18} />} value={weekVolume.toLocaleString('pt-BR')} label="kg volume/semana" color="var(--brand)" />
-        <StatTile icon={<Timer size={18} />} value={formatMinutes(weekMinutes)} label="tempo/semana" />
+      <div
+        className="grid grid-cols-2 gap-y-3 gap-x-2 lg:flex lg:items-center lg:justify-between lg:gap-2 py-4 mb-5"
+        style={{ borderTop: '1px solid var(--border-soft)', borderBottom: '1px solid var(--border-soft)' }}
+      >
+        <Metric icon={<Flame size={16} />} value={streak} label={`dia${streak !== 1 ? 's' : ''} seguidos`} color="var(--warn)" />
+        <Metric icon={<Play size={16} />} value={weekSessions} label="treinos/semana" color="var(--success)" />
+        <Metric icon={<Zap size={16} />} value={weekVolume.toLocaleString('pt-BR')} label="kg volume/semana" color="var(--brand-2)" />
+        <Metric icon={<Timer size={16} />} value={formatMinutes(weekMinutes)} label="tempo/semana" />
       </div>
 
       <p className="text-sm font-semibold mb-2.5" style={{ color: 'var(--text-dim)' }}>

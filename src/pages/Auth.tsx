@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
-import { ChevronLeft, Dumbbell } from 'lucide-react';
+import { ChevronLeft, TrendingUp, Play } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import { setPendingTemplate } from '../lib/pendingTemplate';
 import { PROGRAM_TEMPLATES, type ProgramTemplateId } from '../lib/seedPrograms';
@@ -214,70 +214,105 @@ export function Auth() {
 
   return (
     <div
-      className="min-h-screen flex flex-col px-5 py-8 safe-top safe-bottom mx-auto max-w-[560px] w-full"
+      className={
+        mode === 'login'
+          ? 'min-h-screen flex flex-col safe-top safe-bottom w-full'
+          : 'min-h-screen flex flex-col px-5 py-8 safe-top safe-bottom mx-auto max-w-[560px] w-full'
+      }
       style={{ background: 'var(--bg)' }}
     >
       {mode === 'login' ? (
-        <div className="flex-1 flex flex-col justify-center">
-          <div className="text-center mb-6">
-            <div
-              className="w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-3"
-              style={{ background: 'var(--brand-dim)' }}
-            >
-              <Dumbbell size={22} style={{ color: 'var(--brand)' }} />
+        <div className="hero">
+          <div className="hero__vignette" aria-hidden="true" />
+
+          <div className="hero__side hero__side--left" aria-hidden="true">
+            <div className="p-4 h-full flex flex-col justify-end gap-1.5">
+              <Play size={16} style={{ color: 'var(--brand-2)' }} />
+              <p className="text-xs font-medium" style={{ color: 'var(--text-2)' }}>
+                Upper A
+              </p>
+              <p className="text-[11px]" style={{ color: 'var(--text-faint)' }}>
+                6 exercícios · ~58 min
+              </p>
             </div>
-            <p className="text-2xl font-semibold mb-1">FitBox</p>
-            <p className="text-sm" style={{ color: 'var(--text-dim)' }}>
-              Entre na sua conta
-            </p>
+          </div>
+          <div className="hero__side hero__side--right" aria-hidden="true">
+            <div className="p-4 h-full flex flex-col justify-end gap-1.5">
+              <TrendingUp size={16} style={{ color: 'var(--success)' }} />
+              <p className="text-xs font-medium" style={{ color: 'var(--text-2)' }}>
+                Volume
+              </p>
+              <p className="text-[11px]" style={{ color: 'var(--text-faint)' }}>
+                +12,4% nos últimos 90 dias
+              </p>
+            </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-            <div>
-              <p className="text-xs mb-1.5" style={{ color: 'var(--text-faint)' }}>
-                E-mail
-              </p>
-              <input
-                type="email"
-                autoFocus
-                autoCapitalize="none"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="voce@email.com"
-                className="w-full rounded-xl px-3 py-2.5 text-sm"
-                style={{ background: 'var(--surface-2)', color: 'var(--text)' }}
-              />
+          <div className="hero__content">
+            <p className="hero__eyebrow">Treino · Evolução · Corpo</p>
+            <h1 className="hero__title">FitBox</h1>
+            <div className="hero__rule" />
+            <p className="hero__desc">
+              Seu personal trainer digital — monte treinos, registre séries e acompanhe cada evolução.
+            </p>
+
+            <div className="hero__panel">
+              <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+                <div>
+                  <p className="text-xs mb-1.5 text-left" style={{ color: 'var(--text-faint)' }}>
+                    E-mail
+                  </p>
+                  <input
+                    type="email"
+                    autoFocus
+                    autoCapitalize="none"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="voce@email.com"
+                    className="w-full rounded-xl px-3 py-2.5 text-sm"
+                    style={{ background: 'var(--surface-2)', color: 'var(--text)' }}
+                  />
+                </div>
+
+                <div>
+                  <p className="text-xs mb-1.5 text-left" style={{ color: 'var(--text-faint)' }}>
+                    Senha
+                  </p>
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="w-full rounded-xl px-3 py-2.5 text-sm"
+                    style={{ background: 'var(--surface-2)', color: 'var(--text)' }}
+                  />
+                </div>
+
+                {error && (
+                  <p className="text-xs rounded-lg px-3 py-2 text-left" style={{ background: '#f8717126', color: 'var(--danger)' }}>
+                    {error}
+                  </p>
+                )}
+                {info && (
+                  <p className="text-xs rounded-lg px-3 py-2 text-left" style={{ background: 'var(--success-dim)', color: 'var(--success)' }}>
+                    {info}
+                  </p>
+                )}
+
+                <Button type="submit" full disabled={!canSubmit || submitting} className="mt-1">
+                  {submitting ? 'Aguarde...' : 'Entrar'}
+                </Button>
+              </form>
+
+              <button
+                onClick={() => switchMode('signup')}
+                className="text-sm mt-4 text-center w-full"
+                style={{ color: 'var(--brand)' }}
+              >
+                Não tem conta? Criar uma
+              </button>
             </div>
-
-            <div>
-              <p className="text-xs mb-1.5" style={{ color: 'var(--text-faint)' }}>
-                Senha
-              </p>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                className="w-full rounded-xl px-3 py-2.5 text-sm"
-                style={{ background: 'var(--surface-2)', color: 'var(--text)' }}
-              />
-            </div>
-
-            {error && (
-              <p className="text-xs rounded-lg px-3 py-2" style={{ background: '#f8717126', color: 'var(--danger)' }}>
-                {error}
-              </p>
-            )}
-            {info && (
-              <p className="text-xs rounded-lg px-3 py-2" style={{ background: 'var(--success-dim)', color: 'var(--success)' }}>
-                {info}
-              </p>
-            )}
-
-            <Button type="submit" full disabled={!canSubmit || submitting} className="mt-1">
-              {submitting ? 'Aguarde...' : 'Entrar'}
-            </Button>
-          </form>
+          </div>
         </div>
       ) : (
         <div className="flex-1 flex flex-col">
@@ -529,13 +564,15 @@ export function Auth() {
         </div>
       )}
 
-      <button
-        onClick={() => switchMode(mode === 'login' ? 'signup' : 'login')}
-        className="text-sm mt-5 text-center"
-        style={{ color: 'var(--brand)' }}
-      >
-        {mode === 'login' ? 'Não tem conta? Criar uma' : 'Já tem conta? Entrar'}
-      </button>
+      {mode === 'signup' && (
+        <button
+          onClick={() => switchMode('login')}
+          className="text-sm mt-5 text-center"
+          style={{ color: 'var(--brand)' }}
+        >
+          Já tem conta? Entrar
+        </button>
+      )}
     </div>
   );
 }
