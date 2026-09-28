@@ -92,7 +92,12 @@ export interface BodyMeasurement {
   armRightCm?: number;
   thighLeftCm?: number;
   thighRightCm?: number;
+  /** @deprecated panturrilha não é mais registrada como valor único — ver calfLeftCm/calfRightCm. Mantido só pra exibir medições antigas. */
   calfCm?: number;
+  calfLeftCm?: number;
+  calfRightCm?: number;
+  forearmLeftCm?: number;
+  forearmRightCm?: number;
   notes?: string;
 }
 

@@ -503,6 +503,10 @@ export function addMeasurement(m: Omit<BodyMeasurement, 'id'>): BodyMeasurement 
         thigh_left_cm: measurement.thighLeftCm,
         thigh_right_cm: measurement.thighRightCm,
         calf_cm: measurement.calfCm,
+        calf_left_cm: measurement.calfLeftCm,
+        calf_right_cm: measurement.calfRightCm,
+        forearm_left_cm: measurement.forearmLeftCm,
+        forearm_right_cm: measurement.forearmRightCm,
         notes: measurement.notes,
       })
       .then(logIfError('measurements.insert'));
@@ -532,6 +536,10 @@ export function updateMeasurement(id: string, patch: Partial<Omit<BodyMeasuremen
     if ('thighLeftCm' in patch) dbPatch.thigh_left_cm = patch.thighLeftCm ?? null;
     if ('thighRightCm' in patch) dbPatch.thigh_right_cm = patch.thighRightCm ?? null;
     if ('calfCm' in patch) dbPatch.calf_cm = patch.calfCm ?? null;
+    if ('calfLeftCm' in patch) dbPatch.calf_left_cm = patch.calfLeftCm ?? null;
+    if ('calfRightCm' in patch) dbPatch.calf_right_cm = patch.calfRightCm ?? null;
+    if ('forearmLeftCm' in patch) dbPatch.forearm_left_cm = patch.forearmLeftCm ?? null;
+    if ('forearmRightCm' in patch) dbPatch.forearm_right_cm = patch.forearmRightCm ?? null;
     if ('notes' in patch) dbPatch.notes = patch.notes ?? null;
     supabase.from('measurements').update(dbPatch).eq('id', id).then(logIfError('measurements.update'));
   }

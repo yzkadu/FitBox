@@ -23,7 +23,11 @@ const MEASURE_FIELD_DEFS: { key: keyof BodyMeasurement; label: string; unit: str
   { key: 'thighRightCm', label: 'coxa dir.', unit: 'cm' },
   { key: 'thighCm', label: 'coxa', unit: 'cm' }, // medições antigas, sem separação
   { key: 'hipCm', label: 'quadril', unit: 'cm' },
-  { key: 'calfCm', label: 'panturrilha', unit: 'cm' },
+  { key: 'calfLeftCm', label: 'panturrilha esq.', unit: 'cm' },
+  { key: 'calfRightCm', label: 'panturrilha dir.', unit: 'cm' },
+  { key: 'calfCm', label: 'panturrilha', unit: 'cm' }, // medições antigas, sem separação
+  { key: 'forearmLeftCm', label: 'antebraço esq.', unit: 'cm' },
+  { key: 'forearmRightCm', label: 'antebraço dir.', unit: 'cm' },
 ];
 
 /** Formata a variação em relação à medição anterior (ex: "(-1.2)"), ou vazio
@@ -61,7 +65,10 @@ const emptyForm = {
   armRightCm: '',
   thighLeftCm: '',
   thighRightCm: '',
-  calfCm: '',
+  calfLeftCm: '',
+  calfRightCm: '',
+  forearmLeftCm: '',
+  forearmRightCm: '',
 };
 
 export function BodyStats() {
@@ -103,7 +110,10 @@ export function BodyStats() {
       armRightCm: m.armRightCm?.toString() ?? '',
       thighLeftCm: m.thighLeftCm?.toString() ?? '',
       thighRightCm: m.thighRightCm?.toString() ?? '',
-      calfCm: m.calfCm?.toString() ?? '',
+      calfLeftCm: m.calfLeftCm?.toString() ?? '',
+      calfRightCm: m.calfRightCm?.toString() ?? '',
+      forearmLeftCm: m.forearmLeftCm?.toString() ?? '',
+      forearmRightCm: m.forearmRightCm?.toString() ?? '',
     });
     setSheetOpen(true);
   }
@@ -120,7 +130,10 @@ export function BodyStats() {
       armRightCm: num(form.armRightCm),
       thighLeftCm: num(form.thighLeftCm),
       thighRightCm: num(form.thighRightCm),
-      calfCm: num(form.calfCm),
+      calfLeftCm: num(form.calfLeftCm),
+      calfRightCm: num(form.calfRightCm),
+      forearmLeftCm: num(form.forearmLeftCm),
+      forearmRightCm: num(form.forearmRightCm),
     };
     if (editingId) {
       updateMeasurement(editingId, payload);
@@ -276,6 +289,7 @@ export function BodyStats() {
                       // lado) se a medição não tiver os novos campos esquerdo/direito.
                       if (key === 'armCm' && (m.armLeftCm != null || m.armRightCm != null)) return null;
                       if (key === 'thighCm' && (m.thighLeftCm != null || m.thighRightCm != null)) return null;
+                      if (key === 'calfCm' && (m.calfLeftCm != null || m.calfRightCm != null)) return null;
                       const value = m[key] as number | undefined;
                       if (value == null) return null;
                       const prevValue = prev?.[key] as number | undefined;
@@ -338,8 +352,17 @@ export function BodyStats() {
             <Field label="Quadril (cm)">
               <input type="number" inputMode="decimal" value={form.hipCm} onChange={(e) => setForm({ ...form, hipCm: e.target.value })} className="w-full rounded-lg px-3 py-2 text-sm" style={{ background: 'var(--surface-2)' }} />
             </Field>
-            <Field label="Panturrilha (cm)">
-              <input type="number" inputMode="decimal" value={form.calfCm} onChange={(e) => setForm({ ...form, calfCm: e.target.value })} className="w-full rounded-lg px-3 py-2 text-sm" style={{ background: 'var(--surface-2)' }} />
+            <Field label="Panturrilha esquerda (cm)">
+              <input type="number" inputMode="decimal" value={form.calfLeftCm} onChange={(e) => setForm({ ...form, calfLeftCm: e.target.value })} className="w-full rounded-lg px-3 py-2 text-sm" style={{ background: 'var(--surface-2)' }} />
+            </Field>
+            <Field label="Panturrilha direita (cm)">
+              <input type="number" inputMode="decimal" value={form.calfRightCm} onChange={(e) => setForm({ ...form, calfRightCm: e.target.value })} className="w-full rounded-lg px-3 py-2 text-sm" style={{ background: 'var(--surface-2)' }} />
+            </Field>
+            <Field label="Antebraço esquerdo (cm)">
+              <input type="number" inputMode="decimal" value={form.forearmLeftCm} onChange={(e) => setForm({ ...form, forearmLeftCm: e.target.value })} className="w-full rounded-lg px-3 py-2 text-sm" style={{ background: 'var(--surface-2)' }} />
+            </Field>
+            <Field label="Antebraço direito (cm)">
+              <input type="number" inputMode="decimal" value={form.forearmRightCm} onChange={(e) => setForm({ ...form, forearmRightCm: e.target.value })} className="w-full rounded-lg px-3 py-2 text-sm" style={{ background: 'var(--surface-2)' }} />
             </Field>
             <Field label="Braço esquerdo (cm)">
               <input type="number" inputMode="decimal" value={form.armLeftCm} onChange={(e) => setForm({ ...form, armLeftCm: e.target.value })} className="w-full rounded-lg px-3 py-2 text-sm" style={{ background: 'var(--surface-2)' }} />

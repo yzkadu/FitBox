@@ -73,6 +73,10 @@ function rowToMeasurement(r: Record<string, unknown>): BodyMeasurement {
     thighLeftCm: (r.thigh_left_cm as number) ?? undefined,
     thighRightCm: (r.thigh_right_cm as number) ?? undefined,
     calfCm: (r.calf_cm as number) ?? undefined,
+    calfLeftCm: (r.calf_left_cm as number) ?? undefined,
+    calfRightCm: (r.calf_right_cm as number) ?? undefined,
+    forearmLeftCm: (r.forearm_left_cm as number) ?? undefined,
+    forearmRightCm: (r.forearm_right_cm as number) ?? undefined,
     notes: (r.notes as string) ?? undefined,
   };
 }

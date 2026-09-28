@@ -24,11 +24,16 @@ import { PageHeader, Card, EmptyState, Button, Pill } from '../components/ui';
 import { chartColors, seriesOrder, tooltipStyle } from '../lib/chartTheme';
 import type { BodyMeasurement, CardioLog, Session, WeeklySchedule, WeightGoal } from '../types';
 
-const MEASURE_FIELDS: { key: 'chestCm' | 'waistCm' | 'hipCm' | 'armLeftCm' | 'thighLeftCm'; label: string }[] = [
+const MEASURE_FIELDS: {
+  key: 'chestCm' | 'waistCm' | 'hipCm' | 'armLeftCm' | 'thighLeftCm' | 'calfLeftCm' | 'forearmLeftCm';
+  label: string;
+}[] = [
   { key: 'waistCm', label: 'Cintura' },
   { key: 'chestCm', label: 'Peito' },
   { key: 'armLeftCm', label: 'Braço' },
   { key: 'thighLeftCm', label: 'Coxa' },
+  { key: 'calfLeftCm', label: 'Panturrilha' },
+  { key: 'forearmLeftCm', label: 'Antebraço' },
 ];
 
 function todayIso() {
