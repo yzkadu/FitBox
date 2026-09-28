@@ -1,14 +1,18 @@
-import { useState, type ReactNode } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Play, Flame, Plus, ArrowRight, Bot, Bike, BedDouble, MessageCircle, Zap, Timer, ChevronDown } from 'lucide-react';
+import { Play, Flame, Plus, ArrowRight, Bot, Bike, BedDouble, MessageCircle, Zap, Timer, ChevronDown, Gauge } from 'lucide-react';
 import { useAppData } from '../hooks/useAppData';
 import { useAuth } from '../hooks/useAuth';
 import { useProfile } from '../hooks/useProfile';
 import { startSession } from '../lib/actions';
 import { getCurrentStreakDays, getSessionsThisWeek, getVolumeThisWeek, getTrainingMinutesThisWeek } from '../lib/stats';
 import { getTopCoachTip } from '../lib/coach';
+import { computeGroupReadiness, READINESS_COLORS, READINESS_ORDER } from '../lib/recovery';
+import type { Readiness } from '../lib/recovery';
+import { ANATOMY_GROUP_LABELS } from '../lib/anatomy';
+import type { AnatomyGroup } from '../lib/anatomy';
 import { WEEKDAY_ORDER } from '../types';
-import { Card, Button, EmptyState, AppIcon } from '../components/ui';
+import { Card, Button, EmptyState, AppIcon, Pill } from '../components/ui';
 import { AccountSheet } from '../components/AccountSheet';
 import { ImportLocalDataBanner } from '../components/ImportLocalDataBanner';
 
@@ -68,6 +72,17 @@ export function Home() {
   const coachTip = getTopCoachTip(sessions);
   const coachExercise = coachTip ? exercises.find((e) => e.id === coachTip.exerciseId) : null;
   const coachColor = coachTip?.action === 'increase' ? 'var(--success)' : coachTip?.action === 'deload' ? 'var(--warn)' : 'var(--text)';
+
+  // Card "Prontidão muscular" (v21) — resumo do heatmap de recuperação do
+  // /musculos, mostrando só os grupos mais fadigados agora. Só aparece
+  // quando já existe pelo menos um grupo com dado (senão fica vazio, sem
+  // graça, antes da pessoa ter registrado treinos suficientes).
+  const groupReadiness = useMemo(() => computeGroupReadiness(sessions, exercises), [sessions, exercises]);
+  const readinessHighlights = useMemo(() => {
+    return (Object.entries(groupReadiness) as Array<[AnatomyGroup, Readiness]>).sort(
+      (a, b) => READINESS_ORDER.indexOf(a[1]) - READINESS_ORDER.indexOf(b[1]),
+    );
+  }, [groupReadiness]);
 
   const todayKey = todayWeekdayKey();
   const todaySchedule = weeklySchedule[todayKey];
@@ -209,6 +224,27 @@ export function Home() {
             </div>
             <ArrowRight size={16} style={{ color: 'var(--text-faint)' }} />
           </Card>
+
+          {readinessHighlights.length > 0 && (
+            <Card className="mb-4 cursor-pointer" onClick={() => navigate('/musculos')}>
+              <div className="flex items-center gap-2.5 mb-2.5">
+                <div className="w-7 h-7 rounded-full flex items-center justify-center shrink-0" style={{ background: 'var(--surface-2)' }}>
+                  <Gauge size={14} style={{ color: 'var(--text-dim)' }} />
+                </div>
+                <p className="text-xs font-semibold flex-1" style={{ color: 'var(--text-dim)' }}>
+                  Prontidão muscular
+                </p>
+                <ArrowRight size={14} style={{ color: 'var(--text-faint)' }} />
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {readinessHighlights.slice(0, 5).map(([group, level]) => (
+                  <Pill key={group} style={{ color: READINESS_COLORS[level] }}>
+                    {ANATOMY_GROUP_LABELS[group]}
+                  </Pill>
+                ))}
+              </div>
+            </Card>
+          )}
 
           {coachTip && coachExercise && (
             <Card

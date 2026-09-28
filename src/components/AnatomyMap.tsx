@@ -12,6 +12,8 @@ import {
   regionKey,
 } from '../lib/anatomy';
 import type { AnatomyGender, AnatomyGroup, AnatomyModel, AnatomyView } from '../lib/anatomy';
+import { READINESS_COLORS, READINESS_LABELS, READINESS_ORDER } from '../lib/recovery';
+import type { Readiness } from '../lib/recovery';
 
 import maleFrontRegions from '../assets/anatomy/male-front.regions.svg?raw';
 import maleBackRegions from '../assets/anatomy/male-back.regions.svg?raw';
@@ -71,6 +73,12 @@ export interface AnatomyMapProps {
   /** Chamado sempre que a seleção muda, com a lista de grupos que têm pelo
    * menos uma região selecionada — usado pra filtrar a lista de exercícios. */
   onActiveGroupsChange?: (groups: AnatomyGroup[]) => void;
+  /** Quando informado, o boneco entra em modo "Prontidão": pinta cada região
+   * pela prontidão do seu grupo (verde/amarelo/laranja/vermelho, ver
+   * lib/recovery.ts), esconde os controles de seleção manual (chips,
+   * selecionar tudo/limpar) e vira só leitura — clique não seleciona nada
+   * nesse modo. Um grupo ausente do objeto fica sem cor (ainda sem dado). */
+  readiness?: Partial<Record<AnatomyGroup, Readiness>>;
   className?: string;
 }
 
@@ -79,6 +87,7 @@ export function AnatomyMap({
   gender,
   initialSelectedGroups,
   onActiveGroupsChange,
+  readiness,
   className = '',
 }: AnatomyMapProps) {
   const [selected, setSelected] = useState<Set<string>>(() => {
@@ -107,8 +116,12 @@ export function AnatomyMap({
     regions.forEach((el) => {
       const on = selected.has(regionKey(el.id));
       el.dataset.selected = on ? 'true' : 'false';
+      const group = el.dataset.muscleGroup as AnatomyGroup | undefined;
+      const r = readiness && group ? readiness[group] : undefined;
+      if (r) el.dataset.readiness = r;
+      else delete el.dataset.readiness;
     });
-  }, [selected]);
+  }, [selected, readiness]);
 
   useEffect(() => {
     if (!onActiveGroupsChange) return;
@@ -149,6 +162,7 @@ export function AnatomyMap({
   }
 
   function handleClick(e: ReactMouseEvent<HTMLDivElement>) {
+    if (readiness) return; // modo prontidão é só leitura — clique não seleciona
     const el = (e.target as Element).closest('.semantic-region');
     if (!el || !el.id) return;
     toggleRegion(regionKey(el.id));
@@ -200,11 +214,23 @@ export function AnatomyMap({
       });
   }, [selected]);
 
+  // Lista os 12 grupos ordenados por prontidão (mais fadigado primeiro), com
+  // os que ainda não têm dado registrado no fim — usado no painel de leitura
+  // do modo Prontidão (substitui o resumo de seleção do modo normal).
+  const readinessSummary = useMemo(() => {
+    if (!readiness) return [];
+    return ANATOMY_GROUP_ORDER.map((group) => ({ group, level: readiness[group] ?? null })).sort((a, b) => {
+      const ai = a.level ? READINESS_ORDER.indexOf(a.level) : READINESS_ORDER.length;
+      const bi = b.level ? READINESS_ORDER.indexOf(b.level) : READINESS_ORDER.length;
+      return ai - bi;
+    });
+  }, [readiness]);
+
   const compact = variant === 'compact';
 
   return (
     <div className={className}>
-      {!compact && (
+      {!compact && !readiness && (
         <div className="flex flex-wrap gap-1.5 mb-4">
           {ANATOMY_GROUP_ORDER.map((g) => {
             const on = keysForGroup(g).every((k) => selected.has(k));
@@ -226,7 +252,7 @@ export function AnatomyMap({
         </div>
       )}
 
-      {!compact && (
+      {!compact && !readiness && (
         <div className="flex items-center justify-center mb-3 gap-2">
           {selected.size < ALL_REGION_KEYS.length && (
             <button
@@ -248,6 +274,17 @@ export function AnatomyMap({
               Limpar seleção
             </button>
           )}
+        </div>
+      )}
+
+      {!compact && readiness && (
+        <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 mb-4">
+          {READINESS_ORDER.slice().reverse().map((r) => (
+            <span key={r} className="flex items-center gap-1.5 text-xs" style={{ color: 'var(--text-faint)' }}>
+              <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: READINESS_COLORS[r] }} />
+              {READINESS_LABELS[r]}
+            </span>
+          ))}
         </div>
       )}
 
@@ -360,42 +397,83 @@ export function AnatomyMap({
             )}
           </div>
 
-          <div className="rounded-2xl border p-4" style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
-            <div className="flex items-baseline gap-2 mb-2">
-              <span className="text-2xl font-semibold">{selected.size}</span>
-              <span className="text-xs" style={{ color: 'var(--text-faint)' }}>
-                músculo(s) selecionado(s)
-              </span>
-            </div>
-            {selectionSummary.length === 0 ? (
-              <p className="text-xs" style={{ color: 'var(--text-faint)' }}>
-                Toque num músculo (ou num chip de grupo) pra selecionar, ou use "Selecionar tudo" acima.
-              </p>
-            ) : (
-              <div className="flex flex-col">
-                {selectionSummary.map(({ key, group, niceName, side }) => (
-                  <div
-                    key={key}
-                    className="flex items-center justify-between gap-2 py-1.5 text-xs border-t first:border-t-0"
-                    style={{ borderColor: 'var(--border)' }}
-                  >
-                    <span>
-                      {(group ? ANATOMY_GROUP_LABELS[group] : '') || key} — {niceName}
-                      {side ? ` · ${side}` : ''}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => toggleRegion(key)}
-                      style={{ color: 'var(--text-faint)' }}
-                      aria-label="Remover da seleção"
-                    >
-                      ×
-                    </button>
-                  </div>
-                ))}
+          {readiness ? (
+            <div className="rounded-2xl border p-4" style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
+              <div className="flex items-baseline gap-2 mb-2">
+                <span className="text-2xl font-semibold">{Object.keys(readiness).length}</span>
+                <span className="text-xs" style={{ color: 'var(--text-faint)' }}>
+                  grupo(s) com dado de treino
+                </span>
               </div>
-            )}
-          </div>
+              {Object.keys(readiness).length === 0 ? (
+                <p className="text-xs" style={{ color: 'var(--text-faint)' }}>
+                  Ainda sem treino registrado pra calcular prontidão. Registre algumas sessões pra ver o heatmap aqui.
+                </p>
+              ) : (
+                <div className="flex flex-col">
+                  {readinessSummary.map(({ group, level }) => (
+                    <div
+                      key={group}
+                      className="flex items-center justify-between gap-2 py-1.5 text-xs border-t first:border-t-0"
+                      style={{ borderColor: 'var(--border)' }}
+                    >
+                      <span className="flex items-center gap-2">
+                        <span
+                          className="w-2.5 h-2.5 rounded-full shrink-0"
+                          style={
+                            level
+                              ? { background: READINESS_COLORS[level] }
+                              : { background: 'var(--surface-2)', border: '1px solid var(--border)' }
+                          }
+                        />
+                        {ANATOMY_GROUP_LABELS[group]}
+                      </span>
+                      <span style={{ color: level ? 'var(--text)' : 'var(--text-faint)' }}>
+                        {level ? READINESS_LABELS[level] : 'Sem dado ainda'}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="rounded-2xl border p-4" style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
+              <div className="flex items-baseline gap-2 mb-2">
+                <span className="text-2xl font-semibold">{selected.size}</span>
+                <span className="text-xs" style={{ color: 'var(--text-faint)' }}>
+                  músculo(s) selecionado(s)
+                </span>
+              </div>
+              {selectionSummary.length === 0 ? (
+                <p className="text-xs" style={{ color: 'var(--text-faint)' }}>
+                  Toque num músculo (ou num chip de grupo) pra selecionar, ou use "Selecionar tudo" acima.
+                </p>
+              ) : (
+                <div className="flex flex-col">
+                  {selectionSummary.map(({ key, group, niceName, side }) => (
+                    <div
+                      key={key}
+                      className="flex items-center justify-between gap-2 py-1.5 text-xs border-t first:border-t-0"
+                      style={{ borderColor: 'var(--border)' }}
+                    >
+                      <span>
+                        {(group ? ANATOMY_GROUP_LABELS[group] : '') || key} — {niceName}
+                        {side ? ` · ${side}` : ''}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => toggleRegion(key)}
+                        style={{ color: 'var(--text-faint)' }}
+                        aria-label="Remover da seleção"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
       </div>
