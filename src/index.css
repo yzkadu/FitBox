@@ -319,3 +319,46 @@ input[type="number"] {
 .safe-bottom {
   padding-bottom: env(safe-area-inset-bottom);
 }
+
+/* Mapa muscular (v20): estilo das regiões SVG importadas como markup bruto
+   (?raw) do pacote de assets validado no protótipo (v19). Sem isso, cada
+   <path class="muscle-region"> cai no fill padrão do SVG (preto sólido),
+   cobrindo o desenho da anatomia — bug real encontrado e corrigido antes de
+   publicar a Etapa 2. Mesmos valores do protótipo original. */
+.semantic-region .muscle-region {
+  fill: transparent;
+  stroke: transparent;
+  stroke-width: 1.15;
+  vector-effect: non-scaling-stroke;
+  cursor: pointer;
+  transition: fill 0.16s ease, stroke 0.16s ease, fill-opacity 0.16s ease;
+  pointer-events: all;
+}
+.semantic-region:hover .muscle-region {
+  fill: #7c5cff;
+  fill-opacity: 0.22;
+  stroke: #a890ff;
+  stroke-opacity: 0.5;
+}
+.semantic-region[data-selected='true'] .muscle-region {
+  fill: #7c5cff;
+  fill-opacity: 0.54;
+  stroke: #b6a6ff;
+  stroke-opacity: 0.88;
+}
+.semantic-region[data-readiness='ready'] .muscle-region {
+  fill: #78a65a;
+  fill-opacity: 0.44;
+}
+.semantic-region[data-readiness='moderate'] .muscle-region {
+  fill: #e0b12d;
+  fill-opacity: 0.46;
+}
+.semantic-region[data-readiness='fatigued'] .muscle-region {
+  fill: #d97835;
+  fill-opacity: 0.48;
+}
+.semantic-region[data-readiness='high-fatigue'] .muscle-region {
+  fill: #c34c4c;
+  fill-opacity: 0.5;
+}
