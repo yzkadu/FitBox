@@ -6,6 +6,14 @@ export type TrainingGoal = 'emagrecer' | 'ganhar_massa' | 'definicao' | 'perform
 export type ExperienceLevel = 'iniciante' | 'intermediario' | 'avancado';
 export type WeeklyFrequency = '2-3' | '4-5' | '6-7';
 export type Equipment = 'academia' | 'casa_equipamento' | 'peso_corporal';
+export type TrainingType =
+  | 'aerobico'
+  | 'calistenia'
+  | 'hirox'
+  | 'resistido'
+  | 'hipertrofia'
+  | 'funcional_crossfit'
+  | 'flexibilidade_mobilidade';
 
 interface QuizOption<T extends string> {
   id: T;
@@ -39,6 +47,16 @@ export const EQUIPMENT_OPTIONS: QuizOption<Equipment>[] = [
   { id: 'peso_corporal', label: 'Só peso do corpo', description: 'Sem equipamentos — calistenia' },
 ];
 
+export const TRAINING_TYPE_OPTIONS: QuizOption<TrainingType>[] = [
+  { id: 'resistido', label: 'Resistido', description: 'Musculação tradicional com pesos' },
+  { id: 'hipertrofia', label: 'Hipertrofia', description: 'Foco em ganho de volume muscular' },
+  { id: 'funcional_crossfit', label: 'Funcional / CrossFit', description: 'Movimentos variados, alta intensidade' },
+  { id: 'hirox', label: 'Hirox', description: 'Corrida intercalada com estações funcionais' },
+  { id: 'calistenia', label: 'Calistenia', description: 'Treino com o peso do próprio corpo' },
+  { id: 'aerobico', label: 'Aeróbico', description: 'Corrida, bike, natação e afins' },
+  { id: 'flexibilidade_mobilidade', label: 'Flexibilidade e Mobilidade', description: 'Alongamento, mobilidade articular' },
+];
+
 function findLabel<T extends string>(options: QuizOption<T>[], id: string | null | undefined): string | null {
   return options.find((o) => o.id === id)?.label ?? null;
 }
@@ -52,4 +70,11 @@ export const frequencyLabel = (id: string | null | undefined) => findLabel(FREQU
 export function equipmentLabels(ids: readonly string[] | null | undefined): string[] {
   if (!ids || ids.length === 0) return [];
   return ids.map((id) => findLabel(EQUIPMENT_OPTIONS, id)).filter((l): l is string => !!l);
+}
+
+/** Tipos de treino pretendidos — também múltipla escolha (ex: "hipertrofia" +
+ * "flexibilidade e mobilidade" ao mesmo tempo). */
+export function trainingTypeLabels(ids: readonly string[] | null | undefined): string[] {
+  if (!ids || ids.length === 0) return [];
+  return ids.map((id) => findLabel(TRAINING_TYPE_OPTIONS, id)).filter((l): l is string => !!l);
 }

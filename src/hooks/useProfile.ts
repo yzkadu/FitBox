@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
-import type { TrainingGoal, ExperienceLevel, WeeklyFrequency, Equipment } from '../lib/onboarding';
+import type { TrainingGoal, ExperienceLevel, WeeklyFrequency, Equipment, TrainingType } from '../lib/onboarding';
 
 export interface ProfileInfo {
   name: string;
@@ -16,6 +16,8 @@ export interface ProfileInfo {
    * antigas só têm a coluna legada "equipment" (um valor só); nesse caso
    * ela entra aqui como lista de 1 item. */
   equipment: Equipment[] | null;
+  /** Tipos de treino pretendidos (ver migração v6) — múltipla escolha. */
+  trainingTypes: TrainingType[] | null;
 }
 
 /** Busca os dados do usuário logado (tabela `profiles`): nome/emoji pro cabeçalho,
@@ -36,7 +38,7 @@ export function useProfile(userId: string | undefined): [ProfileInfo | null, () 
     supabase
       .from('profiles')
       .select(
-        'name, emoji, height_cm, age, gender, initial_weight_kg, training_goal, experience_level, weekly_frequency, equipment, equipment_list',
+        'name, emoji, height_cm, age, gender, initial_weight_kg, training_goal, experience_level, weekly_frequency, equipment, equipment_list, training_types',
       )
       .eq('id', userId)
       .single()
@@ -62,6 +64,9 @@ export function useProfile(userId: string | undefined): [ProfileInfo | null, () 
               : data.equipment
                 ? [data.equipment as Equipment]
                 : null,
+            trainingTypes: Array.isArray(data.training_types) && data.training_types.length > 0
+              ? (data.training_types as ProfileInfo['trainingTypes'])
+              : null,
           });
         }
       });

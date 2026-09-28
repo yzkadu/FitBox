@@ -11,10 +11,12 @@ import {
   EXPERIENCE_OPTIONS,
   FREQUENCY_OPTIONS,
   EQUIPMENT_OPTIONS,
+  TRAINING_TYPE_OPTIONS,
   type TrainingGoal,
   type ExperienceLevel,
   type WeeklyFrequency,
   type Equipment,
+  type TrainingType,
 } from '../lib/onboarding';
 
 function friendlyError(message: string): string {
@@ -95,10 +97,11 @@ function StepHeading({ title, subtitle }: { title: string; subtitle?: string }) 
 }
 
 // Passos do quiz de cadastro: objetivo -> experiência -> frequência -> equipamento
-// -> dados pro IMC -> identidade -> programa inicial -> login. Cada tela pergunta
-// uma coisa só (no estilo dos apps de fitness com onboarding em quiz), pra ficar
-// menos cru e já alimentar o Personal Trainer virtual com mais contexto desde o início.
-const SIGNUP_STEPS = 8;
+// -> tipos de treino -> dados pro IMC -> identidade -> programa inicial -> login.
+// Cada tela pergunta uma coisa só (no estilo dos apps de fitness com onboarding em
+// quiz), pra ficar menos cru e já alimentar o Personal Trainer virtual com mais
+// contexto desde o início.
+const SIGNUP_STEPS = 9;
 const LAST_STEP = SIGNUP_STEPS - 1;
 
 export function Auth() {
@@ -118,9 +121,14 @@ export function Auth() {
   const [experienceLevel, setExperienceLevel] = useState<ExperienceLevel | null>(null);
   const [weeklyFrequency, setWeeklyFrequency] = useState<WeeklyFrequency | null>(null);
   const [equipment, setEquipment] = useState<Equipment[]>([]);
+  const [trainingTypes, setTrainingTypes] = useState<TrainingType[]>([]);
 
   function toggleEquipment(id: Equipment) {
     setEquipment((cur) => (cur.includes(id) ? cur.filter((e) => e !== id) : [...cur, id]));
+  }
+
+  function toggleTrainingType(id: TrainingType) {
+    setTrainingTypes((cur) => (cur.includes(id) ? cur.filter((t) => t !== id) : [...cur, id]));
   }
 
   const [submitting, setSubmitting] = useState(false);
@@ -167,6 +175,7 @@ export function Auth() {
           experienceLevel: experienceLevel ?? '',
           weeklyFrequency: weeklyFrequency ?? '',
           equipment, // array — múltipla escolha (ver migração v5)
+          trainingTypes, // array — múltipla escolha (ver migração v6)
         },
       },
     });
@@ -197,8 +206,10 @@ export function Auth() {
       case 3:
         return equipment.length > 0;
       case 4:
-        return !!(heightCm.trim() && age.trim());
+        return trainingTypes.length > 0;
       case 5:
+        return !!(heightCm.trim() && age.trim());
+      case 6:
         return !!name.trim();
       default:
         return true;
@@ -426,6 +437,25 @@ export function Auth() {
 
               {step === 4 && (
                 <>
+                  <StepHeading
+                    title="Que tipos de treino você pretende fazer?"
+                    subtitle="Pode marcar mais de um — ajuda a personalizar suas sugestões de treino."
+                  />
+                  {TRAINING_TYPE_OPTIONS.map((o) => (
+                    <OptionCard
+                      key={o.id}
+                      label={o.label}
+                      description={o.description}
+                      selected={trainingTypes.includes(o.id)}
+                      onClick={() => toggleTrainingType(o.id)}
+                      multi
+                    />
+                  ))}
+                </>
+              )}
+
+              {step === 5 && (
+                <>
                   <StepHeading title="Seus dados" subtitle="Pra calcular seu IMC automaticamente." />
                   <div className="grid grid-cols-2 gap-2.5">
                     <input
@@ -479,7 +509,7 @@ export function Auth() {
                 </>
               )}
 
-              {step === 5 && (
+              {step === 6 && (
                 <>
                   <StepHeading title="Como podemos te chamar?" />
                   <div>
@@ -519,7 +549,7 @@ export function Auth() {
                 </>
               )}
 
-              {step === 6 && (
+              {step === 7 && (
                 <>
                   <StepHeading title="Programa inicial" subtitle="Dá pra mudar tudo depois — isso é só um ponto de partida." />
                   <div className="flex flex-col gap-2">
@@ -536,7 +566,7 @@ export function Auth() {
                 </>
               )}
 
-              {step === 7 && (
+              {step === 8 && (
                 <>
                   <StepHeading title="Falta pouco! Crie seu login" />
                   <div>
