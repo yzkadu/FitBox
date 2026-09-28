@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
-import { ChevronLeft, TrendingUp, Play } from 'lucide-react';
+import { ChevronLeft, TrendingUp, Play, Check } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import { setPendingTemplate } from '../lib/pendingTemplate';
 import { PROGRAM_TEMPLATES, type ProgramTemplateId } from '../lib/seedPrograms';
@@ -34,29 +34,46 @@ function OptionCard({
   description,
   selected,
   onClick,
+  multi,
 }: {
   label: string;
   description?: string;
   selected: boolean;
   onClick: () => void;
+  /** Mostra um indicador de caixinha (em vez de só a cor) — deixa claro que
+   * dá pra marcar mais de uma opção nesse passo. */
+  multi?: boolean;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className="text-left rounded-xl p-3.5 border w-full"
+      className="text-left rounded-xl p-3.5 border w-full flex items-center gap-3"
       style={{
         background: selected ? 'var(--brand-dim)' : 'var(--surface-2)',
         borderColor: selected ? 'var(--brand)' : 'transparent',
       }}
     >
-      <p className="text-sm font-medium" style={{ color: selected ? 'var(--brand)' : 'var(--text)' }}>
-        {label}
-      </p>
-      {description && (
-        <p className="text-xs mt-0.5" style={{ color: 'var(--text-faint)' }}>
-          {description}
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-medium" style={{ color: selected ? 'var(--brand)' : 'var(--text)' }}>
+          {label}
         </p>
+        {description && (
+          <p className="text-xs mt-0.5" style={{ color: 'var(--text-faint)' }}>
+            {description}
+          </p>
+        )}
+      </div>
+      {multi && (
+        <span
+          className="w-5 h-5 rounded-md flex items-center justify-center shrink-0 border"
+          style={{
+            background: selected ? 'var(--brand)' : 'transparent',
+            borderColor: selected ? 'var(--brand)' : 'var(--border-strong)',
+          }}
+        >
+          {selected && <Check size={13} color="white" />}
+        </span>
       )}
     </button>
   );
@@ -100,7 +117,11 @@ export function Auth() {
   const [trainingGoal, setTrainingGoal] = useState<TrainingGoal | null>(null);
   const [experienceLevel, setExperienceLevel] = useState<ExperienceLevel | null>(null);
   const [weeklyFrequency, setWeeklyFrequency] = useState<WeeklyFrequency | null>(null);
-  const [equipment, setEquipment] = useState<Equipment | null>(null);
+  const [equipment, setEquipment] = useState<Equipment[]>([]);
+
+  function toggleEquipment(id: Equipment) {
+    setEquipment((cur) => (cur.includes(id) ? cur.filter((e) => e !== id) : [...cur, id]));
+  }
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -145,7 +166,7 @@ export function Auth() {
           trainingGoal: trainingGoal ?? '',
           experienceLevel: experienceLevel ?? '',
           weeklyFrequency: weeklyFrequency ?? '',
-          equipment: equipment ?? '',
+          equipment, // array — múltipla escolha (ver migração v5)
         },
       },
     });
@@ -174,7 +195,7 @@ export function Auth() {
       case 2:
         return !!weeklyFrequency;
       case 3:
-        return !!equipment;
+        return equipment.length > 0;
       case 4:
         return !!(heightCm.trim() && age.trim());
       case 5:
@@ -386,14 +407,18 @@ export function Auth() {
 
               {step === 3 && (
                 <>
-                  <StepHeading title="Onde você vai treinar?" subtitle="Pra sugerir exercícios compatíveis com o que você tem disponível." />
+                  <StepHeading
+                    title="Onde você vai treinar?"
+                    subtitle="Pode marcar mais de uma — pra sugerir exercícios compatíveis com o que você tem disponível."
+                  />
                   {EQUIPMENT_OPTIONS.map((o) => (
                     <OptionCard
                       key={o.id}
                       label={o.label}
                       description={o.description}
-                      selected={equipment === o.id}
-                      onClick={() => setEquipment(o.id)}
+                      selected={equipment.includes(o.id)}
+                      onClick={() => toggleEquipment(o.id)}
+                      multi
                     />
                   ))}
                 </>

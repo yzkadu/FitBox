@@ -12,7 +12,10 @@ export interface ProfileInfo {
   trainingGoal: TrainingGoal | null;
   experienceLevel: ExperienceLevel | null;
   weeklyFrequency: WeeklyFrequency | null;
-  equipment: Equipment | null;
+  /** Onde a pessoa treina — múltipla escolha (ver migração v5). Contas
+   * antigas só têm a coluna legada "equipment" (um valor só); nesse caso
+   * ela entra aqui como lista de 1 item. */
+  equipment: Equipment[] | null;
 }
 
 /** Busca os dados do usuário logado (tabela `profiles`): nome/emoji pro cabeçalho,
@@ -33,7 +36,7 @@ export function useProfile(userId: string | undefined): [ProfileInfo | null, () 
     supabase
       .from('profiles')
       .select(
-        'name, emoji, height_cm, age, gender, initial_weight_kg, training_goal, experience_level, weekly_frequency, equipment',
+        'name, emoji, height_cm, age, gender, initial_weight_kg, training_goal, experience_level, weekly_frequency, equipment, equipment_list',
       )
       .eq('id', userId)
       .single()
@@ -54,7 +57,11 @@ export function useProfile(userId: string | undefined): [ProfileInfo | null, () 
             trainingGoal: (data.training_goal as ProfileInfo['trainingGoal']) ?? null,
             experienceLevel: (data.experience_level as ProfileInfo['experienceLevel']) ?? null,
             weeklyFrequency: (data.weekly_frequency as ProfileInfo['weeklyFrequency']) ?? null,
-            equipment: (data.equipment as ProfileInfo['equipment']) ?? null,
+            equipment: Array.isArray(data.equipment_list) && data.equipment_list.length > 0
+              ? (data.equipment_list as ProfileInfo['equipment'])
+              : data.equipment
+                ? [data.equipment as Equipment]
+                : null,
           });
         }
       });

@@ -46,4 +46,10 @@ function findLabel<T extends string>(options: QuizOption<T>[], id: string | null
 export const goalLabel = (id: string | null | undefined) => findLabel(GOAL_OPTIONS, id);
 export const experienceLabel = (id: string | null | undefined) => findLabel(EXPERIENCE_OPTIONS, id);
 export const frequencyLabel = (id: string | null | undefined) => findLabel(FREQUENCY_OPTIONS, id);
-export const equipmentLabel = (id: string | null | undefined) => findLabel(EQUIPMENT_OPTIONS, id);
+
+/** Onde treinar agora é múltipla escolha (ex: "academia" + "casa com
+ * equipamentos") — devolve os rótulos de todas as opções marcadas. */
+export function equipmentLabels(ids: readonly string[] | null | undefined): string[] {
+  if (!ids || ids.length === 0) return [];
+  return ids.map((id) => findLabel(EQUIPMENT_OPTIONS, id)).filter((l): l is string => !!l);
+}
