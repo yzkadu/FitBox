@@ -1,11 +1,25 @@
 import { useState } from 'react';
 import { Download } from 'lucide-react';
 import { Card, Button, AppIcon } from './ui';
-import { findLocalBackups, importBackupToAccount, type LocalBackup } from '../lib/importLocal';
+import { findLocalBackups, importBackupToAccount, exportBackupAsJson, markImported, type LocalBackup } from '../lib/importLocal';
 import { store } from '../lib/storage';
 
+const COUNT_LABELS: { key: keyof LocalBackup['counts']; singular: string; plural: string }[] = [
+  { key: 'workouts', singular: 'treino', plural: 'treinos' },
+  { key: 'sessions', singular: 'sessão', plural: 'sessões' },
+  { key: 'measurements', singular: 'medição', plural: 'medições' },
+  { key: 'photos', singular: 'foto', plural: 'fotos' },
+  { key: 'cardioLogs', singular: 'cardio', plural: 'cardios' },
+];
+
+function countsSummary(counts: LocalBackup['counts']): string {
+  return COUNT_LABELS.filter((c) => counts[c.key] > 0)
+    .map((c) => `${counts[c.key]} ${counts[c.key] === 1 ? c.singular : c.plural}`)
+    .join(' · ');
+}
+
 export function ImportLocalDataBanner({ userId }: { userId: string }) {
-  const [backups] = useState<LocalBackup[]>(() => findLocalBackups());
+  const [backups, setBackups] = useState<LocalBackup[]>(() => findLocalBackups());
   const [importingId, setImportingId] = useState<string | null>(null);
   const [dismissed, setDismissed] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -17,8 +31,12 @@ export function ImportLocalDataBanner({ userId }: { userId: string }) {
     setErrorMsg(null);
     try {
       await importBackupToAccount(userId, backup.data);
+      // Só marca como importado (e para de aparecer de novo) depois de confirmar
+      // sucesso — se der erro, o backup local continua intacto e ainda listado,
+      // pra dar pra tentar de novo sem perder nada.
+      markImported(backup.profileId);
       await store.loadForUser(userId);
-      setDismissed(true);
+      setBackups((prev) => prev.filter((b) => b.profileId !== backup.profileId));
     } catch (e) {
       console.error('Falha ao importar dados locais:', e);
       setErrorMsg('Não foi possível importar agora. Tenta de novo em instantes.');
@@ -40,19 +58,36 @@ export function ImportLocalDataBanner({ userId }: { userId: string }) {
           </p>
         </div>
       </div>
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-3">
         {backups.map((b) => (
-          <div key={b.profileId} className="flex items-center justify-between gap-2">
-            <span className="text-sm truncate flex items-center gap-1.5">
-              <AppIcon value={b.profile.emoji} size={14} /> {b.profile.name}
-            </span>
-            <Button
-              className="!px-3 !py-1.5 !text-xs shrink-0"
-              onClick={() => handleImport(b)}
-              disabled={importingId !== null}
-            >
-              {importingId === b.profileId ? 'Importando...' : 'Importar'}
-            </Button>
+          <div key={b.profileId} className="flex flex-col gap-1.5">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-sm truncate flex items-center gap-1.5">
+                <AppIcon value={b.profile.emoji} size={14} /> {b.profile.name}
+              </span>
+            </div>
+            {countsSummary(b.counts) && (
+              <p className="text-xs" style={{ color: 'var(--text-faint)' }}>
+                {countsSummary(b.counts)}
+              </p>
+            )}
+            <div className="flex items-center gap-2">
+              <Button
+                className="!px-3 !py-1.5 !text-xs shrink-0"
+                onClick={() => handleImport(b)}
+                disabled={importingId !== null}
+              >
+                {importingId === b.profileId ? 'Importando...' : 'Importar para minha conta'}
+              </Button>
+              <Button
+                variant="secondary"
+                className="!px-3 !py-1.5 !text-xs shrink-0"
+                onClick={() => exportBackupAsJson(b)}
+                disabled={importingId !== null}
+              >
+                Exportar backup JSON
+              </Button>
+            </div>
           </div>
         ))}
       </div>
@@ -62,7 +97,7 @@ export function ImportLocalDataBanner({ userId }: { userId: string }) {
         </p>
       )}
       <button onClick={() => setDismissed(true)} className="text-xs mt-3" style={{ color: 'var(--text-faint)' }}>
-        Ignorar
+        Agora não
       </button>
     </Card>
   );
