@@ -65,6 +65,13 @@ export const goalLabel = (id: string | null | undefined) => findLabel(GOAL_OPTIO
 export const experienceLabel = (id: string | null | undefined) => findLabel(EXPERIENCE_OPTIONS, id);
 export const frequencyLabel = (id: string | null | undefined) => findLabel(FREQUENCY_OPTIONS, id);
 
+/** Objetivo principal também é múltipla escolha (ex: "emagrecer" + "saúde e
+ * bem-estar" ao mesmo tempo) — devolve os rótulos de todos os marcados. */
+export function goalLabels(ids: readonly string[] | null | undefined): string[] {
+  if (!ids || ids.length === 0) return [];
+  return ids.map((id) => findLabel(GOAL_OPTIONS, id)).filter((l): l is string => !!l);
+}
+
 /** Onde treinar agora é múltipla escolha (ex: "academia" + "casa com
  * equipamentos") — devolve os rótulos de todas as opções marcadas. */
 export function equipmentLabels(ids: readonly string[] | null | undefined): string[] {

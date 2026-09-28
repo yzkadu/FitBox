@@ -117,11 +117,15 @@ export function Auth() {
   const [age, setAge] = useState('');
   const [gender, setGender] = useState<'masculino' | 'feminino'>('feminino');
   const [initialWeightKg, setInitialWeightKg] = useState('');
-  const [trainingGoal, setTrainingGoal] = useState<TrainingGoal | null>(null);
+  const [trainingGoals, setTrainingGoals] = useState<TrainingGoal[]>([]);
   const [experienceLevel, setExperienceLevel] = useState<ExperienceLevel | null>(null);
   const [weeklyFrequency, setWeeklyFrequency] = useState<WeeklyFrequency | null>(null);
   const [equipment, setEquipment] = useState<Equipment[]>([]);
   const [trainingTypes, setTrainingTypes] = useState<TrainingType[]>([]);
+
+  function toggleTrainingGoal(id: TrainingGoal) {
+    setTrainingGoals((cur) => (cur.includes(id) ? cur.filter((g) => g !== id) : [...cur, id]));
+  }
 
   function toggleEquipment(id: Equipment) {
     setEquipment((cur) => (cur.includes(id) ? cur.filter((e) => e !== id) : [...cur, id]));
@@ -171,7 +175,8 @@ export function Auth() {
           age: age.trim(),
           gender,
           initialWeightKg: initialWeightKg.trim(),
-          trainingGoal: trainingGoal ?? '',
+          trainingGoal: trainingGoals[0] ?? '', // legado, compatibilidade (ver migração v8)
+          trainingGoals, // array — múltipla escolha (ver migração v8)
           experienceLevel: experienceLevel ?? '',
           weeklyFrequency: weeklyFrequency ?? '',
           equipment, // array — múltipla escolha (ver migração v5)
@@ -198,7 +203,7 @@ export function Auth() {
   function canContinue(s: number): boolean {
     switch (s) {
       case 0:
-        return !!trainingGoal;
+        return trainingGoals.length > 0;
       case 1:
         return !!experienceLevel;
       case 2:
@@ -373,14 +378,18 @@ export function Auth() {
             <div className="flex-1 flex flex-col gap-2">
               {step === 0 && (
                 <>
-                  <StepHeading title="Qual é o seu objetivo principal?" subtitle="Isso ajuda o Personal Trainer virtual a te orientar melhor." />
+                  <StepHeading
+                    title="Qual é o seu objetivo principal?"
+                    subtitle="Pode marcar mais de um — isso ajuda o Personal Trainer virtual a te orientar melhor."
+                  />
                   {GOAL_OPTIONS.map((o) => (
                     <OptionCard
                       key={o.id}
                       label={o.label}
                       description={o.description}
-                      selected={trainingGoal === o.id}
-                      onClick={() => setTrainingGoal(o.id)}
+                      selected={trainingGoals.includes(o.id)}
+                      onClick={() => toggleTrainingGoal(o.id)}
+                      multi
                     />
                   ))}
                 </>
@@ -558,7 +567,7 @@ export function Auth() {
                   {template === 'smart' ? (
                     (() => {
                       const plan = recommendProgram({
-                        goal: trainingGoal,
+                        goal: trainingGoals[0] ?? null,
                         experience: experienceLevel,
                         frequency: weeklyFrequency,
                         equipment,

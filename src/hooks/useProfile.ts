@@ -9,7 +9,10 @@ export interface ProfileInfo {
   age: number | null;
   gender: 'masculino' | 'feminino' | null;
   initialWeightKg: number | null;
-  trainingGoal: TrainingGoal | null;
+  /** Objetivo principal — múltipla escolha (ver migração v8). Contas antigas
+   * só têm a coluna legada "training_goal" (um valor só); nesse caso ela
+   * entra aqui como lista de 1 item. */
+  trainingGoals: TrainingGoal[] | null;
   experienceLevel: ExperienceLevel | null;
   weeklyFrequency: WeeklyFrequency | null;
   /** Onde a pessoa treina — múltipla escolha (ver migração v5). Contas
@@ -38,7 +41,7 @@ export function useProfile(userId: string | undefined): [ProfileInfo | null, () 
     supabase
       .from('profiles')
       .select(
-        'name, emoji, height_cm, age, gender, initial_weight_kg, training_goal, experience_level, weekly_frequency, equipment, equipment_list, training_types',
+        'name, emoji, height_cm, age, gender, initial_weight_kg, training_goal, training_goal_list, experience_level, weekly_frequency, equipment, equipment_list, training_types',
       )
       .eq('id', userId)
       .single()
@@ -56,7 +59,11 @@ export function useProfile(userId: string | undefined): [ProfileInfo | null, () 
             age: data.age ?? null,
             gender: (data.gender as ProfileInfo['gender']) ?? null,
             initialWeightKg: data.initial_weight_kg ?? null,
-            trainingGoal: (data.training_goal as ProfileInfo['trainingGoal']) ?? null,
+            trainingGoals: Array.isArray(data.training_goal_list) && data.training_goal_list.length > 0
+              ? (data.training_goal_list as ProfileInfo['trainingGoals'])
+              : data.training_goal
+                ? [data.training_goal as TrainingGoal]
+                : null,
             experienceLevel: (data.experience_level as ProfileInfo['experienceLevel']) ?? null,
             weeklyFrequency: (data.weekly_frequency as ProfileInfo['weeklyFrequency']) ?? null,
             equipment: Array.isArray(data.equipment_list) && data.equipment_list.length > 0
