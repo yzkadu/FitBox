@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { MouseEvent as ReactMouseEvent } from 'react';
 import {
+  ALL_REGION_KEYS,
   ANATOMY_GROUP_LABELS,
   ANATOMY_GROUP_ORDER,
   ANATOMY_VIEWBOX,
@@ -40,18 +41,6 @@ const POSES: Array<{ model: AnatomyModel; view: AnatomyView; label: string }> = 
   { model: 'female', view: 'back', label: 'Costas' },
 ];
 
-const GENDER_STORAGE_KEY = 'fitbox-anatomy-gender';
-
-function loadStoredGender(): AnatomyGender {
-  try {
-    const saved = localStorage.getItem(GENDER_STORAGE_KEY);
-    if (saved === 'masculino' || saved === 'feminino') return saved;
-  } catch {
-    // localStorage indisponível — segue no padrão
-  }
-  return 'masculino';
-}
-
 /** Todas as regionKeys que pertencem a um grupo (usado tanto pra pré-selecionar
  * os grupos do treino de hoje quanto pro toggle de um chip de filtro). */
 function keysForGroup(group: AnatomyGroup): string[] {
@@ -69,9 +58,13 @@ interface HoveredInfo {
 
 export interface AnatomyMapProps {
   /** 'full': boneco + chips de filtro + painel de inspeção/seleção (tela /musculos).
-   * 'compact': só o boneco + toggle de gênero, pensado pra caber num card menor. */
+   * 'compact': só o boneco, pensado pra caber num card menor. */
   variant?: 'full' | 'compact';
-  initialGender?: AnatomyGender;
+  /** Qual boneco mostrar (masculino/feminino) — segue sempre o campo `gender`
+   * salvo no perfil da conta (diretriz permanente do projeto, ver v18 no doc),
+   * nunca uma escolha manual da pessoa vendo a tela. Quem chama decide o
+   * fallback pra perfil ainda sem gênero salvo. */
+  gender: AnatomyGender;
   /** Pré-seleciona todas as regiões desses grupos ao montar (ex: grupos do
    * treino do dia). Só lido na primeira renderização. */
   initialSelectedGroups?: AnatomyGroup[];
@@ -83,12 +76,11 @@ export interface AnatomyMapProps {
 
 export function AnatomyMap({
   variant = 'full',
-  initialGender,
+  gender,
   initialSelectedGroups,
   onActiveGroupsChange,
   className = '',
 }: AnatomyMapProps) {
-  const [gender, setGender] = useState<AnatomyGender>(() => initialGender ?? loadStoredGender());
   const [selected, setSelected] = useState<Set<string>>(() => {
     if (!initialSelectedGroups || initialSelectedGroups.length === 0) return new Set();
     const groupSet = new Set(initialSelectedGroups);
@@ -103,19 +95,11 @@ export function AnatomyMap({
   const tooltipRef = useRef<HTMLDivElement>(null);
   const hoveredIdRef = useRef<string | null>(null);
 
-  function changeGender(g: AnatomyGender) {
-    setGender(g);
-    try {
-      localStorage.setItem(GENDER_STORAGE_KEY, g);
-    } catch {
-      // localStorage indisponível — segue só na sessão
-    }
-  }
-
-  // As 4 poses ficam sempre montadas (só a dupla do gênero ativo fica
-  // visível) — assim a seleção nunca "pisca" ao trocar de gênero. Como as
-  // regiões são HTML bruto (dangerouslySetInnerHTML), sincronizamos
-  // data-selected imperativamente sempre que a seleção muda.
+  // As 4 poses ficam sempre montadas (só a dupla do gênero da conta fica
+  // visível) — assim, se o perfil ainda estiver carregando quando o gênero
+  // certo chegar, a seleção não "pisca". Como as regiões são HTML bruto
+  // (dangerouslySetInnerHTML), sincronizamos data-selected imperativamente
+  // sempre que a seleção muda.
   useEffect(() => {
     const root = viewerRef.current;
     if (!root) return;
@@ -154,6 +138,14 @@ export function AnatomyMap({
       keys.forEach((k) => (allOn ? next.delete(k) : next.add(k)));
       return next;
     });
+  }
+
+  function selectAll() {
+    setSelected(new Set(ALL_REGION_KEYS));
+  }
+
+  function clearSelection() {
+    setSelected(new Set());
   }
 
   function handleClick(e: ReactMouseEvent<HTMLDivElement>) {
@@ -234,34 +226,30 @@ export function AnatomyMap({
         </div>
       )}
 
-      <div className="flex items-center justify-center mb-3 gap-2">
-        <div className="flex gap-1 rounded-full p-0.5" style={{ background: 'var(--surface-2)' }}>
-          {(['masculino', 'feminino'] as AnatomyGender[]).map((g) => (
+      {!compact && (
+        <div className="flex items-center justify-center mb-3 gap-2">
+          {selected.size < ALL_REGION_KEYS.length && (
             <button
-              key={g}
               type="button"
-              onClick={() => changeGender(g)}
+              onClick={selectAll}
               className="text-xs px-3 py-1.5 rounded-full font-medium"
-              style={{
-                background: gender === g ? 'var(--brand)' : 'transparent',
-                color: gender === g ? 'white' : 'var(--text-faint)',
-              }}
+              style={{ background: 'var(--surface-2)', color: 'var(--text-faint)' }}
             >
-              {g === 'masculino' ? 'Masculino' : 'Feminino'}
+              Selecionar tudo
             </button>
-          ))}
+          )}
+          {selected.size > 0 && (
+            <button
+              type="button"
+              onClick={clearSelection}
+              className="text-xs px-3 py-1.5 rounded-full font-medium"
+              style={{ background: 'var(--surface-2)', color: 'var(--text-faint)' }}
+            >
+              Limpar seleção
+            </button>
+          )}
         </div>
-        {!compact && selected.size > 0 && (
-          <button
-            type="button"
-            onClick={() => setSelected(new Set())}
-            className="text-xs px-3 py-1.5 rounded-full font-medium"
-            style={{ background: 'var(--surface-2)', color: 'var(--text-faint)' }}
-          >
-            Limpar seleção
-          </button>
-        )}
-      </div>
+      )}
 
       <div className={compact ? '' : 'lg:grid lg:grid-cols-[1.3fr_1fr] lg:gap-4 lg:items-start'}>
       <div
@@ -381,7 +369,7 @@ export function AnatomyMap({
             </div>
             {selectionSummary.length === 0 ? (
               <p className="text-xs" style={{ color: 'var(--text-faint)' }}>
-                Toque num músculo (ou num chip de grupo) pra selecionar. A seleção persiste ao trocar Masculino/Feminino.
+                Toque num músculo (ou num chip de grupo) pra selecionar, ou use "Selecionar tudo" acima.
               </p>
             ) : (
               <div className="flex flex-col">

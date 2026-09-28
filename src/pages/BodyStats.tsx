@@ -292,7 +292,7 @@ export function BodyStats() {
         )}
         <AnatomyMap
           variant="compact"
-          initialGender={profile?.gender ?? undefined}
+          gender={profile?.gender ?? 'masculino'}
           initialSelectedGroups={todayAnatomyGroups}
         />
       </Card>

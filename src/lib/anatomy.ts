@@ -191,6 +191,10 @@ export const REGION_GROUP: Record<string, AnatomyGroup> = {
   'back-hamstrings-right-lateral': 'hamstrings',
 };
 
+/** Todas as regionKeys existentes (union dos dois gêneros, já sem prefixo) —
+ * usado pro botão "Selecionar tudo" do mapa muscular. */
+export const ALL_REGION_KEYS: string[] = Object.keys(REGION_GROUP);
+
 /** Grupo grande do catálogo de exercícios (`Exercise.muscleGroup`) que cada
  * AnatomyGroup novo corresponde — usado pra listar exercícios do catálogo na
  * tela /musculos. Vários grupos finos caem no mesmo grupo grande (ex.

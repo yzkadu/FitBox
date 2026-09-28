@@ -1,5 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useAppData } from '../hooks/useAppData';
+import { useAuth } from '../hooks/useAuth';
+import { useProfile } from '../hooks/useProfile';
 import { PageHeader, Card } from '../components/ui';
 import { AnatomyMap } from '../components/AnatomyMap';
 import { ANATOMY_GROUP_LABELS, ANATOMY_GROUP_TO_MUSCLE_GROUP } from '../lib/anatomy';
@@ -16,6 +18,8 @@ import { MUSCLE_GROUP_LABELS } from '../lib/exercises';
  * um aviso na tela quando isso se aplica. */
 export function MuscleMap() {
   const { exercises } = useAppData();
+  const { user } = useAuth();
+  const [profile] = useProfile(user?.id);
   const [activeGroups, setActiveGroups] = useState<AnatomyGroup[]>([]);
 
   const { matchedExercises, unmappedGroups } = useMemo(() => {
@@ -50,7 +54,7 @@ export function MuscleMap() {
       </p>
 
       <Card className="mb-4">
-        <AnatomyMap onActiveGroupsChange={setActiveGroups} />
+        <AnatomyMap onActiveGroupsChange={setActiveGroups} gender={profile?.gender ?? 'masculino'} />
       </Card>
 
       {activeGroups.length === 0 ? (
