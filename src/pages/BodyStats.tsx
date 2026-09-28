@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import type { ChangeEvent, ReactNode } from 'react';
-import { Plus, Camera, Trash2, Pencil, Scale, X, TrendingUp, TrendingDown, Activity, ChevronRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Plus, Camera, Trash2, Pencil, Scale, X, TrendingUp, TrendingDown, Activity, ChevronRight, PersonStanding } from 'lucide-react';
 import { useAppData } from '../hooks/useAppData';
 import { useAuth } from '../hooks/useAuth';
 import { useProfile } from '../hooks/useProfile';
@@ -9,7 +10,11 @@ import { calcImc, classifyImc, healthyWeightRangeKg } from '../lib/imc';
 import { PageHeader, Card, Button, EmptyState, Pill } from '../components/ui';
 import { Sheet } from '../components/Sheet';
 import { AccountSheet } from '../components/AccountSheet';
-import type { BodyMeasurement, BodyPhoto } from '../types';
+import { AnatomyMap } from '../components/AnatomyMap';
+import { MUSCLE_GROUP_TO_ANATOMY_GROUPS } from '../lib/anatomy';
+import type { AnatomyGroup } from '../lib/anatomy';
+import type { BodyMeasurement, BodyPhoto, Weekday } from '../types';
+import { WEEKDAY_ORDER } from '../types';
 
 const MEASURE_FIELD_DEFS: { key: keyof BodyMeasurement; label: string; unit: string }[] = [
   { key: 'weightKg', label: '', unit: 'kg' },
@@ -45,6 +50,11 @@ function todayIso() {
   return new Date().toISOString().slice(0, 10);
 }
 
+function todayWeekdayKey(): Weekday {
+  const jsDay = new Date().getDay();
+  return WEEKDAY_ORDER[(jsDay + 6) % 7];
+}
+
 function fileToDataUrl(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -72,9 +82,10 @@ const emptyForm = {
 };
 
 export function BodyStats() {
-  const { measurements, photos } = useAppData();
+  const { measurements, photos, weeklySchedule, workouts, exercises } = useAppData();
   const { user } = useAuth();
   const [profile, refetchProfile] = useProfile(user?.id);
+  const navigate = useNavigate();
   const [sheetOpen, setSheetOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [viewingPhoto, setViewingPhoto] = useState<BodyPhoto | null>(null);
@@ -168,6 +179,21 @@ export function BodyStats() {
   const imcClass = imc != null ? classifyImc(imc) : null;
   const healthyRange = heightCm ? healthyWeightRangeKg(heightCm) : null;
 
+  // Grupo(s) muscular(es) do treino programado para hoje (agenda semanal),
+  // pra destacar no mapa muscular — mesmo padrão usado na Home.
+  const todayKey = todayWeekdayKey();
+  const todaySchedule = weeklySchedule[todayKey];
+  const todayWorkout = todaySchedule?.kind === 'treino' ? workouts.find((w) => w.id === todaySchedule.workoutId) : null;
+  const exerciseById = new Map(exercises.map((ex) => [ex.id, ex]));
+  const todayAnatomyGroups: AnatomyGroup[] = todayWorkout
+    ? Array.from(
+        new Set(
+          todayWorkout.exercises
+            .flatMap((we) => MUSCLE_GROUP_TO_ANATOMY_GROUPS[exerciseById.get(we.exerciseId)?.muscleGroup ?? 'outro'] ?? [])
+        )
+      )
+    : [];
+
   return (
     <div className="px-4">
       <PageHeader
@@ -239,6 +265,36 @@ export function BodyStats() {
             </span>
           </button>
         )}
+      </Card>
+
+      <Card className="mb-4">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <PersonStanding size={16} style={{ color: 'var(--brand)' }} />
+            <p className="text-sm font-semibold">Mapa muscular</p>
+          </div>
+          <button
+            onClick={() => navigate('/musculos')}
+            className="text-xs font-medium flex items-center gap-0.5"
+            style={{ color: 'var(--brand)' }}
+          >
+            Ver completo <ChevronRight size={13} />
+          </button>
+        </div>
+        {todayAnatomyGroups.length > 0 ? (
+          <p className="text-xs mb-3" style={{ color: 'var(--text-faint)' }}>
+            Grupos do treino de hoje ({todayWorkout?.name}) destacados abaixo.
+          </p>
+        ) : (
+          <p className="text-xs mb-3" style={{ color: 'var(--text-faint)' }}>
+            Nenhum treino de força programado pra hoje — toque num músculo abaixo pra explorar.
+          </p>
+        )}
+        <AnatomyMap
+          variant="compact"
+          initialGender={profile?.gender ?? undefined}
+          initialSelectedGroups={todayAnatomyGroups}
+        />
       </Card>
 
       <div className="flex items-center justify-between mb-2">

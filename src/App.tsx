@@ -11,6 +11,7 @@ import { History } from './pages/History';
 import { ExerciseDetail } from './pages/ExerciseDetail';
 import { Progress } from './pages/Progress';
 import { BodyStats } from './pages/BodyStats';
+import { MuscleMap } from './pages/MuscleMap';
 import { Cardio } from './pages/Cardio';
 import { ProgramLibrary } from './pages/ProgramLibrary';
 import { AiCoach } from './pages/AiCoach';
@@ -93,6 +94,7 @@ export default function App() {
           <Route path="/exercicio/:exerciseId" element={<ExerciseDetail />} />
           <Route path="/evolucao" element={<Progress />} />
           <Route path="/medidas" element={<BodyStats />} />
+          <Route path="/musculos" element={<MuscleMap />} />
           <Route path="/cardio" element={<Cardio />} />
           <Route path="/programas" element={<ProgramLibrary />} />
           <Route path="/treinador" element={<AiCoach />} />
