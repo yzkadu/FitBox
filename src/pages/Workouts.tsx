@@ -364,7 +364,7 @@ export function Workouts() {
           {mode === 'manual' ? (
             <>
               <p className="text-sm font-medium mb-2">Novo treino</p>
-              <div className="flex gap-2 mb-3">
+              <div className="flex gap-2 mb-3 flex-wrap">
                 {ICON_KEYS.map((k) => (
                   <button
                     key={k}

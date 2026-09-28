@@ -158,21 +158,12 @@ export function seedInferiorDuploHybridProgram() {
   setDaySchedule('dom', { kind: 'cardio', suggestedDistanceKm: 3 });
 }
 
-export type ProgramTemplateId = 'blank' | 'ppl-hybrid' | 'inferior-duplo-hybrid';
-
-export const PROGRAM_TEMPLATES: { id: ProgramTemplateId; name: string; description: string }[] = [
-  { id: 'blank', name: 'Perfil em branco', description: 'Monte seus próprios treinos do zero.' },
-  {
-    id: 'ppl-hybrid',
-    name: 'Programa híbrido (força + corrida/bike)',
-    description: '5 dias de força (Push/Pull/Legs/Upper/Lower), domingo de cardio e sábado de descanso.',
-  },
-  {
-    id: 'inferior-duplo-hybrid',
-    name: 'Programa híbrido (2 dias de inferior + corrida)',
-    description: 'Seg push, ter pull, qua inferior, qui superior completo, sex inferior completo, sáb descanso, dom corrida (meta de 3km).',
-  },
-];
+// 'ppl-hybrid' e 'inferior-duplo-hybrid' eram as 2 opções fixas de template
+// que a pessoa escolhia manualmente no cadastro — substituídas por 'smart'
+// (ver lib/programRecommendation.ts: plano montado na hora com base nas
+// respostas do quiz). Mantidos aqui só por compatibilidade com metadados de
+// contas que já estavam com um desses valores pendente no momento da troca.
+export type ProgramTemplateId = 'blank' | 'smart' | 'ppl-hybrid' | 'inferior-duplo-hybrid';
 
 export function applyProgramTemplate(templateId: ProgramTemplateId) {
   if (templateId === 'ppl-hybrid') seedPplHybridProgram();

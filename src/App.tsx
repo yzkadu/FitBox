@@ -20,6 +20,8 @@ import { store } from './lib/storage';
 import { applyProgramTemplate } from './lib/seedPrograms';
 import type { ProgramTemplateId } from './lib/seedPrograms';
 import { takePendingTemplate } from './lib/pendingTemplate';
+import { applyRecommendedProgram } from './lib/programRecommendation';
+import type { Equipment, ExperienceLevel, TrainingGoal, TrainingType, WeeklyFrequency } from './lib/onboarding';
 
 function Splash() {
   return (
@@ -52,7 +54,20 @@ export default function App() {
       // caímos pro template salvo nos metadados do usuário no momento do cadastro.
       const metaTemplate = session.user.user_metadata?.template as ProgramTemplateId | undefined;
       const pendingTemplate = takePendingTemplate() ?? metaTemplate ?? null;
-      if (isEmpty && pendingTemplate && pendingTemplate !== 'blank') {
+      if (isEmpty && pendingTemplate === 'smart') {
+        // Plano montado com regras a partir das respostas do quiz (ver
+        // lib/programRecommendation.ts) — os dados já foram enviados junto
+        // no cadastro (options.data do signUp), então dá pra reconstruir o
+        // plano aqui mesmo sem precisar buscar o perfil de novo.
+        const meta = session.user.user_metadata ?? {};
+        applyRecommendedProgram({
+          goal: (meta.trainingGoal as TrainingGoal) || null,
+          experience: (meta.experienceLevel as ExperienceLevel) || null,
+          frequency: (meta.weeklyFrequency as WeeklyFrequency) || null,
+          equipment: (meta.equipment as Equipment[]) ?? [],
+          trainingTypes: (meta.trainingTypes as TrainingType[]) ?? [],
+        });
+      } else if (isEmpty && pendingTemplate && pendingTemplate !== 'blank') {
         applyProgramTemplate(pendingTemplate);
       }
       setDataReady(true);

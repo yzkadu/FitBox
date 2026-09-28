@@ -3,7 +3,7 @@ import type { FormEvent } from 'react';
 import { ChevronLeft, TrendingUp, Play, Check } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import { setPendingTemplate } from '../lib/pendingTemplate';
-import { PROGRAM_TEMPLATES, type ProgramTemplateId } from '../lib/seedPrograms';
+import { recommendProgram } from '../lib/programRecommendation';
 import { Button, AppIcon } from '../components/ui';
 import { ICON_KEYS } from '../lib/workoutIcons';
 import {
@@ -112,7 +112,7 @@ export function Auth() {
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [emoji, setEmoji] = useState<string>(ICON_KEYS[0]);
-  const [template, setTemplate] = useState<ProgramTemplateId>('blank');
+  const [template, setTemplate] = useState<'smart' | 'blank'>('smart');
   const [heightCm, setHeightCm] = useState('');
   const [age, setAge] = useState('');
   const [gender, setGender] = useState<'masculino' | 'feminino'>('feminino');
@@ -551,18 +551,74 @@ export function Auth() {
 
               {step === 7 && (
                 <>
-                  <StepHeading title="Programa inicial" subtitle="Dá pra mudar tudo depois — isso é só um ponto de partida." />
-                  <div className="flex flex-col gap-2">
-                    {PROGRAM_TEMPLATES.map((t) => (
+                  <StepHeading
+                    title="Seu plano inicial"
+                    subtitle="Montamos isso com base no que você respondeu — dá pra mudar tudo depois."
+                  />
+                  {template === 'smart' ? (
+                    (() => {
+                      const plan = recommendProgram({
+                        goal: trainingGoal,
+                        experience: experienceLevel,
+                        frequency: weeklyFrequency,
+                        equipment,
+                        trainingTypes,
+                      });
+                      return (
+                        <div className="flex flex-col gap-3">
+                          <div className="rounded-xl p-3.5" style={{ background: 'var(--brand-dim)' }}>
+                            <p className="text-sm font-semibold" style={{ color: 'var(--brand)' }}>
+                              {plan.splitLabel}
+                            </p>
+                            <div className="flex flex-col gap-1 mt-2">
+                              {plan.summaryLines.map((line, i) => (
+                                <p key={i} className="text-xs" style={{ color: 'var(--text-dim)' }}>
+                                  {line}
+                                </p>
+                              ))}
+                            </div>
+                          </div>
+                          <div className="flex flex-wrap gap-1.5">
+                            {plan.workouts.map((w) => (
+                              <span
+                                key={w.name}
+                                className="text-xs px-2.5 py-1 rounded-lg flex items-center gap-1.5"
+                                style={{ background: 'var(--surface-2)', color: 'var(--text-dim)' }}
+                              >
+                                <AppIcon value={w.icon} size={13} />
+                                {w.name}
+                              </span>
+                            ))}
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setTemplate('blank')}
+                            className="text-xs underline self-start mt-1"
+                            style={{ color: 'var(--text-faint)' }}
+                          >
+                            Prefiro montar do zero
+                          </button>
+                        </div>
+                      );
+                    })()
+                  ) : (
+                    <div className="flex flex-col gap-3">
                       <OptionCard
-                        key={t.id}
-                        label={t.name}
-                        description={t.description}
-                        selected={template === t.id}
-                        onClick={() => setTemplate(t.id)}
+                        label="Perfil em branco"
+                        description="Monte seus próprios treinos do zero, sem nenhuma sugestão."
+                        selected
+                        onClick={() => {}}
                       />
-                    ))}
-                  </div>
+                      <button
+                        type="button"
+                        onClick={() => setTemplate('smart')}
+                        className="text-xs underline self-start"
+                        style={{ color: 'var(--text-faint)' }}
+                      >
+                        Prefiro usar o plano sugerido
+                      </button>
+                    </div>
+                  )}
                 </>
               )}
 
