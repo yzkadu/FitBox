@@ -12,7 +12,7 @@ import type { Readiness } from '../lib/recovery';
 import { ANATOMY_GROUP_LABELS } from '../lib/anatomy';
 import type { AnatomyGroup } from '../lib/anatomy';
 import { WEEKDAY_ORDER, WEEKDAY_LABELS } from '../types';
-import { findNextScheduledTraining, hasCompletedScheduledActivityToday } from '../lib/nextTraining';
+import { findNextScheduledTraining, hasCompletedScheduledActivityToday, getCombinedTrainingProgress } from '../lib/nextTraining';
 import { Card, Button, EmptyState, AppIcon, Pill } from '../components/ui';
 import { AccountSheet } from '../components/AccountSheet';
 import { ImportLocalDataBanner } from '../components/ImportLocalDataBanner';
@@ -87,8 +87,9 @@ export function Home() {
 
   const todayKey = todayWeekdayKey();
   const todaySchedule = weeklySchedule[todayKey];
-  const todayWorkout = todaySchedule?.kind === 'treino' ? workouts.find((w) => w.id === todaySchedule.workoutId) : null;
+  const todayWorkout = todaySchedule?.kind === 'treino' || todaySchedule?.kind === 'combo' ? workouts.find((w) => w.id === todaySchedule.workoutId) : null;
   const completedToday = hasCompletedScheduledActivityToday(todaySchedule, sessions, cardioLogs);
+  const comboProgress = todaySchedule?.kind === 'combo' ? getCombinedTrainingProgress(todaySchedule, sessions, cardioLogs) : null;
   const nextTraining = completedToday ? findNextScheduledTraining(weeklySchedule, workouts) : null;
 
   const lastFinished = sessions
@@ -151,6 +152,59 @@ export function Home() {
             </Card>
           )}
 
+          {!activeSessionId && todaySchedule?.kind === 'combo' && todayWorkout && !completedToday && (
+            <Card className="mb-4" style={{ borderColor: 'var(--brand)' }}>
+              <p className="text-sm font-semibold mb-1">Treino combinado de hoje</p>
+              <p className="text-xs mb-3" style={{ color: 'var(--text-dim)' }}>
+                Corrida leve primeiro → musculação depois. Faça as duas etapas para concluir o dia.
+              </p>
+              <div className="flex flex-col gap-2">
+                <button type="button" onClick={() => navigate('/cardio')}
+                  className="w-full rounded-xl px-3 py-3 text-left flex items-center gap-3"
+                  style={{ background: 'var(--surface-2)' }}>
+                  <span className="w-7 h-7 rounded-full grid place-items-center shrink-0"
+                    style={{ background: comboProgress?.cardioDone ? 'var(--success)' : 'var(--brand)', color: '#fff' }}>
+                    {comboProgress?.cardioDone ? <Check size={14}/> : <span className="text-xs font-bold">1</span>}
+                  </span>
+                  <span className="flex-1 min-w-0">
+                    <span className="block font-semibold text-sm">
+                      {comboProgress?.cardioDone ? 'Corrida registrada' : 'Etapa 1 · Correr e registrar'}
+                    </span>
+                    <span className="block text-xs mt-0.5" style={{ color: 'var(--text-faint)' }}>
+                      {todaySchedule.label ?? 'Corrida confortável'}
+                      {todaySchedule.suggestedDurationMin ? ` · ~${todaySchedule.suggestedDurationMin} min` : ''}
+                      {todaySchedule.suggestedDistanceKm ? ` · ref. ${todaySchedule.suggestedDistanceKm} km` : ''}
+                    </span>
+                  </span>
+                  <ArrowRight size={16} style={{ color: 'var(--text-faint)' }}/>
+                </button>
+                <button type="button" onClick={() => handleStart(todayWorkout.id)}
+                  disabled={!comboProgress?.cardioDone || !!comboProgress.strengthDone || todayWorkout.exercises.length === 0}
+                  className="w-full rounded-xl px-3 py-3 text-left flex items-center gap-3 disabled:opacity-50"
+                  style={{ background: 'var(--surface-2)' }}>
+                  <span className="w-7 h-7 rounded-full grid place-items-center shrink-0"
+                    style={{ background: comboProgress?.strengthDone ? 'var(--success)' : 'var(--brand)', color: '#fff' }}>
+                    {comboProgress?.strengthDone ? <Check size={14}/> : <span className="text-xs font-bold">2</span>}
+                  </span>
+                  <span className="flex-1 min-w-0">
+                    <span className="block font-semibold text-sm">
+                      {comboProgress?.strengthDone ? 'Musculação concluída' : 'Etapa 2 · Musculação'}
+                    </span>
+                    <span className="block text-xs mt-0.5" style={{ color: 'var(--text-faint)' }}>
+                      {todayWorkout.name}{!comboProgress?.cardioDone ? ' · liberada após registrar a corrida' : ''}
+                    </span>
+                  </span>
+                  <Play size={15} style={{ color: 'var(--brand)' }}/>
+                </button>
+              </div>
+              {comboProgress?.strengthDone && !comboProgress.cardioDone && (
+                <p className="text-xs mt-2" style={{ color: 'var(--warn)' }}>
+                  Musculação já realizada: registre a corrida de hoje para completar o combo.
+                </p>
+              )}
+            </Card>
+          )}
+
           {!activeSessionId && !completedToday && todaySchedule?.kind === 'treino' && todayWorkout && (
             <Card className="mb-4 flex items-center gap-3" style={{ borderColor: 'var(--brand)' }}>
               <span
@@ -204,7 +258,7 @@ export function Home() {
                 <div className="flex items-center gap-3">
                   <span className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
                     style={{ background: 'var(--brand-dim)', color: 'var(--brand)' }}>
-                    {nextTraining.kind === 'treino'
+                    {nextTraining.kind !== 'cardio'
                       ? <AppIcon value={nextTraining.workout.emoji} size={18} />
                       : <Bike size={18} />}
                   </span>
@@ -213,10 +267,10 @@ export function Home() {
                       Próximo treino · {nextTraining.daysUntil === 1 ? 'Amanhã' : WEEKDAY_LABELS[nextTraining.weekday]}
                     </p>
                     <p className="text-sm font-medium truncate">
-                      {nextTraining.kind === 'treino' ? nextTraining.workout.name : (nextTraining.label ?? 'Cardio')}
+                      {nextTraining.kind === 'cardio' ? (nextTraining.label ?? 'Cardio') : nextTraining.kind === 'combo' ? `Corrida → ${nextTraining.workout.name}` : nextTraining.workout.name}
                     </p>
                   </div>
-                  {nextTraining.kind === 'treino' ? (
+                  {nextTraining.kind !== 'cardio' ? (
                     <button aria-label="Ver próximo treino" onClick={() => navigate(`/treinos/${nextTraining.workout.id}`)}
                       className="w-10 h-10 rounded-full flex items-center justify-center"
                       style={{ background: 'var(--brand)', color: 'white' }}><ArrowRight size={16} /></button>
