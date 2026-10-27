@@ -10,6 +10,8 @@ import { PageHeader, Card, Button, EmptyState, Pill } from '../components/ui';
 import { Sheet } from '../components/Sheet';
 import { PhotoField } from '../components/PhotoField';
 import { chartColors, tooltipStyle } from '../lib/chartTheme';
+import { CARDIO_PRESETS, cardioPresetLogNotes, type CardioPreset } from '../lib/cardioPresets';
+import { CardioPresetCard } from '../components/CardioPresetCard';
 import { WEEKDAY_ORDER } from '../types';
 import type { CardioActivityType, CardioLog } from '../types';
 
@@ -48,6 +50,7 @@ export function Cardio() {
   const navigate = useNavigate();
   const { cardioLogs, weeklySchedule } = useAppData();
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [activePreset, setActivePreset] = useState<string | null>(null);
 
   const todaySchedule = weeklySchedule[todayWeekdayKey()];
   const todayActivities = getActivitiesForDay(todaySchedule);
@@ -66,6 +69,23 @@ export function Cardio() {
   });
   const [proofPhoto, setProofPhoto] = useState<string | undefined>(undefined);
 
+  function registerPreset(preset: CardioPreset) {
+    // Pré-preenche o registro mas NÃO grava atividade não realizada.
+    // Distância fica em branco até o usuário informar um valor medido.
+    setActivePreset(preset.id);
+    setProofPhoto(undefined);
+    setForm({
+      date: todayIso(),
+      type: 'corrida', // compatível com o enum atual do banco; descrito como caminhada em notas
+      durationMin: String(preset.durationMin),
+      distanceKm: '',
+      avgHeartRate: '',
+      rpe: '',
+      notes: cardioPresetLogNotes(preset),
+    });
+    setSheetOpen(true);
+  }
+
   function openSheet() {
     if (cardioPlan && form.date === todayIso()) {
       setForm((f) => ({
@@ -81,7 +101,7 @@ export function Cardio() {
 
   const runProgress = useMemo(() => {
     return cardioLogs
-      .filter((c) => c.type === 'corrida' && c.distanceKm && c.distanceKm > 0)
+      .filter((c) => c.type === 'corrida' && !isInclineTreadmillPreset(c) && c.distanceKm && c.distanceKm > 0)
       .slice()
       .sort((a, b) => a.date.localeCompare(b.date))
       .map((c) => ({
@@ -117,6 +137,7 @@ export function Cardio() {
       proofPhotoDataUrl: proofPhoto,
     });
     setSheetOpen(false);
+    setActivePreset(null);
     setForm({ ...form, durationMin: '', distanceKm: '', avgHeartRate: '', rpe: '', notes: '' });
     setProofPhoto(undefined);
     if (combinedToday && form.date === todayIso()) navigate('/');
@@ -151,6 +172,14 @@ export function Cardio() {
           </div>
         </Card>
       )}
+
+      <div className="flex items-center justify-between gap-2 mb-2.5">
+        <p className="text-sm font-semibold" style={{color:'var(--text-dim)'}}>Treinos prontos de cardio</p>
+        <span className="text-[11px]" style={{color:'var(--brand)'}}>Guias por etapas</span>
+      </div>
+      {CARDIO_PRESETS.map(preset => (
+        <CardioPresetCard key={preset.id} preset={preset} onRegister={registerPreset}/>
+      ))}
 
       {cardioLogs.length > 0 && (
         <div className="grid grid-cols-3 gap-2.5 mb-5">
@@ -271,8 +300,16 @@ export function Cardio() {
         </div>
       )}
 
-      <Sheet open={sheetOpen} onClose={() => setSheetOpen(false)} title="Registrar atividade">
+      <Sheet open={sheetOpen} onClose={() => {setSheetOpen(false);setActivePreset(null);}} title="Registrar atividade">
         <div className="flex flex-col gap-3">
+          {activePreset && (
+            <div className="rounded-xl px-3 py-2.5 text-xs" style={{background:'var(--brand-dim)',color:'var(--text-dim)'}}>
+              <p className="font-semibold mb-1" style={{color:'var(--brand)'}}>Esteira inclinada · caminhada</p>
+              <p>O FitBox usa a categoria técnica “Corrida” para registrar esteira,
+                mas esta atividade é uma caminhada inclinada e aparece identificada assim no histórico.
+                Informe a distância somente se a esteira a tiver medido.</p>
+            </div>
+          )}
           <div className="flex flex-wrap gap-2">
             {ALL_CARDIO_TYPES.map((t) => {
               const meta = TYPE_META[t];
@@ -378,6 +415,10 @@ export function Cardio() {
   );
 }
 
+function isInclineTreadmillPreset(log: CardioLog) {
+  return log.notes?.startsWith('Treino pronto: Esteira inclinada · 20 minutos.') ?? false;
+}
+
 function CardioRow({ log, onDelete }: { log: CardioLog; onDelete: () => void }) {
   const meta = TYPE_META[log.type];
   const Icon = meta.icon;
@@ -393,7 +434,7 @@ function CardioRow({ log, onDelete }: { log: CardioLog; onDelete: () => void }) 
           {new Date(log.date).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}
         </p>
         <div className="flex flex-wrap gap-1.5">
-          <Pill tone="brand">{meta.label}</Pill>
+          <Pill tone="brand">{isInclineTreadmillPreset(log) ? 'Esteira inclinada' : meta.label}</Pill>
           <Pill>{log.durationMin} min</Pill>
           {log.distanceKm != null && <Pill>{log.distanceKm} km</Pill>}
           {pace && <Pill>{pace}</Pill>}
