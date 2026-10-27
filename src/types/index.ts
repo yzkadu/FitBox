@@ -140,10 +140,11 @@ export const WEEKDAY_LABELS: Record<Weekday, string> = {
   dom: 'Domingo',
 };
 
-/** O que fazer em um dia da semana: treinar (um Workout específico), cardio, ou descansar */
+/** Programação diária: treino de força, cardio, ambos em ordem, ou descanso. */
 export type DaySchedule =
   | { kind: 'treino'; workoutId: string }
   | { kind: 'cardio'; suggestedDistanceKm?: number; label?: string }
+  | { kind: 'combo'; workoutId: string; order: 'cardio-first'; suggestedDistanceKm?: number; suggestedDurationMin?: number; label?: string }
   | { kind: 'descanso' };
 
 export type WeeklySchedule = Partial<Record<Weekday, DaySchedule>>;
