@@ -1,152 +1,270 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronRight, Check } from 'lucide-react';
+import { ChevronRight, Check, CalendarDays, Info, Clock, Target, SlidersHorizontal } from 'lucide-react';
 import { PageHeader, Card, Button, Pill, AppIcon } from '../components/ui';
 import { Sheet } from '../components/Sheet';
+import { useAuth } from '../hooks/useAuth';
+import { useProfile } from '../hooks/useProfile';
+import { WEEKDAY_LABELS } from '../types';
 import {
-  READY_PROGRAMS,
-  GOAL_LABELS,
-  SPLIT_LABELS,
-  applyReadyProgram,
-  type ProgramGoal,
-  type SplitLength,
-  type ReadyProgram,
+  READY_PROGRAMS, GOAL_LABELS, SPLIT_LABELS, PLACE_LABELS, LEVEL_LABELS,
+  applyReadyProgram, programPlace,
+  type ProgramGoal, type ProgramPlace, type ProgramLevel, type SplitLength, type ReadyProgram,
 } from '../lib/readyPrograms';
 import { BUILTIN_EXERCISES } from '../lib/exercises';
 
-const GOAL_FILTERS: ProgramGoal[] = ['hipertrofia', 'emagrecimento', 'calistenia', 'core'];
+const GOAL_FILTERS: ProgramGoal[] = [
+  'hibrido', 'emagrecimento', 'hipertrofia', 'corrida', 'calistenia', 'funcional', 'core', 'mobilidade',
+];
+const PLACE_FILTERS: ProgramPlace[] = ['academia', 'misto', 'peso_corporal', 'casa_equipamento', 'ar_livre'];
+const LEVEL_FILTERS: ProgramLevel[] = ['iniciante', 'intermediario', 'avancado'];
 const SPLIT_FILTERS: SplitLength[] = ['unico', 'ab', 'abc', 'abcd', 'abcde'];
+const WEEKDAYS = ['seg', 'ter', 'qua', 'qui', 'sex', 'sab', 'dom'] as const;
+
+function fitScore(p: ReadyProgram, user: {
+  experienceLevel?: string | null;
+  equipment?: string[] | null;
+  trainingGoals?: string[] | null;
+  trainingTypes?: string[] | null;
+}): number {
+  let score = 0;
+  const place = programPlace(p);
+  const eq = user.equipment ?? [];
+  if (place === 'peso_corporal') score += 1;
+  if (place === 'academia' && eq.includes('academia')) score += 3;
+  if (place === 'misto' && eq.includes('academia')) score += 3;
+  if (place === 'casa_equipamento' && eq.includes('casa_equipamento')) score += 3;
+  if (place === 'ar_livre' && (user.trainingTypes ?? []).includes('aerobico')) score += 3;
+  if (p.level === user.experienceLevel) score += 2;
+  if (p.level === 'intermediario' && user.experienceLevel === 'iniciante') score -= 4;
+  if ((user.trainingGoals ?? []).includes('emagrecer') && ['emagrecimento', 'hibrido', 'corrida'].includes(p.goal)) score += 3;
+  if ((user.trainingGoals ?? []).includes('ganhar_massa') && p.goal === 'hipertrofia') score += 3;
+  if ((user.trainingGoals ?? []).includes('performance') && ['hibrido', 'corrida'].includes(p.goal)) score += 2;
+  if ((user.trainingTypes ?? []).includes('hirox') && p.id.includes('hyrox')) score += 6;
+  if ((user.trainingTypes ?? []).includes('aerobico') && ['corrida', 'hibrido'].includes(p.goal)) score += 2;
+  if ((user.trainingTypes ?? []).includes('calistenia') && p.goal === 'calistenia') score += 3;
+  return score;
+}
 
 export function ProgramLibrary() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const [profile] = useProfile(user?.id);
   const [goalFilter, setGoalFilter] = useState<ProgramGoal | null>(null);
+  const [placeFilter, setPlaceFilter] = useState<ProgramPlace | null>(null);
+  const [levelFilter, setLevelFilter] = useState<ProgramLevel | null>(null);
   const [splitFilter, setSplitFilter] = useState<SplitLength | null>(null);
   const [preview, setPreview] = useState<ReadyProgram | null>(null);
-  const [applied, setApplied] = useState(false);
+  const [appliedMode, setAppliedMode] = useState<'treinos' | 'agenda' | null>(null);
   const [applying, setApplying] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const filtered = useMemo(() => {
-    return READY_PROGRAMS.filter((p) => (!goalFilter || p.goal === goalFilter) && (!splitFilter || p.split === splitFilter));
-  }, [goalFilter, splitFilter]);
+    return READY_PROGRAMS
+      .filter((p) => (!goalFilter || p.goal === goalFilter) &&
+        (!placeFilter || programPlace(p) === placeFilter) &&
+        (!levelFilter || p.level === levelFilter || (!p.level && levelFilter === 'intermediario')) &&
+        (!splitFilter || p.split === splitFilter))
+      .map((p, index) => ({ p, index, score: profile ? fitScore(p, profile) : 0 }))
+      .sort((a, b) => b.score - a.score || a.index - b.index)
+      .map((entry) => entry.p);
+  }, [goalFilter, placeFilter, levelFilter, splitFilter, profile]);
 
   function openPreview(p: ReadyProgram) {
-    setApplied(false);
+    setAppliedMode(null);
+    setError(null);
     setPreview(p);
   }
 
-  function handleApply() {
-    if (!preview || applying) return;
+  function handleApply(withSchedule: boolean) {
+    if (!preview || applying || appliedMode) return;
     setApplying(true);
+    setError(null);
     try {
-      applyReadyProgram(preview.id);
-      setApplied(true);
+      const created = applyReadyProgram(preview.id, { applySchedule: withSchedule });
+      if (created.length !== preview.days.length) {
+        setError('Não foi possível montar o programa. Tente novamente.');
+        return;
+      }
+      setAppliedMode(withSchedule ? 'agenda' : 'treinos');
+    } catch {
+      setError('Ocorreu um erro ao criar os treinos. Verifique sua conexão e tente novamente.');
     } finally {
       setApplying(false);
     }
   }
 
-  function goToWorkouts() {
-    setPreview(null);
-    navigate('/treinos');
-  }
-
   return (
-    <div className="px-4">
+    <div className="px-4 lg:px-0">
       <PageHeader title="Programas prontos" />
-
-      <p className="text-xs mb-4" style={{ color: 'var(--text-faint)' }}>
-        Escolha um objetivo e quantos dias por semana você quer treinar. Aplicar um programa só cria os
-        treinos — depois é só encaixar os dias na Programação da semana.
+      <p className="text-sm mb-4" style={{ color: 'var(--text-dim)' }}>
+        Treinos pensados para a vida real: musculação, HYROX, corrida, casa e condicionamento.
+        Confira o plano semanal e adapte conforme experiência e recuperação.
       </p>
 
-      <p className="text-xs font-medium mb-1.5" style={{ color: 'var(--text-dim)' }}>
-        Objetivo
-      </p>
+      <div className="flex items-center gap-2 mb-3" style={{ color: 'var(--text-dim)' }}>
+        <SlidersHorizontal size={15} />
+        <span className="text-xs font-semibold">Encontre um programa para você</span>
+      </div>
+
+      <p className="text-xs font-medium mb-1.5" style={{ color: 'var(--text-dim)' }}>Objetivo / modalidade</p>
       <div className="flex flex-wrap gap-1.5 mb-3">
         <FilterChip label="Todos" active={goalFilter === null} onClick={() => setGoalFilter(null)} />
-        {GOAL_FILTERS.map((g) => (
-          <FilterChip key={g} label={GOAL_LABELS[g]} active={goalFilter === g} onClick={() => setGoalFilter(g)} />
-        ))}
+        {GOAL_FILTERS.map((g) =>
+          <FilterChip key={g} label={GOAL_LABELS[g]} active={goalFilter === g} onClick={() => setGoalFilter(g)} />)}
       </div>
 
-      <p className="text-xs font-medium mb-1.5" style={{ color: 'var(--text-dim)' }}>
-        Dias por semana
-      </p>
+      <p className="text-xs font-medium mb-1.5" style={{ color: 'var(--text-dim)' }}>Onde você treina?</p>
+      <div className="flex flex-wrap gap-1.5 mb-3">
+        <FilterChip label="Qualquer lugar" active={placeFilter === null} onClick={() => setPlaceFilter(null)} />
+        {PLACE_FILTERS.map((p) =>
+          <FilterChip key={p} label={PLACE_LABELS[p]} active={placeFilter === p} onClick={() => setPlaceFilter(p)} />)}
+      </div>
+
+      <p className="text-xs font-medium mb-1.5" style={{ color: 'var(--text-dim)' }}>Seu nível</p>
+      <div className="flex flex-wrap gap-1.5 mb-3">
+        <FilterChip label="Todos" active={levelFilter === null} onClick={() => setLevelFilter(null)} />
+        {LEVEL_FILTERS.map((l) =>
+          <FilterChip key={l} label={LEVEL_LABELS[l]} active={levelFilter === l} onClick={() => setLevelFilter(l)} />)}
+      </div>
+
+      <p className="text-xs font-medium mb-1.5" style={{ color: 'var(--text-dim)' }}>Quantidade de treinos diferentes</p>
       <div className="flex flex-wrap gap-1.5 mb-4">
         <FilterChip label="Todos" active={splitFilter === null} onClick={() => setSplitFilter(null)} />
-        {SPLIT_FILTERS.map((s) => (
-          <FilterChip key={s} label={SPLIT_LABELS[s]} active={splitFilter === s} onClick={() => setSplitFilter(s)} />
-        ))}
+        {SPLIT_FILTERS.map((s) =>
+          <FilterChip key={s} label={SPLIT_LABELS[s]} active={splitFilter === s} onClick={() => setSplitFilter(s)} />)}
       </div>
+
+      <p className="text-xs mb-3" style={{ color: 'var(--text-faint)' }}>
+        {filtered.length} programa{filtered.length !== 1 ? 's' : ''} encontrado{filtered.length !== 1 ? 's' : ''}.
+        {profile ? ' Ordenados por afinidade com seu perfil.' : ''}
+      </p>
 
       <div className="flex flex-col gap-2.5 pb-6">
         {filtered.map((p) => (
           <Card key={p.id} className="!p-0 overflow-hidden">
-            <button onClick={() => openPreview(p)} className="w-full flex items-center gap-3 px-4 py-3.5 text-left">
-              <span
-                className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
-                style={{ background: 'var(--surface-2)', color: 'var(--text-dim)' }}
-              >
+            <button type="button" onClick={() => openPreview(p)}
+              className="w-full flex items-start gap-3 px-4 py-3.5 text-left">
+              <span className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
+                style={{ background: 'var(--brand-dim)', color: 'var(--brand)' }}>
                 <AppIcon value={p.days[0]?.emoji} size={18} />
               </span>
               <div className="flex-1 min-w-0">
-                <p className="font-medium text-sm">{p.title}</p>
-                <div className="flex flex-wrap gap-1 mt-1">
+                <p className="font-semibold text-sm">{p.title}</p>
+                <p className="text-xs mt-1.5" style={{ color: 'var(--text-dim)' }}>{p.description}</p>
+                <div className="flex flex-wrap gap-1 mt-2">
                   <Pill tone="brand">{GOAL_LABELS[p.goal]}</Pill>
-                  <Pill>{SPLIT_LABELS[p.split]}</Pill>
+                  <Pill>{PLACE_LABELS[programPlace(p)]}</Pill>
+                  {p.level && <Pill>{LEVEL_LABELS[p.level]}</Pill>}
+                  {p.sessionMinutes && <Pill>{p.sessionMinutes} min</Pill>}
                 </div>
               </div>
-              <ChevronRight size={18} style={{ color: 'var(--text-faint)' }} />
+              <ChevronRight size={18} style={{ color: 'var(--text-faint)' }} className="shrink-0 mt-1" />
             </button>
           </Card>
         ))}
         {filtered.length === 0 && (
-          <p className="text-sm text-center py-8" style={{ color: 'var(--text-faint)' }}>
-            Nenhum programa com esse filtro ainda.
-          </p>
+          <div className="text-center py-8">
+            <p className="text-sm mb-2" style={{ color: 'var(--text-dim)' }}>Nenhum programa com todos esses filtros.</p>
+            <button onClick={() => {setGoalFilter(null);setPlaceFilter(null);setLevelFilter(null);setSplitFilter(null);}}
+              className="text-xs font-semibold" style={{ color: 'var(--brand)' }}>Limpar filtros</button>
+          </div>
         )}
       </div>
 
       <Sheet open={preview !== null} onClose={() => setPreview(null)} title={preview?.title ?? ''}>
         {preview && (
           <div className="flex flex-col gap-3">
-            <div className="flex flex-wrap gap-1.5">
+            <div className="flex flex-wrap gap-1">
               <Pill tone="brand">{GOAL_LABELS[preview.goal]}</Pill>
-              <Pill>{SPLIT_LABELS[preview.split]}</Pill>
+              <Pill>{PLACE_LABELS[programPlace(preview)]}</Pill>
+              {preview.level && <Pill>{LEVEL_LABELS[preview.level]}</Pill>}
+              {preview.sessionMinutes && <Pill>{preview.sessionMinutes} min/sessão (aprox.)</Pill>}
             </div>
-            <p className="text-xs" style={{ color: 'var(--text-faint)' }}>
-              {preview.description}
-            </p>
+            <p className="text-sm" style={{ color: 'var(--text-dim)' }}>{preview.description}</p>
+            <div className="rounded-xl p-3" style={{ background: 'var(--surface-2)' }}>
+              <p className="text-xs font-semibold flex items-center gap-1.5 mb-2">
+                <CalendarDays size={14} style={{ color: 'var(--brand)' }} /> Organização semanal sugerida
+              </p>
+              {preview.weekPlan ? WEEKDAYS.map((day, i) => {
+                const step = preview.weekPlan![i];
+                const description = step.kind === 'rest' ? 'Descanso / recuperação'
+                  : step.kind === 'cardio' ? step.label
+                  : preview.days[step.index]?.name ?? 'Treino';
+                return (
+                  <div key={day} className="flex items-start gap-2 py-1.5 text-xs"
+                    style={{ borderTop: i ? '1px solid var(--border-soft)' : undefined }}>
+                    <span className="w-16 shrink-0 font-medium" style={{ color: 'var(--text-dim)' }}>{WEEKDAY_LABELS[day]}</span>
+                    <span style={{ color: step.kind === 'rest' ? 'var(--text-faint)' : 'var(--text)' }}>
+                      {description}{step.kind === 'cardio' && step.distanceKm ? ' · base ' + step.distanceKm + ' km' : ''}
+                    </span>
+                  </div>
+                );
+              }) : (
+                <p className="text-xs" style={{ color: 'var(--text-dim)' }}>
+                  Programa livre: crie os treinos e organize os dias em Meus treinos.
+                </p>
+              )}
+            </div>
 
+            {preview.progression && (
+              <p className="text-xs rounded-xl px-3 py-2.5 flex gap-2"
+                style={{ background: 'var(--surface-2)', color: 'var(--text-dim)' }}>
+                <Target size={15} className="shrink-0" style={{ color: 'var(--brand)' }} />
+                <span><strong>Progressão:</strong> {preview.progression}</span>
+              </p>
+            )}
+            {preview.recoveryNote && (
+              <p className="text-xs flex gap-2" style={{ color: 'var(--text-dim)' }}>
+                <Info size={15} className="shrink-0" />
+                <span>{preview.recoveryNote}</span>
+              </p>
+            )}
+
+            <div className="flex items-center gap-2">
+              <Clock size={15} style={{ color: 'var(--text-faint)' }} />
+              <p className="text-sm font-semibold">Treinos incluídos ({preview.days.length})</p>
+            </div>
             {preview.days.map((day, di) => (
-              <div key={di}>
+              <div key={di} className="rounded-xl px-3 py-2.5" style={{ background: 'var(--surface-2)' }}>
                 <p className="text-sm font-medium mb-1.5 flex items-center gap-1.5">
                   <AppIcon value={day.emoji} size={15} /> {day.name}
                 </p>
-                <ul className="flex flex-col gap-1 mb-1">
-                  {day.exercises.map((ex, ei) => (
-                    <ExerciseSpecRow key={ei} exerciseId={ex.id} sets={ex.sets} reps={ex.reps} />
-                  ))}
+                {day.focus && <p className="text-xs mb-2" style={{ color: 'var(--text-faint)' }}>{day.focus}</p>}
+                <ul className="flex flex-col gap-1.5">
+                  {day.exercises.map((ex, ei) =>
+                    <ExerciseSpecRow key={ei} exerciseId={ex.id} sets={ex.sets} reps={ex.reps} notes={ex.notes} />)}
                 </ul>
               </div>
             ))}
 
-            {applied ? (
+            {appliedMode ? (
               <div className="flex flex-col gap-2 mt-1">
-                <div
-                  className="rounded-xl px-3 py-2.5 text-xs flex items-center gap-2"
-                  style={{ background: 'var(--success-dim)', color: 'var(--success)' }}
-                >
-                  <Check size={14} /> Treino{preview.days.length > 1 ? 's' : ''} criado{preview.days.length > 1 ? 's' : ''} em Meus treinos.
+                <div className="rounded-xl px-3 py-2.5 text-xs flex items-center gap-2"
+                  style={{ background: 'var(--success-dim)', color: 'var(--success)' }}>
+                  <Check size={14} />
+                  {appliedMode === 'agenda' ? 'Treinos criados e agenda semanal atualizada no app.' : 'Treinos adicionados ao app sem alterar sua agenda.'}
                 </div>
-                <Button full onClick={goToWorkouts}>
-                  Ver em Meus treinos
-                </Button>
+                <p className="text-xs" style={{ color: 'var(--text-faint)' }}>Confira os treinos e a sincronização antes de fechar o aplicativo.</p>
+                <Button full onClick={() => {setPreview(null);navigate('/treinos');}}>Ver em Meus treinos</Button>
               </div>
             ) : (
-              <Button full onClick={handleApply} disabled={applying} className="mt-1">
-                {applying ? 'Criando...' : 'Aplicar esse programa'}
-              </Button>
+              <div className="flex flex-col gap-2 mt-1">
+                {error && <p className="text-xs" role="alert" style={{ color: 'var(--danger)' }}>{error}</p>}
+                <Button full onClick={() => handleApply(false)} disabled={applying}>
+                  {applying ? 'Criando...' : 'Adicionar treinos sem mudar agenda'}
+                </Button>
+                {preview.weekPlan && (
+                  <>
+                    <Button full variant="secondary" onClick={() => handleApply(true)} disabled={applying}>
+                      Criar treinos e ativar a agenda sugerida
+                    </Button>
+                    <p className="text-xs" style={{ color: 'var(--text-faint)' }}>
+                      Atenção: ativar a agenda substitui os sete dias programados atualmente. Seus treinos e histórico antigos não são apagados.
+                    </p>
+                  </>
+                )}
+              </div>
             )}
           </div>
         )}
@@ -157,14 +275,9 @@ export function ProgramLibrary() {
 
 function FilterChip({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
   return (
-    <button
-      onClick={onClick}
+    <button type="button" aria-pressed={active} onClick={onClick}
       className="text-xs px-3 py-1.5 rounded-full font-medium"
-      style={{
-        background: active ? 'var(--brand)' : 'var(--surface-2)',
-        color: active ? 'white' : 'var(--text-dim)',
-      }}
-    >
+      style={{ background: active ? 'var(--brand)' : 'var(--surface-2)', color: active ? 'white' : 'var(--text-dim)' }}>
       {label}
     </button>
   );
@@ -174,13 +287,16 @@ function exerciseName(id: string): string {
   return BUILTIN_EXERCISES.find((e) => e.id === id)?.name ?? id;
 }
 
-function ExerciseSpecRow({ exerciseId, sets, reps }: { exerciseId: string; sets: number; reps: string }) {
+function ExerciseSpecRow({ exerciseId, sets, reps, notes }: {
+  exerciseId: string; sets: number; reps: string; notes?: string;
+}) {
   return (
-    <li className="text-xs flex justify-between gap-2" style={{ color: 'var(--text-dim)' }}>
-      <span className="truncate">{exerciseName(exerciseId)}</span>
-      <span className="shrink-0" style={{ color: 'var(--text-faint)' }}>
-        {sets}x{reps}
-      </span>
+    <li className="text-xs">
+      <div className="flex justify-between gap-2" style={{ color: 'var(--text-dim)' }}>
+        <span className="min-w-0">{exerciseName(exerciseId)}</span>
+        <span className="shrink-0" style={{ color: 'var(--text-faint)' }}>{sets} × {reps}</span>
+      </div>
+      {notes && <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-faint)' }}>{notes}</p>}
     </li>
   );
 }
