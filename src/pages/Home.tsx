@@ -1,6 +1,6 @@
 import { useMemo, useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Play, Flame, Plus, ArrowRight, Bot, Bike, BedDouble, MessageCircle, Zap, Timer, ChevronDown, Gauge } from 'lucide-react';
+import { Play, Check, Flame, Plus, ArrowRight, Bot, Bike, BedDouble, MessageCircle, Zap, Timer, ChevronDown, Gauge } from 'lucide-react';
 import { useAppData } from '../hooks/useAppData';
 import { useAuth } from '../hooks/useAuth';
 import { useProfile } from '../hooks/useProfile';
@@ -11,7 +11,8 @@ import { computeGroupReadiness, READINESS_COLORS, READINESS_ORDER } from '../lib
 import type { Readiness } from '../lib/recovery';
 import { ANATOMY_GROUP_LABELS } from '../lib/anatomy';
 import type { AnatomyGroup } from '../lib/anatomy';
-import { WEEKDAY_ORDER } from '../types';
+import { WEEKDAY_ORDER, WEEKDAY_LABELS } from '../types';
+import { findNextScheduledTraining, hasCompletedScheduledActivityToday } from '../lib/nextTraining';
 import { Card, Button, EmptyState, AppIcon, Pill } from '../components/ui';
 import { AccountSheet } from '../components/AccountSheet';
 import { ImportLocalDataBanner } from '../components/ImportLocalDataBanner';
@@ -87,6 +88,8 @@ export function Home() {
   const todayKey = todayWeekdayKey();
   const todaySchedule = weeklySchedule[todayKey];
   const todayWorkout = todaySchedule?.kind === 'treino' ? workouts.find((w) => w.id === todaySchedule.workoutId) : null;
+  const completedToday = hasCompletedScheduledActivityToday(todaySchedule, sessions, cardioLogs);
+  const nextTraining = completedToday ? findNextScheduledTraining(weeklySchedule, workouts) : null;
 
   const lastFinished = sessions
     .filter((s) => s.finishedAt)
@@ -148,7 +151,7 @@ export function Home() {
             </Card>
           )}
 
-          {!activeSessionId && todaySchedule?.kind === 'treino' && todayWorkout && (
+          {!activeSessionId && !completedToday && todaySchedule?.kind === 'treino' && todayWorkout && (
             <Card className="mb-4 flex items-center gap-3" style={{ borderColor: 'var(--brand)' }}>
               <span
                 className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
@@ -173,7 +176,7 @@ export function Home() {
             </Card>
           )}
 
-          {!activeSessionId && todaySchedule?.kind === 'cardio' && (
+          {!activeSessionId && !completedToday && todaySchedule?.kind === 'cardio' && (
             <Card
               className="mb-4 flex items-center gap-3 cursor-pointer"
               style={{ borderColor: 'var(--success)' }}
@@ -192,7 +195,46 @@ export function Home() {
             </Card>
           )}
 
-          {!activeSessionId && todaySchedule?.kind === 'descanso' && (
+          {!activeSessionId && completedToday && (
+            <Card className="mb-4" style={{ borderColor: 'var(--success)' }}>
+              <p className="text-xs font-semibold mb-2 flex items-center gap-1.5" style={{ color: 'var(--success)' }}>
+                <Check size={14} /> Atividade de hoje concluída
+              </p>
+              {nextTraining ? (
+                <div className="flex items-center gap-3">
+                  <span className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
+                    style={{ background: 'var(--brand-dim)', color: 'var(--brand)' }}>
+                    {nextTraining.kind === 'treino'
+                      ? <AppIcon value={nextTraining.workout.emoji} size={18} />
+                      : <Bike size={18} />}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-semibold mb-0.5" style={{ color: 'var(--brand)' }}>
+                      Próximo treino · {nextTraining.daysUntil === 1 ? 'Amanhã' : WEEKDAY_LABELS[nextTraining.weekday]}
+                    </p>
+                    <p className="text-sm font-medium truncate">
+                      {nextTraining.kind === 'treino' ? nextTraining.workout.name : 'Cardio'}
+                    </p>
+                  </div>
+                  {nextTraining.kind === 'treino' ? (
+                    <button aria-label="Ver próximo treino" onClick={() => navigate(`/treinos/${nextTraining.workout.id}`)}
+                      className="w-10 h-10 rounded-full flex items-center justify-center"
+                      style={{ background: 'var(--brand)', color: 'white' }}><ArrowRight size={16} /></button>
+                  ) : (
+                    <button aria-label="Ver cardio" onClick={() => navigate('/cardio')}
+                      className="w-10 h-10 rounded-full flex items-center justify-center"
+                      style={{ background: 'var(--brand)', color: 'white' }}><ArrowRight size={16} /></button>
+                  )}
+                </div>
+              ) : (
+                <p className="text-sm" style={{ color: 'var(--text-dim)' }}>
+                  Tudo concluído! Programe seu próximo treino em Meus treinos.
+                </p>
+              )}
+            </Card>
+          )}
+
+          {!activeSessionId && !completedToday && todaySchedule?.kind === 'descanso' && (
             <Card className="mb-4 flex items-center gap-3">
               <div className="w-11 h-11 rounded-full flex items-center justify-center shrink-0" style={{ background: 'var(--surface-2)' }}>
                 <BedDouble size={20} style={{ color: 'var(--text-dim)' }} />
