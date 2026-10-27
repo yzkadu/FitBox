@@ -41,7 +41,7 @@ interface WorkoutSpec {
   exercises: ExerciseSpec[];
 }
 
-type ScheduleEntry = { kind: 'treino'; workoutIndex: number } | { kind: 'cardio'; suggestedDistanceKm?: number; label?: string } | { kind: 'descanso' };
+type ScheduleEntry = { kind: 'treino'; workoutIndex: number } | { kind: 'cardio'; suggestedDistanceKm?: number; label?: string } | { kind: 'combo'; workoutIndex: number; order: 'cardio-first'; label?: string; suggestedDurationMin?: number; suggestedDistanceKm?: number } | { kind: 'descanso' };
 
 export interface RecommendedProgramPlan {
   /** Rótulo curto da divisão escolhida, ex: "Push / Pull / Legs". */
@@ -170,6 +170,7 @@ function getCuratedPlan(input: RecommendationInput): RecommendedProgramPlan | nu
     const step = program.weekPlan![index];
     schedule[day] = step.kind === 'rest' ? { kind: 'descanso' }
       : step.kind === 'cardio' ? { kind: 'cardio', suggestedDistanceKm: step.distanceKm, label: step.label }
+      : step.kind === 'combo' ? { kind: 'combo', workoutIndex: step.index, order: 'cardio-first', label: step.label, suggestedDurationMin: step.durationMin, suggestedDistanceKm: step.distanceKm }
       : { kind: 'treino', workoutIndex: step.index };
   });
 
@@ -188,8 +189,8 @@ function getCuratedPlan(input: RecommendationInput): RecommendedProgramPlan | nu
     const stationIndex = program.days.findIndex((day) => /estaç|HYROX B|HYROX · Esta/i.test(day.name));
     const kept = new Set<Weekday>();
     const easyRun = WEEKDAY_ORDER.find((day) => schedule[day]?.kind === 'cardio');
-    const strength = WEEKDAY_ORDER.find((day) => schedule[day]?.kind === 'treino' && schedule[day]?.workoutIndex === 0);
-    const station = WEEKDAY_ORDER.find((day) => schedule[day]?.kind === 'treino' && schedule[day]?.workoutIndex === (stationIndex < 0 ? 1 : stationIndex));
+    const strength = WEEKDAY_ORDER.find((day) => (schedule[day]?.kind === 'treino' || schedule[day]?.kind === 'combo') && schedule[day]?.workoutIndex === 0);
+    const station = WEEKDAY_ORDER.find((day) => (schedule[day]?.kind === 'treino' || schedule[day]?.kind === 'combo') && schedule[day]?.workoutIndex === (stationIndex < 0 ? 1 : stationIndex));
     if (strength) kept.add(strength);
     if (station) kept.add(station);
     if (easyRun) kept.add(easyRun);
@@ -331,6 +332,7 @@ export function applyRecommendedProgram(input: RecommendationInput): void {
     const entry = plan.schedule[day];
     if (!entry) continue;
     if (entry.kind === 'treino') schedule[day] = { kind: 'treino', workoutId: createdIds[entry.workoutIndex] };
+    else if (entry.kind === 'combo') schedule[day] = { kind: 'combo', workoutId: createdIds[entry.workoutIndex], order: 'cardio-first', label: entry.label, suggestedDurationMin: entry.suggestedDurationMin, suggestedDistanceKm: entry.suggestedDistanceKm };
     else schedule[day] = entry;
   }
   replaceWeeklySchedule(schedule);
