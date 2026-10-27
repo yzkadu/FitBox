@@ -626,7 +626,7 @@ export const READY_PROGRAMS: ReadyProgram[] = [
       { name: 'Combo B · Costas e bíceps', emoji: 'target', focus: 'Força de puxada e braços',
         exercises: [ex('ex-puxada-frente',3,'8-12'),ex('ex-remada-baixa',3,'10-12'),
           ex('ex-crucifixo-inverso-maquina',2,'12-15'),ex('ex-rosca-martelo',2,'10-12')] },
-      { name: 'Combo C · Pernas e core', emoji: 'footprints', focus: 'Musculação antes de qualquer corrida intensa',
+      { name: 'Combo C · Pernas e core', emoji: 'footprints', focus: 'Força de pernas; evite empilhar corrida intensa nessa sessão',
         exercises: [ex('ex-agachamento-livre',3,'8-10'),ex('ex-mesa-flexora',3,'10-12'),
           ex('ex-leg-press',2,'10-12'),ex('ex-panturrilha-em-pe',2,'12-15'),
           ex('ex-fedb-dead-bug',2,'10 cada lado')] },
