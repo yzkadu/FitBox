@@ -140,7 +140,7 @@ export const WEEKDAY_LABELS: Record<Weekday, string> = {
 /** O que fazer em um dia da semana: treinar (um Workout específico), cardio, ou descansar */
 export type DaySchedule =
   | { kind: 'treino'; workoutId: string }
-  | { kind: 'cardio'; suggestedDistanceKm?: number }
+  | { kind: 'cardio'; suggestedDistanceKm?: number; label?: string }
   | { kind: 'descanso' };
 
 export type WeeklySchedule = Partial<Record<Weekday, DaySchedule>>;
