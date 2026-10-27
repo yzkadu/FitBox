@@ -12,7 +12,8 @@ import { Card, Button, EmptyState, AppIcon } from '../components/ui';
 import { KaduProgramBanner } from '../components/KaduProgramBanner';
 import { ICON_KEYS } from '../lib/workoutIcons';
 import { WEEKDAY_ORDER, WEEKDAY_LABELS } from '../types';
-import type { DaySchedule, Weekday, Workout } from '../types';
+import type { ScheduledActivity, Weekday, Workout } from '../types';
+import { getActivitiesForDay } from '../lib/nextTraining';
 
 const IA_SUGGESTIONS = [
   'Perna (quadríceps e posterior)',
@@ -23,89 +24,110 @@ const IA_SUGGESTIONS = [
   'Core e cardio',
 ];
 
-const CARDIO_VALUE = '__cardio__';
-const REST_VALUE = '__descanso__';
-const NONE_VALUE = '__nenhum__';
-const COMBO_PREFIX = '__combo__:';
-
-function scheduleToValue(s: DaySchedule | undefined): string {
-  if (!s) return NONE_VALUE;
-  if (s.kind === 'cardio') return CARDIO_VALUE;
-  if (s.kind === 'combo') return COMBO_PREFIX + s.workoutId;
-  if (s.kind === 'descanso') return REST_VALUE;
-  return s.workoutId;
-}
-
+/** Cada dia aceita múltiplas atividades, sem ordem ou obrigatoriedade. */
 function WeeklyScheduleEditor() {
   const { weeklySchedule, workouts } = useAppData();
-  const active = workouts.filter((w) => !w.archived);
+  const active = workouts.filter(w => !w.archived);
+  const [opened, setOpened] = useState<Weekday | null>(null);
 
-  function handleChange(day: Weekday, value: string) {
-    if (value === NONE_VALUE) setDaySchedule(day, null);
-    else if (value === CARDIO_VALUE) setDaySchedule(day, { kind: 'cardio' });
-    else if (value === REST_VALUE) setDaySchedule(day, { kind: 'descanso' });
-    else if (value.startsWith(COMBO_PREFIX)) {
-      const existing = weeklySchedule[day];
-      setDaySchedule(day, { kind: 'combo', workoutId: value.slice(COMBO_PREFIX.length), order: 'cardio-first',
-        suggestedDurationMin: existing?.kind === 'combo' ? existing.suggestedDurationMin : 15,
-        suggestedDistanceKm: existing?.kind === 'combo' ? existing.suggestedDistanceKm : undefined,
-        label: existing?.kind === 'combo' ? existing.label : 'Corrida leve antes da musculação' });
+  function save(day: Weekday, activities: ScheduledActivity[]) {
+    setDaySchedule(day, activities.length ? { kind: 'multi', activities } : { kind: 'descanso' });
+  }
+
+  function add(day: Weekday, value: string) {
+    if (!value) return;
+    const current = getActivitiesForDay(weeklySchedule[day]);
+    if (value === 'cardio') {
+      if (current.some(x => x.kind === 'cardio')) return;
+      save(day, [...current, { kind: 'cardio', label: 'Corrida / cardio livre' }]);
+    } else if (value.startsWith('treino:')) {
+      const workoutId = value.slice('treino:'.length);
+      if (!active.some(w => w.id === workoutId) || current.some(x => x.kind === 'treino' && x.workoutId === workoutId)) return;
+      save(day, [...current, { kind: 'treino', workoutId }]);
     }
-    else setDaySchedule(day, { kind: 'treino', workoutId: value });
+  }
+
+  function remove(day: Weekday, index: number) {
+    save(day, getActivitiesForDay(weeklySchedule[day]).filter((_, i) => i !== index));
+  }
+
+  function updateCardio(day: Weekday, index: number, patch: Partial<Extract<ScheduledActivity, {kind:'cardio'}>>) {
+    const activities = getActivitiesForDay(weeklySchedule[day]);
+    const activity = activities[index];
+    if (activity?.kind !== 'cardio') return;
+    save(day, activities.map((a, i) => i === index ? {...activity, ...patch} : a));
   }
 
   return (
     <Card className="mb-5">
       <div className="flex items-center gap-2 mb-3">
-        <CalendarDays size={16} style={{ color: 'var(--brand)' }} />
-        <p className="text-sm font-semibold">Programação da semana</p>
+        <CalendarDays size={16} style={{ color: 'var(--brand)' }}/>
+        <p className="text-sm font-semibold">Programação livre da semana</p>
       </div>
-      <p className="text-xs mb-3" style={{ color: 'var(--text-faint)' }}>
-        Escolha musculação, cardio, descanso ou corrida → musculação no mesmo dia. No combo, registre a corrida primeiro para liberar a ficha.
+      <p className="text-xs mb-3" style={{color: 'var(--text-faint)'}}>
+        Combine musculação, HYROX, corrida e core no mesmo dia.
+        As opções são independentes: faça uma, várias ou nenhuma, na ordem que preferir.
       </p>
       <div className="flex flex-col gap-2">
-        {WEEKDAY_ORDER.map((day) => (
-          <div key={day} className="flex flex-col gap-1.5">
-            <div className="flex items-center gap-3">
-            <span className="text-xs font-medium w-16 shrink-0" style={{ color: 'var(--text-dim)' }}>
-              {WEEKDAY_LABELS[day]}
-            </span>
-            <select
-              value={scheduleToValue(weeklySchedule[day])}
-              onChange={(e) => handleChange(day, e.target.value)}
-              className="flex-1 rounded-lg px-2.5 py-2 text-xs min-w-0"
-              style={{ background: 'var(--surface-2)', color: 'var(--text)' }}
-            >
-              <option value={NONE_VALUE}>— Nenhum —</option>
-              {active.map((w) => (
-                <option key={w.id} value={w.id}>
-                  {w.name}
-                </option>
-              ))}
-              <option value={CARDIO_VALUE}>Cardio (corrida/bike)</option>
-              {active.map((item) => <option key={'combo-'+item.id} value={COMBO_PREFIX+item.id}>Corrida → {item.name}</option>)}
-              <option value={REST_VALUE}>Descanso</option>
-            </select>
-            {weeklySchedule[day]?.kind === 'cardio' && weeklySchedule[day].label && (
-              <span className="text-[11px] max-w-28 truncate" title={weeklySchedule[day].label}
-                style={{ color: 'var(--text-faint)' }}>{weeklySchedule[day].label}</span>
-            )}
+        {WEEKDAY_ORDER.map(day => {
+          const activities = getActivitiesForDay(weeklySchedule[day]);
+          const isOpen = opened === day;
+          return (
+            <div key={day} className="rounded-xl p-2.5" style={{background:'var(--surface-2)'}}>
+              <button type="button" onClick={() => setOpened(isOpen ? null : day)}
+                className="flex items-center gap-2 w-full text-left">
+                <span className="text-xs font-semibold w-16 shrink-0">{WEEKDAY_LABELS[day]}</span>
+                <span className="flex-1 min-w-0 text-xs" style={{color:'var(--text-dim)'}}>
+                  {activities.length === 0 ? 'Descanso / livre' :
+                    activities.map(a => a.kind === 'cardio' ? (a.label || 'Corrida/cardio') :
+                      (active.find(w => w.id === a.workoutId)?.name || 'Treino')).join(' + ')}
+                </span>
+                <span className="text-xs" style={{color:'var(--brand)'}}>{isOpen ? 'Fechar' : 'Editar'}</span>
+              </button>
+              {isOpen && (
+                <div className="mt-3 flex flex-col gap-2">
+                  {activities.map((activity, index) => (
+                    <div key={activity.kind === 'treino' ? activity.workoutId : 'cardio'}
+                      className="rounded-lg p-2.5" style={{background:'var(--surface)'}}>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs flex-1">
+                          {activity.kind === 'cardio' ? 'Corrida / cardio' :
+                            active.find(w => w.id === activity.workoutId)?.name ?? 'Treino não encontrado'}
+                        </span>
+                        <button type="button" onClick={() => remove(day,index)}
+                          aria-label="Remover opção deste dia"
+                          className="text-xs" style={{color:'var(--danger)'}}>Remover</button>
+                      </div>
+                      {activity.kind === 'cardio' && (
+                        <div className="grid grid-cols-[1fr_76px] gap-2 mt-2">
+                          <input aria-label="Descrição do cardio" value={activity.label ?? ''}
+                            onChange={e => updateCardio(day,index,{label:e.target.value})}
+                            placeholder="Corrida leve, tiros, caminhada..." className="text-xs p-2 rounded-lg min-w-0"
+                            style={{background:'var(--surface-2)'}}/>
+                          <input type="number" aria-label="Duração opcional em minutos"
+                            min={0} max={180} placeholder="Min"
+                            value={activity.suggestedDurationMin ?? ''}
+                            onChange={e=>updateCardio(day,index,{suggestedDurationMin:e.target.value ? Math.min(180,Math.max(1,Number(e.target.value))) : undefined})}
+                            className="text-xs p-2 rounded-lg w-full" style={{background:'var(--surface-2)'}}/>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                  <select value="" aria-label={`Adicionar atividade para ${WEEKDAY_LABELS[day]}`}
+                    onChange={e => add(day,e.target.value)}
+                    className="rounded-lg p-2.5 text-xs w-full" style={{background:'var(--surface)'}}>
+                    <option value="">+ Adicionar outra opção...</option>
+                    {!activities.some(a => a.kind === 'cardio') && <option value="cardio">Corrida / cardio</option>}
+                    {active.filter(w => !activities.some(a => a.kind === 'treino' && a.workoutId === w.id))
+                      .map(w => <option key={w.id} value={'treino:'+w.id}>{w.name}</option>)}
+                  </select>
+                  {activities.length > 0 && <button type="button" onClick={() => save(day,[])}
+                    className="text-xs text-left p-1" style={{color:'var(--text-faint)'}}>Deixar este dia livre</button>}
+                </div>
+              )}
             </div>
-            {weeklySchedule[day]?.kind === 'combo' && (
-              <div className="ml-16 flex items-center flex-wrap gap-2 px-1 pb-1">
-                <span className="text-[11px]" style={{ color: 'var(--text-dim)' }}>Corrida antes:</span>
-                <input type="number" min={5} max={90} step={5} aria-label="Duração da corrida em minutos"
-                  value={weeklySchedule[day].suggestedDurationMin ?? 15}
-                  onChange={(e) => {
-                    const current = weeklySchedule[day];
-                    if (current?.kind === 'combo') setDaySchedule(day, { ...current, suggestedDurationMin: Math.min(90, Math.max(5, Number(e.target.value) || 5)) });
-                  }}
-                  className="w-16 rounded-md py-1 px-2 text-xs" style={{ background: 'var(--surface-2)' }}/>
-                <span className="text-[11px]" style={{ color: 'var(--text-faint)' }}>min · ritmo fácil</span>
-              </div>
-            )}
-          </div>
-        ))}
+          );
+        })}
       </div>
     </Card>
   );
