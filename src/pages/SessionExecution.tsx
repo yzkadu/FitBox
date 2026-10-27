@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { X, Plus, Check, Trash2, Clock, Bot, Repeat, Calculator, TimerReset, Eye } from 'lucide-react';
+import { X, Plus, Check, Trash2, Clock, Bot, Calculator, TimerReset, Eye } from 'lucide-react';
 import { useAppData } from '../hooks/useAppData';
 import {
   addExerciseToSession,
@@ -18,6 +18,7 @@ import { primeRestBeep, playRestBeep } from '../lib/restBeep';
 import { Button } from '../components/ui';
 import { ExercisePicker } from '../components/ExercisePicker';
 import { ExerciseThumbnail, ExerciseGuide } from '../components/ExerciseVisual';
+import { SessionSetRow } from '../components/SessionSetRow';
 import { Sheet } from '../components/Sheet';
 import { PhotoField } from '../components/PhotoField';
 import type { Exercise } from '../types';
@@ -79,6 +80,7 @@ export function SessionExecution() {
 
   const [plateSheetExerciseId, setPlateSheetExerciseId] = useState<string | null>(null);
   const [exerciseGuideId, setExerciseGuideId] = useState<string | null>(null);
+  const [setInputError, setSetInputError] = useState<string | null>(null);
   const [plateWeight, setPlateWeight] = useState('');
   const [barWeight, setBarWeight] = useState<number>(loadBarWeight);
 
@@ -126,11 +128,24 @@ export function SessionExecution() {
   }
 
   function toggleSetCompleted(sessionExerciseId: string, setId: string, currentlyCompleted: boolean) {
-    const nowCompleted = !currentlyCompleted;
-    updateSet(session!.id, sessionExerciseId, setId, { completed: nowCompleted });
-    if (nowCompleted) {
+    const entry = session?.exercises.find(e => e.id === sessionExerciseId);
+    const currentSet = entry?.sets.find(st => st.id === setId);
+    if (!entry || !currentSet) return;
+    // Série de força precisa de reps informadas. Distância/tempo podem
+    // ser marcados após concluir o alvo; peso zero é legítimo no peso corporal.
+    const distanceOrTime = /\\b(?:m|km|min|seg|s)\\b/i.test(entry.targetReps ?? '');
+    if (!currentlyCompleted && currentSet.reps <= 0 && !distanceOrTime) {
+      setSetInputError(`Informe as repetições da série ${currentSet.setNumber} antes de concluí-la.`);
+      return;
+    }
+    setSetInputError(null);
+    const done = !currentlyCompleted;
+    updateSet(session!.id, sessionExerciseId, setId, { completed: done });
+    if (done && entry.sets.some(st => st.id !== setId && !st.completed)) {
       primeRestBeep();
-      startRestTimer(DEFAULT_REST_SECONDS);
+      startRestTimer(entry.restSeconds ?? DEFAULT_REST_SECONDS);
+    } else if (!done) {
+      skipRest();
     }
   }
 
@@ -338,80 +353,38 @@ export function SessionExecution() {
                 </p>
               )}
 
-              <div className="grid grid-cols-[28px_1fr_1fr_32px_28px] gap-2 items-center mb-1 px-1">
-                <span className="text-[11px]" style={{ color: 'var(--text-faint)' }}>
-                  Série
-                </span>
-                <span className="text-[11px]" style={{ color: 'var(--text-faint)' }}>
-                  Peso (kg)
-                </span>
-                <span className="text-[11px]" style={{ color: 'var(--text-faint)' }}>
-                  Reps
-                </span>
-                <span />
-                <span />
+              <div className="flex items-center justify-between gap-2 mb-3 mt-3">
+                <p className="text-xs font-semibold" style={{ color: 'var(--text-dim)' }}>Registro individual de séries</p>
+                <p className="text-xs" style={{ color: 'var(--text-faint)' }}>
+                  {se.sets.filter(st => st.completed).length}/{se.sets.length} concluídas
+                </p>
               </div>
-
-              {se.sets.map((set, setIndex) => {
-                const prevSet = lastSets?.[setIndex];
-                return (
-                  <div key={set.id} className="mb-1.5">
-                    <div className="grid grid-cols-[28px_1fr_1fr_32px_28px] gap-2 items-center">
-                      <span
-                        className="text-xs font-medium text-center rounded-lg py-2"
-                        style={{ background: 'var(--surface-2)', color: 'var(--text-dim)' }}
-                      >
-                        {set.setNumber}
-                      </span>
-                      <input
-                        type="number"
-                        inputMode="decimal"
-                        value={set.weight || ''}
-                        onChange={(e) => updateSet(session.id, se.id, set.id, { weight: Number(e.target.value) || 0 })}
-                        className="w-full min-w-0 rounded-lg py-2 text-center text-sm"
-                        style={{ background: 'var(--surface-2)' }}
-                        placeholder="0"
-                      />
-                      <input
-                        type="number"
-                        inputMode="numeric"
-                        value={set.reps || ''}
-                        onChange={(e) => updateSet(session.id, se.id, set.id, { reps: Number(e.target.value) || 0 })}
-                        className="w-full min-w-0 rounded-lg py-2 text-center text-sm"
-                        style={{ background: 'var(--surface-2)' }}
-                        placeholder="0"
-                      />
-                      <button
-                        onClick={() => toggleSetCompleted(se.id, set.id, set.completed)}
-                        className="w-8 h-8 rounded-lg flex items-center justify-center mx-auto"
-                        style={{
-                          background: set.completed ? 'var(--success)' : 'var(--surface-2)',
-                          color: set.completed ? '#06281d' : 'var(--text-faint)',
-                        }}
-                      >
-                        <Check size={15} strokeWidth={3} />
-                      </button>
-                      <button
-                        onClick={() => removeSetFromSessionExercise(session.id, se.id, set.id)}
-                        style={{ color: 'var(--text-faint)' }}
-                        className="flex items-center justify-center"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
-                    {prevSet && !set.completed && (
-                      <button
-                        onClick={() => updateSet(session.id, se.id, set.id, { weight: prevSet.weight, reps: prevSet.reps })}
-                        className="flex items-center gap-1 text-[11px] mt-1 pl-1"
-                        style={{ color: 'var(--text-faint)' }}
-                      >
-                        <Repeat size={10} />
-                        última vez: {prevSet.weight}kg × {prevSet.reps} — toque pra repetir
-                      </button>
-                    )}
-                  </div>
-                );
-              })}
+              {setInputError && (
+                <p role="alert" className="mb-2 text-xs rounded-lg p-2"
+                  style={{ background: 'var(--danger)' + '20', color: 'var(--danger)' }}>
+                  {setInputError}
+                </p>
+              )}
+              {se.sets.map((set, setIndex) => (
+                <SessionSetRow
+                  key={set.id}
+                  series={set}
+                  previous={lastSets?.[setIndex]}
+                  onUpdate={patch => {
+                    setSetInputError(null);
+                    updateSet(session.id, se.id, set.id, patch);
+                  }}
+                  onToggle={() => toggleSetCompleted(se.id, set.id, set.completed)}
+                  onRemove={() => {
+                    setSetInputError(null);
+                    removeSetFromSessionExercise(session.id, se.id, set.id);
+                  }}
+                  onRepeat={() => {
+                    const last = lastSets?.[setIndex];
+                    if (last) updateSet(session.id, se.id, set.id, { weight: last.weight, reps: last.reps });
+                  }}
+                />
+              ))}
 
               <button
                 onClick={() => addSetToSessionExercise(session.id, se.id)}
