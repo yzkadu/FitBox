@@ -651,25 +651,35 @@ export function setWeightGoal(goal: WeightGoal | null) {
 // ---------- Dados básicos do perfil (altura/idade/sexo/peso inicial p/ IMC) ----------
 
 export interface ProfileBasicsPatch {
+  name?: string;
   heightCm?: number | null;
   age?: number | null;
   gender?: 'masculino' | 'feminino' | null;
   initialWeightKg?: number | null;
+  experienceLevel?: import('./onboarding').ExperienceLevel | null;
+  equipment?: import('./onboarding').Equipment[];
+  weeklyFrequency?: import('./onboarding').WeeklyFrequency | null;
 }
 
-/** Perfil não faz parte do store otimista (é carregado à parte por `useProfile`),
- * então essa gravação aguarda a confirmação do Supabase e devolve o resultado —
- * quem chama decide como reagir a um erro (mostrar mensagem, manter sheet aberto, etc). */
+/** Só informa sucesso depois de confirmar que o banco realmente atualizou uma linha. */
 export async function updateProfileBasics(userId: string, patch: ProfileBasicsPatch): Promise<{ ok: true } | { ok: false; error: string }> {
   const dbPatch: Record<string, unknown> = {};
+  if ('name' in patch) dbPatch.name = patch.name?.trim();
   if ('heightCm' in patch) dbPatch.height_cm = patch.heightCm ?? null;
   if ('age' in patch) dbPatch.age = patch.age ?? null;
   if ('gender' in patch) dbPatch.gender = patch.gender ?? null;
   if ('initialWeightKg' in patch) dbPatch.initial_weight_kg = patch.initialWeightKg ?? null;
-  const { error } = await supabase.from('profiles').update(dbPatch).eq('id', userId);
-  if (error) {
-    console.error('Falha ao sincronizar (profiles.updateBasics):', error);
-    return { ok: false, error: error.message };
+  if ('experienceLevel' in patch) dbPatch.experience_level = patch.experienceLevel ?? null;
+  if ('weeklyFrequency' in patch) dbPatch.weekly_frequency = patch.weeklyFrequency ?? null;
+  if ('equipment' in patch) {
+    dbPatch.equipment_list = patch.equipment ?? [];
+    dbPatch.equipment = patch.equipment?.[0] ?? null; // compatibilidade com coluna legada
+  }
+
+  const { data, error } = await supabase.from('profiles').update(dbPatch).eq('id', userId).select('id').maybeSingle();
+  if (error || !data) {
+    console.error('Falha ao sincronizar (profiles.updateBasics):', error ?? 'Perfil não localizado ou sem permissão.');
+    return { ok: false, error: error?.message ?? 'Perfil não localizado ou sem permissão para editar.' };
   }
   return { ok: true };
 }
