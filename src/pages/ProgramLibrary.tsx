@@ -189,14 +189,14 @@ export function ProgramLibrary() {
               {preview.weekPlan ? WEEKDAYS.map((day, i) => {
                 const step = preview.weekPlan![i];
                 const description = step.kind === 'rest' ? 'Descanso / recuperação'
-                  : step.kind === 'cardio' ? step.label
+                  : step.kind === 'cardio' || step.kind === 'combo' ? step.label
                   : preview.days[step.index]?.name ?? 'Treino';
                 return (
                   <div key={day} className="flex items-start gap-2 py-1.5 text-xs"
                     style={{ borderTop: i ? '1px solid var(--border-soft)' : undefined }}>
                     <span className="w-16 shrink-0 font-medium" style={{ color: 'var(--text-dim)' }}>{WEEKDAY_LABELS[day]}</span>
                     <span style={{ color: step.kind === 'rest' ? 'var(--text-faint)' : 'var(--text)' }}>
-                      {description}{step.kind === 'cardio' && step.distanceKm ? ' · base ' + step.distanceKm + ' km' : ''}
+                      {description}{step.kind === 'cardio' && step.distanceKm ? ' · base ' + step.distanceKm + ' km' : ''}{step.kind === 'combo' && step.durationMin ? ' · ' + step.durationMin + ' min de corrida antes' : ''}
                     </span>
                   </div>
                 );
