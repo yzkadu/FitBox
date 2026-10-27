@@ -80,7 +80,7 @@ export function SessionExecution() {
 
   const [plateSheetExerciseId, setPlateSheetExerciseId] = useState<string | null>(null);
   const [exerciseGuideId, setExerciseGuideId] = useState<string | null>(null);
-  const [setInputError, setSetInputError] = useState<string | null>(null);
+  const [setInputError, setSetInputError] = useState<{ entryId: string; message: string } | null>(null);
   const [plateWeight, setPlateWeight] = useState('');
   const [barWeight, setBarWeight] = useState<number>(loadBarWeight);
 
@@ -135,7 +135,7 @@ export function SessionExecution() {
     // ser marcados após concluir o alvo; peso zero é legítimo no peso corporal.
     const distanceOrTime = /\\b(?:m|km|min|seg|s)\\b/i.test(entry.targetReps ?? '');
     if (!currentlyCompleted && currentSet.reps <= 0 && !distanceOrTime) {
-      setSetInputError(`Informe as repetições da série ${currentSet.setNumber} antes de concluí-la.`);
+      setSetInputError({ entryId: sessionExerciseId, message: `Informe as repetições da série ${currentSet.setNumber} antes de concluí-la.` });
       return;
     }
     setSetInputError(null);
@@ -359,10 +359,10 @@ export function SessionExecution() {
                   {se.sets.filter(st => st.completed).length}/{se.sets.length} concluídas
                 </p>
               </div>
-              {setInputError && (
+              {setInputError?.entryId === se.id && (
                 <p role="alert" className="mb-2 text-xs rounded-lg p-2"
                   style={{ background: 'var(--danger)' + '20', color: 'var(--danger)' }}>
-                  {setInputError}
+                  {setInputError.message}
                 </p>
               )}
               {se.sets.map((set, setIndex) => (
