@@ -93,6 +93,13 @@ function WeightGoalCard({
   weeklySchedule: WeeklySchedule;
 }) {
   const [editing, setEditing] = useState(goal === null);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+  const formatDate = (start: string, weeks: number) => {
+    const date = new Date(start + 'T12:00:00');
+    date.setDate(date.getDate() + Math.ceil(weeks) * 7);
+    return date.toLocaleDateString('pt-BR');
+  };
   const lastWeight = measurements
     .filter((m) => m.weightKg != null)
     .slice()
@@ -100,28 +107,69 @@ function WeightGoalCard({
 
   const [form, setForm] = useState({
     startWeightKg: goal ? String(goal.startWeightKg) : lastWeight != null ? String(lastWeight) : '',
-    targetLossKg: goal ? String(goal.targetLossKg) : '',
-    targetWeeks: goal ? String(goal.targetWeeks) : '',
+    targetLossKg: goal ? String(Math.abs(goal.targetLossKg)) : '',
+    weeklyRateKg: goal && goal.targetWeeks > 0 ? String(Math.abs(goal.targetLossKg / goal.targetWeeks)) : '0.25',
+    direction: goal && goal.targetLossKg < 0 ? 'ganhar' : 'perder',
   });
 
-  function handleSave() {
-    const startWeightKg = Number(form.startWeightKg);
-    const targetLossKg = Number(form.targetLossKg);
-    const targetWeeks = Number(form.targetWeeks);
-    if (!startWeightKg || !targetLossKg || !targetWeeks) return;
-    setWeightGoal({ startWeightKg, targetLossKg, targetWeeks, startDate: goal?.startDate ?? todayIso() });
-    setEditing(false);
+  const startWeight = Number(form.startWeightKg);
+  const changeKg = Number(form.targetLossKg);
+  const rateKg = Number(form.weeklyRateKg);
+  const valid = Number.isFinite(startWeight) && startWeight >= 20 && startWeight <= 500 &&
+    Number.isFinite(changeKg) && changeKg > 0 &&
+    Number.isFinite(rateKg) && rateKg >= 0.05 && rateKg <= 2 &&
+    (form.direction === 'ganhar' ? startWeight + changeKg <= 500 : startWeight - changeKg >= 20);
+  const weeks = valid ? Math.ceil(changeKg / rateKg) : null;
+  const targetWeight = startWeight + (form.direction === 'ganhar' ? changeKg : -changeKg);
+
+  async function handleSave() {
+    if (!valid || weeks === null) { setError('Revise o peso, a mudança desejada e o ritmo.'); return; }
+    setSaving(true); setError('');
+    try {
+      const result = await setWeightGoal({
+        startWeightKg: startWeight,
+        targetLossKg: changeKg * (form.direction === 'ganhar' ? -1 : 1),
+        targetWeeks: weeks,
+        startDate: goal?.startDate ?? todayIso(),
+      });
+      if (!result.ok) { setError(result.error); return; }
+      setEditing(false);
+    } catch {
+      setError('Não foi possível salvar a meta. Verifique sua conexão.');
+    } finally { setSaving(false); }
+  }
+
+  async function handleDelete() {
+    setSaving(true); setError('');
+    try {
+      const result = await setWeightGoal(null);
+      if (!result.ok) { setError(result.error); return; }
+      setEditing(true);
+    } catch {
+      setError('Não foi possível apagar a meta.');
+    } finally { setSaving(false); }
   }
 
   if (editing) {
     return (
       <Card className="mb-4">
         <p className="text-sm font-medium mb-1 flex items-center gap-1.5">
-          <Target size={15} style={{ color: 'var(--brand)' }} /> Meta de perda de peso
+          <Target size={15} style={{ color: 'var(--brand)' }} /> Meta de peso
         </p>
         <p className="text-xs mb-3" style={{ color: 'var(--text-faint)' }}>
           Estimativa geral pra te ajudar a planejar — não substitui orientação médica ou nutricional.
         </p>
+        <div className="flex gap-2 mb-3">
+          {(['perder', 'ganhar'] as const).map((direction) => (
+            <button type="button" key={direction}
+              onClick={() => setForm({ ...form, direction })}
+              className="flex-1 rounded-lg px-3 py-2 text-xs font-medium"
+              style={{ background: form.direction === direction ? 'var(--brand)' : 'var(--surface-2)',
+                color: form.direction === direction ? 'white' : 'var(--text-dim)' }}>
+              {direction === 'perder' ? 'Perder peso' : 'Ganhar peso'}
+            </button>
+          ))}
+        </div>
         <div className="grid grid-cols-2 gap-3 mb-3">
           <label className="flex flex-col gap-1">
             <span className="text-xs" style={{ color: 'var(--text-faint)' }}>
@@ -138,7 +186,7 @@ function WeightGoalCard({
           </label>
           <label className="flex flex-col gap-1">
             <span className="text-xs" style={{ color: 'var(--text-faint)' }}>
-              Quer perder (kg)
+              Quer {form.direction === 'perder' ? 'perder' : 'ganhar'} (kg)
             </span>
             <input
               type="number"
@@ -152,23 +200,35 @@ function WeightGoalCard({
           </label>
           <label className="flex flex-col gap-1 col-span-2">
             <span className="text-xs" style={{ color: 'var(--text-faint)' }}>
-              Em quantas semanas (~)
+              Ritmo (kg por semana)
             </span>
             <input
               type="number"
               inputMode="numeric"
-              value={form.targetWeeks}
-              onChange={(e) => setForm({ ...form, targetWeeks: e.target.value })}
-              placeholder="Ex: 10"
+              value={form.weeklyRateKg}
+              min="0.05"
+              max="2"
+              step="0.05"
+              onChange={(e) => setForm({ ...form, weeklyRateKg: e.target.value })}
+              placeholder="Ex: 0.25"
               className="w-full rounded-lg px-3 py-2 text-sm"
               style={{ background: 'var(--surface-2)' }}
             />
           </label>
         </div>
+        {weeks !== null && (
+          <div className="rounded-lg p-3 text-xs mb-3" style={{ background: 'var(--surface-2)' }}>
+            <p>Peso-alvo: {targetWeight.toFixed(1)} kg</p>
+            <p>Prazo estimado: {weeks} semanas</p>
+            <p>Data prevista: {formatDate(goal?.startDate ?? todayIso(), weeks)}</p>
+            {rateKg > 1 && <p className="mt-1" style={{ color: 'var(--warn)' }}>Ritmo elevado: procure orientação individualizada.</p>}
+          </div>
+        )}
+        {error && <p role="alert" className="text-xs mb-2" style={{ color: 'var(--danger)' }}>{error}</p>}
         <div className="flex gap-2">
           <Button
             full
-            disabled={!form.startWeightKg || !form.targetLossKg || !form.targetWeeks}
+            disabled={!valid || saving}
             onClick={handleSave}
           >
             {goal ? 'Salvar alterações' : 'Definir meta'}
@@ -191,24 +251,27 @@ function WeightGoalCard({
     <Card className="mb-4">
       <div className="flex items-start justify-between mb-1">
         <p className="text-sm font-medium flex items-center gap-1.5">
-          <Target size={15} style={{ color: 'var(--brand)' }} /> Meta de perda de peso
+          <Target size={15} style={{ color: 'var(--brand)' }} /> Meta de peso
         </p>
         <div className="flex items-center gap-2">
           <button onClick={() => setEditing(true)} style={{ color: 'var(--text-faint)' }}>
             <Pencil size={14} />
           </button>
-          <button onClick={() => setWeightGoal(null)} style={{ color: 'var(--text-faint)' }}>
+          <button aria-label="Apagar meta" disabled={saving} onClick={handleDelete} style={{ color: 'var(--text-faint)' }}>
             <X size={15} />
           </button>
         </div>
       </div>
       <p className="text-xs mb-3" style={{ color: 'var(--text-faint)' }}>
-        {g.startWeightKg}kg → {targetWeightKg.toFixed(1)}kg em ~{g.targetWeeks} semanas ({assessment.targetWeeklyRateKg.toFixed(2)}kg/semana)
+        {g.startWeightKg} kg → {targetWeightKg.toFixed(1)} kg · {g.targetLossKg >= 0 ? 'Perder' : 'Ganhar'} {Math.abs(g.targetLossKg).toFixed(1)} kg
+        em aproximadamente {g.targetWeeks} semanas ({Math.abs(assessment.targetWeeklyRateKg).toFixed(2)} kg/semana).
+        Previsão: {formatDate(g.startDate, g.targetWeeks)}.
       </p>
 
       <p className="text-xs mb-3" style={{ color: 'var(--text-dim)' }}>
         {assessment.pace.message}
       </p>
+      {error && <p role="alert" className="text-xs mb-2" style={{ color: 'var(--danger)' }}>{error}</p>}
 
       <div
         className="rounded-xl p-3 text-sm mb-2"
