@@ -16,7 +16,7 @@ const SUPABASE_URL = 'https://jeeqklhckuwcgqygadpu.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_vc9GJoZnx8Em3Ou_8k-1Rg_V63uIt8F';
 
 const MODEL = 'claude-haiku-4-5-20251001';
-const MAX_TOKENS = 1000;
+const MAX_TOKENS = 1700;
 const MAX_QUESTION_LEN = 1500;
 const MAX_CONTEXT_LEN = 12000;
 const MAX_HISTORY_MESSAGES = 12;
@@ -42,9 +42,16 @@ Regras importantes:
   TODAS elas, nada é aplicado de verdade até a pessoa confirmar na tela; você
   nunca aplica nada sozinho, só propõe.
   1) propose_schedule_changes — pra mudar a AGENDA SEMANAL (trocar um dia
-     entre treino/cardio/descanso, incluir natação/corrida/bike num dia, dar
-     folga). Use sempre o id exato de um treino existente (fornecido nos
-     dados) quando kind for "treino". Nunca invente um workoutId.
+     entre treino/cardio/descanso e kind="multi" para combinar várias opções
+     independentes no mesmo dia. Exemplos: musculação + HYROX, corrida + força,
+     corrida + musculação + core, ou apenas uma delas. NÃO imponha ordem
+     obrigatória, nem obrigue a cumprir todas as opções. Para kind="multi",
+     informe workoutIds (IDs reais de 1 a 5 treinos já cadastrados) e
+     includeCardio=true caso queira adicionar corrida/cardio. Use somente
+     IDs exatos dos treinos existentes no contexto, sem inventar IDs.
+     Ao combinar programas, evite somar volumes de treino indiscriminadamente;
+     considere experiência, frequência, fadiga e descanso. Nada se aplica
+     sem confirmação da pessoa.
   2) propose_new_workout — quando a pessoa pedir pra CRIAR UM TREINO NOVO do
      zero (ex: "monta um treino de perna", "cria um push de 45 minutos").
      Sugira entre 6 e 9 exercícios pra uma sessão completa (menos se ela
@@ -75,7 +82,7 @@ const ICON_KEYS = ['dumbbell', 'flame', 'target', 'footprints', 'zap', 'activity
 const SCHEDULE_TOOL = {
   name: 'propose_schedule_changes',
   description:
-    'Propõe uma ou mais mudanças concretas na agenda semanal de treino da pessoa (o que fazer em cada dia: treino específico, cardio, ou descanso), para ela revisar e confirmar na tela antes de qualquer coisa ser aplicada de verdade.',
+    'Propõe agendas flexíveis, incluindo múltiplos treinos cadastrados e cardio no mesmo dia (kind=multi), sem ordem ou obrigação. Mostre para aprovação.',
   input_schema: {
     type: 'object',
     properties: {
@@ -95,15 +102,23 @@ const SCHEDULE_TOOL = {
             },
             kind: {
               type: 'string',
-              enum: ['treino', 'cardio', 'descanso'],
+              enum: ['treino', 'cardio', 'multi', 'descanso'],
             },
             workoutId: {
               type: 'string',
-              description: 'Obrigatório quando kind="treino": o id exato de um treino existente, copiado dos dados fornecidos.',
+              description: 'Obrigatório quando kind=treino: ID exato de um treino existente.',
             },
+            workoutIds: {
+              type: 'array',
+              items: { type: 'string' },
+              description: 'Para kind=multi: IDs reais dos treinos existentes para oferecer como opções no mesmo dia, até 5.',
+            },
+            includeCardio: { type: 'boolean', description: 'kind=multi: incluir também corrida/cardio (sem ordem fixa).' },
+            label: { type: 'string', description: 'Nome opcional da sessão cardio.' },
+            suggestedDurationMin: { type: 'number', description: 'Tempo opcional do cardio em minutos.' },
             suggestedDistanceKm: {
               type: 'number',
-              description: 'Opcional, só quando kind="cardio": meta de distância sugerida em km.',
+              description: 'Distância opcional de referência em km para cardio.',
             },
           },
           required: ['weekday', 'kind'],
@@ -198,7 +213,7 @@ const WORKOUT_EDIT_TOOL = {
 };
 
 const VALID_WEEKDAYS = new Set(['seg', 'ter', 'qua', 'qui', 'sex', 'sab', 'dom']);
-const VALID_KINDS = new Set(['treino', 'cardio', 'descanso']);
+const VALID_KINDS = new Set(['treino', 'cardio', 'multi', 'descanso']);
 const VALID_EDIT_ACTIONS = new Set(['add', 'remove', 'replace', 'update_sets']);
 const MAX_ITEMS_PER_PROPOSAL = 12;
 
@@ -207,6 +222,10 @@ interface ScheduleChangeRaw {
   kind?: unknown;
   workoutId?: unknown;
   suggestedDistanceKm?: unknown;
+  workoutIds?: unknown;
+  includeCardio?: unknown;
+  label?: unknown;
+  suggestedDurationMin?: unknown;
 }
 
 function sanitizeScheduleProposal(input: unknown): { summary: string; changes: ScheduleChangeRaw[] } | null {
@@ -222,7 +241,13 @@ function sanitizeScheduleProposal(input: unknown): { summary: string; changes: S
       weekday: c.weekday,
       kind: c.kind,
       workoutId: typeof c.workoutId === 'string' ? c.workoutId.slice(0, 200) : undefined,
-      suggestedDistanceKm: typeof c.suggestedDistanceKm === 'number' ? c.suggestedDistanceKm : undefined,
+      suggestedDistanceKm: typeof c.suggestedDistanceKm === 'number' && Number.isFinite(c.suggestedDistanceKm) && c.suggestedDistanceKm > 0 ? Math.min(100, c.suggestedDistanceKm) : undefined,
+      suggestedDurationMin: typeof c.suggestedDurationMin === 'number' && Number.isFinite(c.suggestedDurationMin) ? Math.min(180, Math.max(1, Math.round(c.suggestedDurationMin))) : undefined,
+      label: typeof c.label === 'string' ? c.label.slice(0, 90) : undefined,
+      workoutIds: Array.isArray(c.workoutIds)
+        ? [...new Set(c.workoutIds.filter((x): x is string => typeof x === 'string').map(id => id.slice(0, 200)))].slice(0, 5)
+        : undefined,
+      includeCardio: c.includeCardio === true,
     }))
     .slice(0, 7);
   if (!summary || changes.length === 0) return null;
