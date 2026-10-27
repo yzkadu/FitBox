@@ -240,6 +240,15 @@ export const BUILTIN_EXERCISES: Exercise[] = [
   { id: 'ex-fedb-cable-reverse-crunch', name: 'Abdominal reverso no cabo', muscleGroup: 'abdomen', equipment: 'cabo' },
   { id: 'ex-fedb-side-jackknife', name: 'Abdominal jackknife lateral', muscleGroup: 'abdomen' },
 
+  // Modalidades híbridas: exercícios adicionados sem mudar IDs históricos.
+  { id: 'ex-hyrox-ski', name: 'HYROX · SkiErg', muscleGroup: 'cardio', equipment: 'SkiErg' },
+  { id: 'ex-hyrox-sled-push', name: 'HYROX · Empurrar trenó', muscleGroup: 'cardio', equipment: 'trenó / pista' },
+  { id: 'ex-hyrox-sled-pull', name: 'HYROX · Puxar trenó', muscleGroup: 'cardio', equipment: 'trenó / corda' },
+  { id: 'ex-hyrox-burpee', name: 'Burpee com salto à frente', muscleGroup: 'cardio' },
+  { id: 'ex-hyrox-farmers', name: 'HYROX · Caminhada do fazendeiro', muscleGroup: 'outro', equipment: 'kettlebells / halteres' },
+  { id: 'ex-hyrox-sandbag', name: 'HYROX · Afundo com sandbag', muscleGroup: 'perna', equipment: 'sandbag' },
+  { id: 'ex-hyrox-wall-ball', name: 'HYROX · Wall ball', muscleGroup: 'perna', equipment: 'bola medicinal e alvo' },
+
   // Cardio (importados)
   { id: 'ex-fedb-prowler-sprint', name: 'Prowler (empurrar trenó)', muscleGroup: 'cardio' },
   { id: 'ex-fedb-wind-sprints', name: 'Sprints (tiros de velocidade)', muscleGroup: 'cardio' },
