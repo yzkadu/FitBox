@@ -362,3 +362,28 @@ input[type="number"] {
   fill: #c34c4c;
   fill-opacity: 0.5;
 }
+
+/* Visual de exercícios = mesmo personagem do Mapa Muscular, com o mesmo roxo
+ * (--brand) do FitBox. O SVG fonte permanece inalterado. */
+.exercise-anatomy .semantic-region .muscle-region {
+  pointer-events: none;
+  cursor: default;
+}
+.exercise-anatomy[data-focus='chest'] .semantic-region[data-muscle-group='chest'] .muscle-region,
+.exercise-anatomy[data-focus='back'] .semantic-region[data-muscle-group='back'] .muscle-region,
+.exercise-anatomy[data-focus='shoulders'] .semantic-region[data-muscle-group='shoulders'] .muscle-region,
+.exercise-anatomy[data-focus='biceps'] .semantic-region[data-muscle-group='biceps'] .muscle-region,
+.exercise-anatomy[data-focus='triceps'] .semantic-region[data-muscle-group='triceps'] .muscle-region,
+.exercise-anatomy[data-focus='forearms'] .semantic-region[data-muscle-group='forearms'] .muscle-region,
+.exercise-anatomy[data-focus='core'] .semantic-region[data-muscle-group='core'] .muscle-region,
+.exercise-anatomy[data-focus='glutes'] .semantic-region[data-muscle-group='glutes'] .muscle-region,
+.exercise-anatomy[data-focus='quadriceps'] .semantic-region[data-muscle-group='quadriceps'] .muscle-region,
+.exercise-anatomy[data-focus='adductors'] .semantic-region[data-muscle-group='adductors'] .muscle-region,
+.exercise-anatomy[data-focus='hamstrings'] .semantic-region[data-muscle-group='hamstrings'] .muscle-region,
+.exercise-anatomy[data-focus='calves'] .semantic-region[data-muscle-group='calves'] .muscle-region {
+  fill: var(--brand);
+  fill-opacity: 0.58;
+  stroke: var(--brand-2);
+  stroke-opacity: 0.95;
+  stroke-width: 1.5;
+}
