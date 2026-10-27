@@ -37,16 +37,25 @@ function Splash() {
 export default function App() {
   const { session, authLoading } = useAuth();
   const [dataReady, setDataReady] = useState(false);
+  const [dataError, setDataError] = useState('');
+  const [usingLocalCopy, setUsingLocalCopy] = useState(false);
+  const [loadAttempt, setLoadAttempt] = useState(0);
 
   useEffect(() => {
     if (!session) {
       store.clear();
       setDataReady(false);
+      setDataError('');
+      setUsingLocalCopy(false);
       return;
     }
     let cancelled = false;
     setDataReady(false);
-    store.loadForUser(session.user.id).then(() => {
+    setDataError('');
+    setUsingLocalCopy(false);
+    store.loadForUser(session.user.id).then(({ fromCache }) => {
+      if (cancelled) return;
+      setUsingLocalCopy(fromCache);
       if (cancelled) return;
       const snapshot = store.getSnapshot();
       const isEmpty = snapshot.workouts.length === 0 && Object.keys(snapshot.weeklySchedule).length === 0;
@@ -55,7 +64,7 @@ export default function App() {
       // caímos pro template salvo nos metadados do usuário no momento do cadastro.
       const metaTemplate = session.user.user_metadata?.template as ProgramTemplateId | undefined;
       const pendingTemplate = takePendingTemplate() ?? metaTemplate ?? null;
-      if (isEmpty && pendingTemplate === 'smart') {
+      if (!fromCache && isEmpty && pendingTemplate === 'smart') {
         // Plano montado com regras a partir das respostas do quiz (ver
         // lib/programRecommendation.ts) — os dados já foram enviados junto
         // no cadastro (options.data do signUp), então dá pra reconstruir o
@@ -68,23 +77,45 @@ export default function App() {
           equipment: (meta.equipment as Equipment[]) ?? [],
           trainingTypes: (meta.trainingTypes as TrainingType[]) ?? [],
         });
-      } else if (isEmpty && pendingTemplate && pendingTemplate !== 'blank') {
+      } else if (!fromCache && isEmpty && pendingTemplate && pendingTemplate !== 'blank') {
         applyProgramTemplate(pendingTemplate);
       }
       setDataReady(true);
+    }).catch((error: unknown) => {
+      if (!cancelled) setDataError(error instanceof Error ? error.message : 'Não foi possível carregar os dados.');
     });
     return () => {
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [session?.user.id]);
+  }, [session?.user.id, loadAttempt]);
 
   if (authLoading) return <Splash />;
   if (!session) return <Auth />;
+  if (dataError) return (
+    <div className="min-h-screen flex flex-col items-center justify-center px-6 gap-4 text-center"
+      style={{ background: 'var(--bg)', color: 'var(--text)' }}>
+      <Dumbbell size={28} style={{ color: 'var(--brand)' }} />
+      <h1 className="font-semibold">Não foi possível carregar seus dados</h1>
+      <p className="text-sm" role="alert" style={{ color: 'var(--text-dim)' }}>{dataError}</p>
+      <button type="button" onClick={() => setLoadAttempt((attempt) => attempt + 1)}
+        className="rounded-xl px-5 py-2.5 text-sm font-medium"
+        style={{ background: 'var(--brand)', color: 'white' }}>Tentar novamente</button>
+    </div>
+  );
   if (!dataReady) return <Splash />;
 
   return (
     <BrowserRouter>
+      {usingLocalCopy && (
+        <div role="status" className="p-3 text-center text-xs"
+          style={{ background: 'var(--surface-2)', color: 'var(--warn)' }}>
+          Sem conexão com os dados online. Mostrando a última cópia local (sem fotos).
+          <button type="button" className="ml-2 underline" onClick={() => setLoadAttempt((attempt) => attempt + 1)}>
+            Reconectar
+          </button>
+        </div>
+      )}
       <Routes>
         <Route element={<Layout />}>
           <Route path="/" element={<Home />} />
