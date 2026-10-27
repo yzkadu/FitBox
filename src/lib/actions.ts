@@ -51,14 +51,41 @@ async function syncWorkoutExercises(workoutId: string) {
   supabase.from('workouts').update({ exercises: workout.exercises }).eq('id', workoutId).then(logIfError('workouts.exercises'));
 }
 
-/** Reenvia o array de exercícios/séries (jsonb) inteiro de uma sessão para o Supabase. */
-async function syncSessionExercises(sessionId: string) {
-  const userId = requireUserId();
-  if (!userId) return;
-  await pendingSessionInserts.get(sessionId);
-  const session = store.getSnapshot().sessions.find((s) => s.id === sessionId);
-  if (!session) return;
-  supabase.from('sessions').update({ exercises: session.exercises }).eq('id', sessionId).then(logIfError('sessions.exercises'));
+/** Coalesce edições rápidas de peso/reps em uma fila por sessão. Uma gravação
+ * assíncrona mais antiga não pode sobrescrever a última em ordem invertida.
+ * Cada próxima gravação lê o snapshot atual antes de enviá-lo.
+ */
+const pendingSessionUpdates = new Map<string, Promise<void>>();
+const dirtySessions = new Set<string>();
+
+function syncSessionExercises(sessionId: string) {
+  if (!requireUserId()) return;
+  if (pendingSessionUpdates.has(sessionId)) {
+    dirtySessions.add(sessionId);
+    return;
+  }
+
+  const promise = (async () => {
+    try {
+      await pendingSessionInserts.get(sessionId);
+      do {
+        dirtySessions.delete(sessionId);
+        const current = store.getSnapshot().sessions.find(s => s.id === sessionId);
+        if (!current) return;
+        // Congela os dados enviados para uma edição posterior não alterá-los
+        // enquanto a requisição anterior ainda está em trânsito.
+        const exercises = JSON.parse(JSON.stringify(current.exercises));
+        const { error } = await supabase.from('sessions')
+          .update({ exercises }).eq('id', sessionId);
+        if (error) console.error('Falha ao sincronizar (sessions.exercises):', error);
+      } while (dirtySessions.has(sessionId));
+    } finally {
+      pendingSessionUpdates.delete(sessionId);
+      dirtySessions.delete(sessionId);
+    }
+  })();
+
+  pendingSessionUpdates.set(sessionId, promise);
 }
 
 function syncWeeklySchedule() {
@@ -406,6 +433,9 @@ export async function finishSession(
   const userId = requireUserId();
   if (userId) {
     await pendingSessionInserts.get(sessionId);
+    // A finalização precisa acontecer DEPOIS de todas as mudanças de série,
+    // não competir com atualizações assíncronas iniciadas a cada tecla.
+    await pendingSessionUpdates.get(sessionId);
     const { error } = await supabase
       .from('sessions')
       .update({
