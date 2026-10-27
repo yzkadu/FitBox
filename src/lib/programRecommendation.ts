@@ -13,10 +13,11 @@
 // (isso é a "Fase 9 — FitBox AI real" do roadmap, que precisa de um backend
 // seguro antes).
 
-import { createWorkout, addExerciseToWorkout, setDaySchedule } from './actions';
+import { createWorkout, addExerciseToWorkout, replaceWeeklySchedule } from './actions';
+import { READY_PROGRAMS } from './readyPrograms';
 import type { Equipment, ExperienceLevel, TrainingGoal, TrainingType, WeeklyFrequency } from './onboarding';
 import type { IconKey } from './workoutIcons';
-import { WEEKDAY_ORDER, type Weekday } from '../types';
+import { WEEKDAY_ORDER, type Weekday, type WeeklySchedule } from '../types';
 
 export interface RecommendationInput {
   goal: TrainingGoal | null;
@@ -30,6 +31,8 @@ interface ExerciseSpec {
   id: string;
   sets: number;
   reps: string;
+  notes?: string;
+  restSeconds?: number;
 }
 
 interface WorkoutSpec {
@@ -38,7 +41,7 @@ interface WorkoutSpec {
   exercises: ExerciseSpec[];
 }
 
-type ScheduleEntry = { kind: 'treino'; workoutIndex: number } | { kind: 'cardio'; suggestedDistanceKm?: number } | { kind: 'descanso' };
+type ScheduleEntry = { kind: 'treino'; workoutIndex: number } | { kind: 'cardio'; suggestedDistanceKm?: number; label?: string } | { kind: 'descanso' };
 
 export interface RecommendedProgramPlan {
   /** Rótulo curto da divisão escolhida, ex: "Push / Pull / Legs". */
@@ -106,7 +109,7 @@ const GOAL_PROFILES: Record<TrainingGoal, GoalProfile> = {
   performance: { sets: 4, mainReps: '5-6', isoReps: '8-10', blockCount: 4, fullCount: 5, note: 'cargas mais altas, menos repetição — foco em força' },
   ganhar_massa: { sets: 4, mainReps: '8-10', isoReps: '10-12', blockCount: 6, fullCount: 7, note: 'volume alto pra hipertrofia' },
   definicao: { sets: 3, mainReps: '10-12', isoReps: '12-15', blockCount: 5, fullCount: 6, note: 'volume moderado com repetição mais alta' },
-  emagrecer: { sets: 3, mainReps: '12-15', isoReps: '15-20', blockCount: 5, fullCount: 6, note: 'repetição alta e descanso curto — foco em gasto calórico' },
+  emagrecer: { sets: 3, mainReps: '12-15', isoReps: '15-20', blockCount: 5, fullCount: 6, note: 'treino de força para preservar condicionamento e massa magra; emagrecimento exige um plano alimentar compatível' },
   saude: { sets: 3, mainReps: '10-12', isoReps: '12-15', blockCount: 4, fullCount: 5, note: 'treino equilibrado e mais curto, fácil de manter' },
 };
 
@@ -135,7 +138,59 @@ function activeDaysFromFrequency(frequency: WeeklyFrequency | null): number {
   return 3; // '2-3' ou não informado
 }
 
+/** Usa uma programação curada quando a resposta do cadastro indica uma modalidade específica.
+ * Nunca oferece equipamentos que o perfil declarou não ter. */
+function getCuratedPlan(input: RecommendationInput): RecommendedProgramPlan | null {
+  const gym = input.equipment.includes('academia');
+  const withDumbbells = input.equipment.includes('casa_equipamento');
+  const wantsHyrox = input.trainingTypes.includes('hirox');
+  const wantsRunning = input.trainingTypes.includes('aerobico');
+  const wantsLoseWeight = input.goal === 'emagrecer' || input.goal === 'definicao';
+  let programId: string | null = null;
+
+  if (wantsHyrox && gym) {
+    if (input.experience === 'iniciante') programId = 'hyrox-inicio';
+    else programId = wantsLoseWeight ? 'hibrido-emagrecimento' : 'hyrox-intermediario';
+  } else if (!gym && !withDumbbells) {
+    programId = wantsRunning && input.goal === 'performance' ? 'corrida-primeiros-5km' : 'casa-zero-equipamento';
+  } else if (!gym && withDumbbells) {
+    programId = 'halteres-em-casa';
+  } else if (gym && input.experience === 'iniciante') {
+    programId = 'academia-comecar';
+  } else if (gym && wantsLoseWeight && wantsRunning) {
+    programId = 'hibrido-emagrecimento';
+  } else if (gym && wantsRunning && input.goal === 'performance') {
+    programId = 'corrida-10km';
+  }
+
+  const program = READY_PROGRAMS.find((p) => p.id === programId);
+  if (!program?.weekPlan || program.weekPlan.length !== 7) return null;
+  const schedule: Partial<Record<Weekday, ScheduleEntry>> = {};
+  WEEKDAY_ORDER.forEach((day, index) => {
+    const step = program.weekPlan![index];
+    schedule[day] = step.kind === 'rest' ? { kind: 'descanso' }
+      : step.kind === 'cardio' ? { kind: 'cardio', suggestedDistanceKm: step.distanceKm, label: step.label }
+      : { kind: 'treino', workoutIndex: step.index };
+  });
+
+  return {
+    splitLabel: program.title,
+    summaryLines: [
+      program.description,
+      program.progression ?? 'Aumente o volume de treino gradualmente, respeitando sua recuperação.',
+      'Treinos distribuídos ao longo da semana com dias de recuperação. Tudo pode ser editado depois.',
+    ],
+    workouts: program.days.map((d) => ({
+      name: d.name, icon: d.emoji as IconKey,
+      exercises: d.exercises.map((e) => ({ id: e.id, sets: e.sets, reps: e.reps, notes: e.notes, restSeconds: e.restSeconds })),
+    })),
+    schedule,
+  };
+}
+
 export function recommendProgram(input: RecommendationInput): RecommendedProgramPlan {
+  const curatedPlan = getCuratedPlan(input);
+  if (curatedPlan) return curatedPlan;
   const goal = input.goal ?? 'saude';
   const profile = GOAL_PROFILES[goal];
   const tier = resolveTier(input.equipment);
@@ -236,13 +291,15 @@ export function applyRecommendedProgram(input: RecommendationInput): void {
   const plan = recommendProgram(input);
   const createdIds = plan.workouts.map((w) => {
     const workout = createWorkout(w.name, w.icon);
-    w.exercises.forEach((ex) => addExerciseToWorkout(workout.id, ex.id, ex.sets, ex.reps));
+    w.exercises.forEach((e) => addExerciseToWorkout(workout.id, e.id, e.sets, e.reps, e.notes, e.restSeconds));
     return workout.id;
   });
+  const schedule: WeeklySchedule = {};
   for (const day of WEEKDAY_ORDER) {
     const entry = plan.schedule[day];
     if (!entry) continue;
-    if (entry.kind === 'treino') setDaySchedule(day, { kind: 'treino', workoutId: createdIds[entry.workoutIndex] });
-    else setDaySchedule(day, entry);
+    if (entry.kind === 'treino') schedule[day] = { kind: 'treino', workoutId: createdIds[entry.workoutIndex] };
+    else schedule[day] = entry;
   }
+  replaceWeeklySchedule(schedule);
 }
