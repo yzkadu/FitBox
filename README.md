@@ -64,3 +64,32 @@ mostram uma prévia e só são aplicadas depois de tocar em **Aplicar**.
 
 Os programas prontos híbridos acrescentam opções combinadas na mesma data, sem
 substituir automaticamente sua agenda até que você confirme a ativação.
+
+## Biblioteca visual de exercícios (2026-10)
+
+- O catálogo embutido passou de **210** para **327** exercícios, preservando todos
+  os IDs antigos e os registros salvos.
+- O seletor permite filtrar por músculos e especialidades como funcional/HYROX,
+  calistenia/casa, mobilidade, antebraços, quadríceps, posteriores e panturrilhas.
+- **Seletor, montador, programas prontos, sessão e detalhes** exibem miniaturas.
+  O painel “Ver execução” mostra até duas fotografias estáticas do movimento.
+- Apenas um subconjunto possui correspondência visual mapeada manualmente em
+  `src/lib/exerciseMedia.ts`. O restante é identificado como sem demonstração
+  revisada — não é permitida uma imagem de outra variante como substituta.
+- Orientações individuais de execução são disponibilizadas quando revisadas;
+  na ausência delas o app mostra nome, equipamento e região alvo, sem inventar
+  passos técnicos específicos.
+- O **personagem anatômico do próprio FitBox**, em visualização masculina ou
+  feminina, pode ser aberto no guia para destacar a região predominante.
+  Esse destaque **não** é medição precisa de ativação muscular.
+- Fotos em duas posições não são vídeos ou animações nem substituem observação
+  técnica presencial; links remotos exigem conexão e podem ficar indisponíveis.
+
+**Direitos e atribuições:** as fotos vinculadas vieram de
+[yuhonas/free-exercise-db](https://github.com/yuhonas/free-exercise-db),
+que declara licença Unlicense para seu repositório. Parte da cadeia de
+origem dos desenhos/fotos pode remeter à obra Everkinetic sob
+[CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/);
+mantemos identificação e origem por precaução. As dez pranchas enviadas
+como referência estética não foram copiadas para o projeto público:
+seus direitos e a correção biomecânica de cada miniatura não foram verificados.
