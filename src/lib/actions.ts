@@ -233,6 +233,9 @@ export function startSession(workout: Workout): Session {
         return {
           id: uid(),
           exerciseId: we.exerciseId,
+          notes: we.notes,
+          targetReps: we.targetReps,
+          restSeconds: we.restSeconds,
           // Só o peso é pré-preenchido (ponto de partida sugerido); as reps ficam
           // em branco até o usuário realmente registrar o que fez na série, para
           // não gravar no histórico uma série que não foi executada.
