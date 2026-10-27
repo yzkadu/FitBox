@@ -38,7 +38,13 @@ function readLocalSnapshot(userId: string): AppData | null {
     if (!Array.isArray(data.workouts) || !Array.isArray(data.sessions) ||
         !Array.isArray(data.measurements) || !Array.isArray(data.cardioLogs) ||
         !data.weeklySchedule || typeof data.weeklySchedule !== 'object') return null;
-    return { ...emptyData(), ...data, photos: [], exercises: Array.isArray(data.exercises) ? data.exercises : [...BUILTIN_EXERCISES] };
+    // Mesmo usando cache antigo, sempre mesclar o catálogo embutido mais recente.
+    // Nunca depender da lista de exercícios que foi gravada na versão anterior.
+    const builtInIds = new Set(BUILTIN_EXERCISES.map(ex => ex.id));
+    const locallyCreated = Array.isArray(data.exercises)
+      ? data.exercises.filter(ex => ex.custom && !builtInIds.has(ex.id))
+      : [];
+    return { ...emptyData(), ...data, photos: [], exercises: [...BUILTIN_EXERCISES, ...locallyCreated] };
   } catch {
     return null;
   }
