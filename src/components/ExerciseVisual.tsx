@@ -85,7 +85,7 @@ export function ExerciseGuide({ exercise, compact = false }: { exercise?: Exerci
         </div>
         <span className="text-[10px] rounded-full px-2 py-1 shrink-0 font-semibold"
           style={{ background: 'var(--brand-dim)', color: 'var(--brand)' }}>
-          {images ? '2 fases' : 'Guia'}
+          {images ? (images.kind === 'foto' ? '2 fotos' : '2 ilustrações') : 'Guia'}
         </span>
       </div>
 
@@ -127,7 +127,7 @@ export function ExerciseGuide({ exercise, compact = false }: { exercise?: Exerci
                     style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
                     <div className={compact ? 'h-[96px] sm:h-[132px]' : 'h-[125px] sm:h-[158px]'}>
                       <ExercisePhoto src={src}
-                        alt={exercise.name + ' — fotografia da fase ' + (index + 1)}/>
+                        alt={exercise.name + ' — ' + (images.kind === 'foto' ? 'fotografia' : 'ilustração') + ' da fase ' + (index + 1)}/>
                     </div>
                     <p className="text-[10px] py-1.5 text-center"
                       style={{ color: 'var(--text-faint)' }}>
@@ -137,7 +137,9 @@ export function ExerciseGuide({ exercise, compact = false }: { exercise?: Exerci
                 ))}
               </div>
               <p className="text-[10px] leading-relaxed" style={{ color: 'var(--text-faint)' }}>
-                Posições de referência; as fotografias não são uma animação do movimento.
+                {images.kind === 'foto'
+                  ? 'Fotografias reais em duas posições do movimento; não são animação.'
+                  : 'Ilustrações específicas do movimento para orientar a posição; não são fotos nem animações.'}
               </p>
             </>
           ) : (
@@ -244,11 +246,13 @@ export function ExerciseGuide({ exercise, compact = false }: { exercise?: Exerci
           <Info size={13} className="shrink-0 mt-0.5"
             style={{ color: 'var(--text-faint)' }}/>
           <p className="text-[10px]" style={{ color: 'var(--text-faint)' }}>
-            {images
-              ? 'Fotografias de referência da biblioteca aberta free-exercise-db. '
-              : 'Ainda não há fotografia de execução revisada para esta variação. '}
+            {images ? images.credit + ' ' : 'Ainda não há demonstração de execução revisada para esta variação. '}
             A técnica deve ser adaptada ao seu nível e às orientações profissionais.
-            {images && (
+            {images?.sourceId === 'workout-guide/skierg' && (
+              <a className="underline ml-1" href="https://github.com/bryllim/workout-guide"
+                target="_blank" rel="noopener noreferrer">Fonte das ilustrações</a>
+            )}
+            {images?.kind === 'foto' && (
               <a className="underline ml-1" href="https://github.com/yuhonas/free-exercise-db"
                 target="_blank" rel="noopener noreferrer">Fonte das fotos</a>
             )}
