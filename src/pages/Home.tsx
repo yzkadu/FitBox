@@ -153,9 +153,9 @@ export function Home() {
             </Card>
           )}
 
-          {!activeSessionId && todaysOptions.length > 1 && (
+          {!activeSessionId && todaysOptions.length > 0 && (todaySchedule?.kind === 'multi' || todaySchedule?.kind === 'combo') && (
             <Card className="mb-4" style={{ borderColor: 'var(--brand)' }}>
-              <p className="text-sm font-semibold mb-1">Suas opções de treino de hoje</p>
+              <p className="text-sm font-semibold mb-1">Suas atividades de hoje</p>
               <p className="text-xs mb-3" style={{ color: 'var(--text-dim)' }}>
                 Faça musculação, cardio, HYROX ou combine atividades. Você decide a ordem e quantas realizar.
               </p>
