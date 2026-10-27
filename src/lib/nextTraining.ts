@@ -3,7 +3,7 @@ import { WEEKDAY_ORDER } from '../types';
 
 export type NextScheduledTraining =
   | { kind: 'treino'; weekday: Weekday; daysUntil: number; workout: Workout }
-  | { kind: 'cardio'; weekday: Weekday; daysUntil: number };
+  | { kind: 'cardio'; weekday: Weekday; daysUntil: number; label?: string };
 
 /** Compara datas no horário local do dispositivo, não em UTC. */
 function onLocalDay(iso: string, date: Date): boolean {
@@ -47,7 +47,7 @@ export function findNextScheduledTraining(
     const day = new Date(today.getFullYear(), today.getMonth(), today.getDate() + daysUntil);
     const weekday = WEEKDAY_ORDER[(day.getDay() + 6) % 7];
     const planned = schedule[weekday];
-    if (planned?.kind === 'cardio') return { kind: 'cardio', weekday, daysUntil };
+    if (planned?.kind === 'cardio') return { kind: 'cardio', weekday, daysUntil, label: planned.label };
     if (planned?.kind === 'treino') {
       const workout = workouts.find((w) => w.id === planned.workoutId && !w.archived);
       if (workout) return { kind: 'treino', weekday, daysUntil, workout };
