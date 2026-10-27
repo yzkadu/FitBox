@@ -59,6 +59,9 @@ export interface SessionExercise {
   exerciseId: string;
   sets: SetLog[];
   notes?: string;
+  /** Orientação de séries do montador, inclusive tempo e distância em estações HYROX. */
+  targetReps?: string;
+  restSeconds?: number;
 }
 
 /** A completed (or in-progress) workout session, derived from a Workout template */
