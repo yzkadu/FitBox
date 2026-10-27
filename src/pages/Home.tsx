@@ -261,7 +261,7 @@ export function Home() {
                       Próximo treino · {nextTraining.daysUntil === 1 ? 'Amanhã' : WEEKDAY_LABELS[nextTraining.weekday]}
                     </p>
                     <p className="text-sm font-medium truncate">
-                      {nextTraining.kind === 'cardio' ? (nextTraining.label ?? 'Cardio') : nextTraining.kind === 'combo' ? `Corrida → ${nextTraining.workout.name}` : nextTraining.workout.name}
+                      {nextTraining.kind === 'cardio' ? (nextTraining.label ?? 'Cardio') : nextTraining.workout.name}
                     </p>
                   </div>
                   {nextTraining.kind !== 'cardio' ? (
