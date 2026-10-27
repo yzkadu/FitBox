@@ -26,6 +26,39 @@ export function emptyData(): AppData {
   };
 }
 
+// Cache local por usuário: permite reabrir os últimos dados quando o servidor estiver indisponível.
+// Fotos continuam no Supabase; não usamos localStorage para imagens grandes.
+const CACHE_PREFIX = 'fitbox:snapshot:v1:';
+
+function readLocalSnapshot(userId: string): AppData | null {
+  try {
+    const saved = localStorage.getItem(CACHE_PREFIX + userId);
+    if (!saved) return null;
+    const data = JSON.parse(saved) as AppData;
+    if (!Array.isArray(data.workouts) || !Array.isArray(data.sessions) ||
+        !Array.isArray(data.measurements) || !Array.isArray(data.cardioLogs) ||
+        !data.weeklySchedule || typeof data.weeklySchedule !== 'object') return null;
+    return { ...emptyData(), ...data, photos: [], exercises: Array.isArray(data.exercises) ? data.exercises : [...BUILTIN_EXERCISES] };
+  } catch {
+    return null;
+  }
+}
+
+function saveLocalSnapshot(userId: string, data: AppData) {
+  try {
+    // Backup leve para que imagens em base64 não esgotem o armazenamento local.
+    const backup: AppData = {
+      ...data,
+      photos: [],
+      sessions: data.sessions.map(({ proofPhotoDataUrl: _photo, ...rest }) => rest),
+      cardioLogs: data.cardioLogs.map(({ proofPhotoDataUrl: _photo, ...rest }) => rest),
+    };
+    localStorage.setItem(CACHE_PREFIX + userId, JSON.stringify(backup));
+  } catch (error) {
+    console.warn('O navegador não permitiu atualizar a cópia local do FitBox:', error);
+  }
+}
+
 // ---------- Conversores linha do banco (snake_case) <-> objeto do app (camelCase) ----------
 
 function rowToWorkout(r: Record<string, unknown>): Workout {
@@ -132,6 +165,7 @@ class Store {
     const draft = structuredClone(this.data);
     const result = mutator(draft);
     this.data = result ?? draft;
+    if (this.userId) saveLocalSnapshot(this.userId, this.data);
     this.notify();
   }
 
@@ -143,9 +177,12 @@ class Store {
   }
 
   /** Carrega todos os dados do usuário logado a partir do Supabase. */
-  async loadForUser(userId: string) {
+  async loadForUser(userId: string): Promise<{ fromCache: boolean }> {
     this.userId = userId;
     this.loading = true;
+    const cached = readLocalSnapshot(userId);
+    // Nunca mantém o snapshot de outra conta durante a troca de usuário.
+    this.data = cached ?? emptyData();
     this.notify();
 
     const [workoutsRes, sessionsRes, customExRes, measurementsRes, photosRes, cardioRes, scheduleRes, goalRes] = await Promise.all([
@@ -159,8 +196,15 @@ class Store {
       supabase.from('weight_goal').select('*').eq('user_id', userId).maybeSingle(),
     ]);
 
-    for (const res of [workoutsRes, sessionsRes, customExRes, measurementsRes, photosRes, cardioRes, scheduleRes, goalRes]) {
-      if (res.error) console.error('Falha ao carregar dados do FitBox:', res.error);
+    const responses = [workoutsRes, sessionsRes, customExRes, measurementsRes, photosRes, cardioRes, scheduleRes, goalRes];
+    const failures = responses.filter((res) => res.error);
+    if (failures.length) {
+      failures.forEach((res) => console.error('Falha ao carregar dados do FitBox:', res.error));
+      this.loading = false;
+      this.notify();
+      if (cached) return { fromCache: true };
+      // Não interprete falhas no banco como "conta vazia" e não crie templates de treino sobre dados desconhecidos.
+      throw new Error('Não foi possível carregar seus dados. Verifique a conexão e tente novamente.');
     }
 
     const customExercises = (customExRes.data ?? []).map(rowToCustomExercise);
@@ -178,8 +222,10 @@ class Store {
       weightGoal: (goalRes.data?.goal as WeightGoal) ?? null,
       activeSessionId: (sessionsData.find((s) => !s.finished_at)?.id as string) ?? null,
     };
+    saveLocalSnapshot(userId, this.data);
     this.loading = false;
     this.notify();
+    return { fromCache: false };
   }
 }
 
