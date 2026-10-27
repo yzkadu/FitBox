@@ -173,6 +173,24 @@ function getCuratedPlan(input: RecommendationInput): RecommendedProgramPlan | nu
       : { kind: 'treino', workoutIndex: step.index };
   });
 
+  // Respeita a frequência escolhida: elimina sessões opcionais antes de
+  // oferecer uma semana com mais dias do que a pessoa declarou poder treinar.
+  const maxDays = input.frequency === '2-3' ? 3 : input.frequency === '4-5' ? 5 : 6;
+  const activeDays = () => WEEKDAY_ORDER.filter((day) => schedule[day]?.kind !== 'descanso').length;
+  const removeFirst = (kind: 'cardio' | 'treino') => {
+    for (const day of [...WEEKDAY_ORDER].reverse()) {
+      if (activeDays() <= maxDays) break;
+      if (schedule[day]?.kind === kind) schedule[day] = { kind: 'descanso' };
+    }
+  };
+  if (program.goal === 'corrida') {
+    removeFirst('treino');
+    removeFirst('cardio');
+  } else {
+    removeFirst('cardio');
+    removeFirst('treino');
+  }
+
   return {
     splitLabel: program.title,
     summaryLines: [
