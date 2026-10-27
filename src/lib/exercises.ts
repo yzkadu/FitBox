@@ -1,4 +1,5 @@
 import type { Exercise } from '../types';
+import { EXTRA_EXERCISES } from './extraExercises';
 
 /**
  * Built-in exercise catalog, seeded on first run. Users can add their own on top.
@@ -257,6 +258,7 @@ export const BUILTIN_EXERCISES: Exercise[] = [
   { id: 'ex-fedb-wrist-roller', name: 'Rolo de punho (wrist roller)', muscleGroup: 'outro' },
   { id: 'ex-fedb-seated-palm-up-barbell-wrist-curl', name: 'Rosca de punho sentado (pegada supinada) com barra', muscleGroup: 'outro', equipment: 'barra' },
   { id: 'ex-fedb-seated-palms-down-barbell-wrist-curl', name: 'Rosca de punho sentado (pegada pronada) com barra', muscleGroup: 'outro', equipment: 'barra' },
+  ...EXTRA_EXERCISES,
 ];
 
 export const MUSCLE_GROUP_LABELS: Record<string, string> = {
