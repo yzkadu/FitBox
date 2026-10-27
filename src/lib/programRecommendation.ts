@@ -41,7 +41,7 @@ interface WorkoutSpec {
   exercises: ExerciseSpec[];
 }
 
-type ScheduleEntry = { kind: 'treino'; workoutIndex: number } | { kind: 'cardio'; suggestedDistanceKm?: number; label?: string } | { kind: 'combo'; workoutIndex: number; order: 'cardio-first'; label?: string; suggestedDurationMin?: number; suggestedDistanceKm?: number } | { kind: 'descanso' };
+type ScheduleEntry = { kind: 'treino'; workoutIndex: number } | { kind: 'cardio'; suggestedDistanceKm?: number; label?: string } | { kind: 'combo'; workoutIndex: number; label?: string; suggestedDurationMin?: number; suggestedDistanceKm?: number } | { kind: 'descanso' };
 
 export interface RecommendedProgramPlan {
   /** Rótulo curto da divisão escolhida, ex: "Push / Pull / Legs". */
@@ -170,7 +170,7 @@ function getCuratedPlan(input: RecommendationInput): RecommendedProgramPlan | nu
     const step = program.weekPlan![index];
     schedule[day] = step.kind === 'rest' ? { kind: 'descanso' }
       : step.kind === 'cardio' ? { kind: 'cardio', suggestedDistanceKm: step.distanceKm, label: step.label }
-      : step.kind === 'combo' ? { kind: 'combo', workoutIndex: step.index, order: 'cardio-first', label: step.label, suggestedDurationMin: step.durationMin, suggestedDistanceKm: step.distanceKm }
+      : step.kind === 'combo' ? { kind: 'combo', workoutIndex: step.index, label: step.label, suggestedDurationMin: step.durationMin, suggestedDistanceKm: step.distanceKm }
       : { kind: 'treino', workoutIndex: step.index };
   });
 
