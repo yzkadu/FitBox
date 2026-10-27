@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useMemo, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { localIsoDate, getActivitiesForDay } from '../lib/nextTraining';
 import type { ReactNode } from 'react';
 import { Plus, Bike, Footprints, Waves, Trash2, Route as RouteIcon, Clock, Gauge, TrendingUp, Repeat, Zap, Anchor, Mountain } from 'lucide-react';
@@ -11,7 +11,6 @@ import { Sheet } from '../components/Sheet';
 import { PhotoField } from '../components/PhotoField';
 import { chartColors, tooltipStyle } from '../lib/chartTheme';
 import { CARDIO_PRESETS, cardioPresetLogNotes, type CardioPreset } from '../lib/cardioPresets';
-import { CardioPresetCard } from '../components/CardioPresetCard';
 import { WEEKDAY_ORDER } from '../types';
 import type { CardioActivityType, CardioLog } from '../types';
 
@@ -48,6 +47,7 @@ const ALL_CARDIO_TYPES: CardioActivityType[] = ['corrida', 'bike', 'natacao', 'e
 
 export function Cardio() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { cardioLogs, weeklySchedule } = useAppData();
   const [sheetOpen, setSheetOpen] = useState(false);
   const [activePreset, setActivePreset] = useState<string | null>(null);
@@ -85,6 +85,15 @@ export function Cardio() {
     });
     setSheetOpen(true);
   }
+
+  useEffect(() => {
+    const presetId = new URLSearchParams(location.search).get('preset');
+    if (!presetId) return;
+    const selected = CARDIO_PRESETS.find(p => p.id === presetId);
+    if (selected) registerPreset(selected);
+    // Limpa a URL para que atualizar a página não reabra o mesmo registro.
+    navigate('/cardio', { replace: true });
+  }, [location.search, navigate]);
 
   function openSheet() {
     if (cardioPlan && form.date === todayIso()) {
@@ -173,13 +182,11 @@ export function Cardio() {
         </Card>
       )}
 
-      <div className="flex items-center justify-between gap-2 mb-2.5">
-        <p className="text-sm font-semibold" style={{color:'var(--text-dim)'}}>Treinos prontos de cardio</p>
-        <span className="text-[11px]" style={{color:'var(--brand)'}}>Guias por etapas</span>
-      </div>
-      {CARDIO_PRESETS.map(preset => (
-        <CardioPresetCard key={preset.id} preset={preset} onRegister={registerPreset}/>
-      ))}
+      <button type="button" onClick={() => navigate('/treinos/programas')}
+        className="w-full text-left rounded-xl p-3 mb-4 text-xs"
+        style={{background:'var(--surface-2)',color:'var(--brand)'}}>
+        Procurando treinos prontos? Veja Emagrecimento → Corrida / esteira em Programas prontos.
+      </button>
 
       {cardioLogs.length > 0 && (
         <div className="grid grid-cols-3 gap-2.5 mb-5">
