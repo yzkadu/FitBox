@@ -1,4 +1,6 @@
 import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { localIsoDate } from '../lib/nextTraining';
 import type { ReactNode } from 'react';
 import { Plus, Bike, Footprints, Waves, Trash2, Route as RouteIcon, Clock, Gauge, TrendingUp, Repeat, Zap, Anchor, Mountain } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
@@ -12,7 +14,7 @@ import { WEEKDAY_ORDER } from '../types';
 import type { CardioActivityType, CardioLog } from '../types';
 
 function todayIso() {
-  return new Date().toISOString().slice(0, 10);
+  return localIsoDate(new Date());
 }
 
 /** Date.getDay(): 0=domingo...6=sábado → nosso índice seg..dom (0..6) */
@@ -43,11 +45,13 @@ const TYPE_META: Record<CardioActivityType, { label: string; icon: typeof Bike; 
 const ALL_CARDIO_TYPES: CardioActivityType[] = ['corrida', 'bike', 'natacao', 'eliptico', 'corda', 'remo', 'escada'];
 
 export function Cardio() {
+  const navigate = useNavigate();
   const { cardioLogs, weeklySchedule } = useAppData();
   const [sheetOpen, setSheetOpen] = useState(false);
 
   const todaySchedule = weeklySchedule[todayWeekdayKey()];
-  const suggestedDistanceKm = todaySchedule?.kind === 'cardio' ? todaySchedule.suggestedDistanceKm : undefined;
+  const suggestedDistanceKm = todaySchedule?.kind === 'cardio' || todaySchedule?.kind === 'combo' ? todaySchedule.suggestedDistanceKm : undefined;
+  const combinedToday = todaySchedule?.kind === 'combo';
 
   const [form, setForm] = useState({
     date: todayIso(),
@@ -61,7 +65,7 @@ export function Cardio() {
   const [proofPhoto, setProofPhoto] = useState<string | undefined>(undefined);
 
   function openSheet() {
-    if (todaySchedule?.kind === 'cardio' && form.date === todayIso()) {
+    if ((todaySchedule?.kind === 'cardio' || todaySchedule?.kind === 'combo') && form.date === todayIso()) {
       setForm((f) => ({
         ...f,
         distanceKm: suggestedDistanceKm && !f.distanceKm ? String(suggestedDistanceKm) : f.distanceKm,
@@ -113,6 +117,7 @@ export function Cardio() {
     setSheetOpen(false);
     setForm({ ...form, durationMin: '', distanceKm: '', avgHeartRate: '', rpe: '', notes: '' });
     setProofPhoto(undefined);
+    if (combinedToday && form.type === 'corrida' && form.date === todayIso()) navigate('/');
   }
 
   return (
@@ -131,11 +136,13 @@ export function Cardio() {
         }
       />
 
-      {todaySchedule?.kind === 'cardio' && (todaySchedule.label || suggestedDistanceKm) && (
+      {(todaySchedule?.kind === 'cardio' || todaySchedule?.kind === 'combo') && (todaySchedule.label || suggestedDistanceKm || combinedToday) && (
         <Card className="mb-4 flex items-start gap-3" style={{ borderColor: 'var(--success)' }}>
           <RouteIcon size={18} style={{ color: 'var(--success)' }} />
           <div className="text-sm">
             <p className="font-semibold">{todaySchedule.label ?? 'Cardio programado'}</p>
+            {combinedToday && <p className="text-xs mt-1" style={{ color: 'var(--brand)' }}>Etapa 1/2 · Registre sua corrida, depois volte à página inicial para iniciar a musculação.</p>}
+            {combinedToday && todaySchedule.suggestedDurationMin && <p className="text-xs mt-1" style={{ color: 'var(--text-dim)' }}>Duração sugerida: ~{todaySchedule.suggestedDurationMin} min, confortável.</p>}
             {suggestedDistanceKm && <p className="text-xs mt-1" style={{ color: 'var(--text-dim)' }}>
               Distância de referência: {suggestedDistanceKm} km — adapte ao condicionamento.
             </p>}
