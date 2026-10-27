@@ -22,8 +22,7 @@ export function hasCompletedScheduledActivityToday(
   today = new Date(),
 ): boolean {
   if (schedule?.kind === 'treino') {
-    return sessions.some((s) => s.finishedAt && onLocalDay(s.finishedAt, today) &&
-      (s.workoutId === schedule.workoutId || s.workoutId === null));
+    return sessions.some((s) => s.finishedAt && onLocalDay(s.finishedAt, today));
   }
   if (schedule?.kind === 'cardio') {
     const iso = [
