@@ -10,6 +10,7 @@
 // só depois decide os dias na "Programação da semana".
 
 import { createWorkout, addExerciseToWorkout, replaceWeeklySchedule } from './actions';
+import { EXTRA_WEIGHT_LOSS_PROGRAMS } from './weightLossPrograms';
 import { WEEKDAY_ORDER } from '../types';
 import type { Workout, WeeklySchedule } from '../types';
 
@@ -54,6 +55,7 @@ interface ReadyProgramDay {
 
 export type ProgramPlace = 'academia' | 'casa_equipamento' | 'peso_corporal' | 'misto' | 'ar_livre';
 export type ProgramLevel = 'iniciante' | 'intermediario' | 'avancado';
+export type ProgramModality = 'corrida' | 'forca' | 'hibrido' | 'casa' | 'funcional';
 export type WeekStep = { kind: 'workout'; index: number } | { kind: 'cardio'; label: string; distanceKm?: number } | { kind: 'combo'; index: number; label: string; durationMin?: number; distanceKm?: number } | { kind: 'rest' };
 
 export interface ReadyProgram {
@@ -63,6 +65,10 @@ export interface ReadyProgram {
   split: SplitLength;
   description: string;
   days: ReadyProgramDay[];
+  /** Modalidade principal, independente da categoria de objetivo. */
+  modality?: ProgramModality;
+  /** Protocolo intervalado de cardio, apresentado em vez de uma ficha de séries. */
+  cardioPresetId?: string;
   place?: ProgramPlace;
   level?: ProgramLevel;
   sessionMinutes?: number;
@@ -79,6 +85,22 @@ export const PLACE_LABELS: Record<ProgramPlace, string> = {
   misto: 'Academia + corrida',
   ar_livre: 'Corrida / ar livre',
 };
+export const MODALITY_LABELS: Record<ProgramModality, string> = {
+  corrida: 'Corrida / esteira',
+  forca: 'Musculação',
+  hibrido: 'Híbrido',
+  casa: 'Casa / baixo impacto',
+  funcional: 'Funcional',
+};
+export function programModality(program: ReadyProgram): ProgramModality {
+  if (program.modality) return program.modality;
+  if (program.goal === 'hibrido') return 'hibrido';
+  if (program.goal === 'corrida') return 'corrida';
+  if (program.goal === 'funcional') return 'funcional';
+  if (program.goal === 'calistenia' || program.goal === 'core' || program.goal === 'mobilidade') return 'casa';
+  return 'forca';
+}
+
 export const LEVEL_LABELS: Record<ProgramLevel, string> = {
   iniciante: 'Iniciante', intermediario: 'Intermediário', avancado: 'Avançado',
 };
@@ -377,6 +399,8 @@ export const READY_PROGRAMS: ReadyProgram[] = [
       },
     ],
   },
+
+  ...EXTRA_WEIGHT_LOSS_PROGRAMS,
 
   // ---------- Calistenia ----------
   {
@@ -828,7 +852,7 @@ export const READY_PROGRAMS: ReadyProgram[] = [
 /** Cria os treinos, sem alterar a agenda por padrão. */
 export function applyReadyProgram(programId: string, options?: { applySchedule?: boolean }): Workout[] {
   const program = READY_PROGRAMS.find((p) => p.id === programId);
-  if (!program) return [];
+  if (!program || program.cardioPresetId) return []; // protocolos cardio usam registro próprio
   const workouts = program.days.map((day) => {
     const workout = createWorkout(day.name, day.emoji);
     day.exercises.forEach((e) => addExerciseToWorkout(workout.id, e.id, e.sets, e.reps, e.notes, e.restSeconds));
