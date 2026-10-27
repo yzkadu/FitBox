@@ -189,7 +189,7 @@ export function Home() {
                 <p className="text-xs font-semibold mb-0.5" style={{ color: 'var(--success)' }}>
                   Hoje é dia de cardio
                 </p>
-                <p className="text-sm font-medium">Corrida ou bike — registre sua atividade</p>
+                <p className="text-sm font-medium">{todaySchedule.label ?? 'Corrida ou bike — registre sua atividade'}</p>
               </div>
               <ArrowRight size={16} style={{ color: 'var(--text-faint)' }} />
             </Card>
@@ -213,7 +213,7 @@ export function Home() {
                       Próximo treino · {nextTraining.daysUntil === 1 ? 'Amanhã' : WEEKDAY_LABELS[nextTraining.weekday]}
                     </p>
                     <p className="text-sm font-medium truncate">
-                      {nextTraining.kind === 'treino' ? nextTraining.workout.name : 'Cardio'}
+                      {nextTraining.kind === 'treino' ? nextTraining.workout.name : (weeklySchedule[nextTraining.weekday]?.kind === 'cardio' ? weeklySchedule[nextTraining.weekday].label ?? 'Cardio' : 'Cardio')}
                     </p>
                   </div>
                   {nextTraining.kind === 'treino' ? (
