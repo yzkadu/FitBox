@@ -5,7 +5,6 @@ import type { ReadyProgram, WeekStep } from './readyPrograms';
 const off: WeekStep = {kind:'rest'};
 const w = (index:number): WeekStep => ({kind:'workout',index});
 const c = (label:string,distanceKm?:number): WeekStep => ({kind:'cardio',label,distanceKm});
-const both = (index:number,label:string,durationMin:number): WeekStep => ({kind:'combo',index,label,durationMin});
 const e = (id:string,sets:number,reps:string,notes?:string,restSeconds?:number) =>
   ({id,sets,reps,notes,restSeconds});
 
