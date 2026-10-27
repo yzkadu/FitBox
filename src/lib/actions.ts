@@ -145,6 +145,8 @@ export function addExerciseToWorkout(
   exerciseId: string,
   targetSets = 3,
   targetReps = '10-12',
+  notes?: string,
+  restSeconds?: number,
 ): void {
   store.update((d) => {
     const w = d.workouts.find((w) => w.id === workoutId);
@@ -154,6 +156,8 @@ export function addExerciseToWorkout(
       exerciseId,
       targetSets,
       targetReps,
+      notes,
+      restSeconds,
       order: w.exercises.length,
     };
     w.exercises.push(entry);
@@ -621,6 +625,14 @@ export function deleteCardioLog(id: string) {
 }
 
 // ---------- Programa semanal ----------
+
+/** Aplica a agenda inteira com uma única atualização e uma única sincronização. */
+export function replaceWeeklySchedule(schedule: import('../types').WeeklySchedule) {
+  store.update((data) => {
+    data.weeklySchedule = schedule;
+  });
+  syncWeeklySchedule();
+}
 
 export function setDaySchedule(weekday: Weekday, schedule: DaySchedule | null) {
   store.update((d) => {
