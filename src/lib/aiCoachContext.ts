@@ -6,6 +6,7 @@
 import type { AppData } from '../types';
 import { WEEKDAY_LABELS, WEEKDAY_ORDER } from '../types';
 import { MUSCLE_GROUP_LABELS } from './exercises';
+import { getActivitiesForDay } from './nextTraining';
 import { getCoachSuggestion } from './coach';
 import { getCurrentStreakDays, getExerciseHistory, getTotalSessionsThisMonth, getTrainedExerciseIds } from './stats';
 import { assessWeightGoal } from './goal';
@@ -44,9 +45,11 @@ export function buildCoachContext(data: AppData, profileName?: string): string {
     if (sched?.kind === 'treino') {
       const w = workouts.find((w) => w.id === sched.workoutId);
       desc = w ? `treino "${w.name}"` : 'treino (removido)';
-    } else if (sched?.kind === 'combo') {
-      const w = workouts.find(w => w.id === sched.workoutId);
-      desc = `COMBINADO: corrida leve primeiro (${sched.suggestedDurationMin ?? 15}min), depois treino "${w?.name ?? 'removido'}" (id "${sched.workoutId}")`;
+    } else if (sched?.kind === 'multi' || sched?.kind === 'combo') {
+      const choices = getActivitiesForDay(sched).map(a => a.kind === 'treino'
+        ? 'treino "' + (workouts.find(w => w.id === a.workoutId)?.name ?? 'removido') + '" (id "' + a.workoutId + '")'
+        : 'cardio/corrida' + (a.label ? ' (' + a.label + ')' : ''));
+      desc = 'OPÇÕES LIVRES, SEM ORDEM NEM OBRIGAÇÃO: ' + choices.join(' + ');
     } else if (sched?.kind === 'cardio') {
       desc = sched.suggestedDistanceKm ? `cardio (meta ${sched.suggestedDistanceKm}km)` : 'cardio';
     } else if (sched?.kind === 'descanso') {
