@@ -5,18 +5,25 @@ import { PageHeader, Card, Button, Pill, AppIcon } from '../components/ui';
 import { Sheet } from '../components/Sheet';
 import { useAuth } from '../hooks/useAuth';
 import { useProfile } from '../hooks/useProfile';
+import { useAppData } from '../hooks/useAppData';
 import { WEEKDAY_LABELS } from '../types';
 import {
   READY_PROGRAMS, GOAL_LABELS, SPLIT_LABELS, PLACE_LABELS, LEVEL_LABELS,
-  applyReadyProgram, programPlace,
-  type ProgramGoal, type ProgramPlace, type ProgramLevel, type SplitLength, type ReadyProgram,
+  applyReadyProgram, programPlace, programModality, MODALITY_LABELS,
+  type ProgramGoal, type ProgramPlace, type ProgramLevel, type SplitLength, type ReadyProgram, type ProgramModality,
 } from '../lib/readyPrograms';
 import { BUILTIN_EXERCISES } from '../lib/exercises';
 import { ExerciseThumbnail, ExerciseGuide } from '../components/ExerciseVisual';
+import { CARDIO_PRESETS } from '../lib/cardioPresets';
+import { CardioPresetCard } from '../components/CardioPresetCard';
+import { getActivitiesForDay } from '../lib/nextTraining';
+import { setDaySchedule } from '../lib/actions';
+import type { Weekday } from '../types';
 
 const GOAL_FILTERS: ProgramGoal[] = [
   'hibrido', 'emagrecimento', 'hipertrofia', 'corrida', 'calistenia', 'funcional', 'core', 'mobilidade',
 ];
+const MODALITY_FILTERS: ProgramModality[] = ['corrida','forca','hibrido','casa','funcional'];
 const PLACE_FILTERS: ProgramPlace[] = ['academia', 'misto', 'peso_corporal', 'casa_equipamento', 'ar_livre'];
 const LEVEL_FILTERS: ProgramLevel[] = ['iniciante', 'intermediario', 'avancado'];
 const SPLIT_FILTERS: SplitLength[] = ['unico', 'ab', 'abc', 'abcd', 'abcde'];
@@ -51,7 +58,11 @@ export function ProgramLibrary() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [profile] = useProfile(user?.id);
+  const { weeklySchedule } = useAppData();
   const [goalFilter, setGoalFilter] = useState<ProgramGoal | null>(null);
+  const [modalityFilter, setModalityFilter] = useState<ProgramModality | null>(null);
+  const [presetWeekday, setPresetWeekday] = useState<Weekday>('seg');
+  const [presetAdded, setPresetAdded] = useState(false);
   const [placeFilter, setPlaceFilter] = useState<ProgramPlace | null>(null);
   const [levelFilter, setLevelFilter] = useState<ProgramLevel | null>(null);
   const [splitFilter, setSplitFilter] = useState<SplitLength | null>(null);
@@ -63,18 +74,34 @@ export function ProgramLibrary() {
   const filtered = useMemo(() => {
     return READY_PROGRAMS
       .filter((p) => (!goalFilter || p.goal === goalFilter) &&
+        (!modalityFilter || programModality(p) === modalityFilter) &&
         (!placeFilter || programPlace(p) === placeFilter) &&
         (!levelFilter || p.level === levelFilter || (!p.level && levelFilter === 'intermediario')) &&
         (!splitFilter || p.split === splitFilter))
       .map((p, index) => ({ p, index, score: profile ? fitScore(p, profile) : 0 }))
       .sort((a, b) => b.score - a.score || a.index - b.index)
       .map((entry) => entry.p);
-  }, [goalFilter, placeFilter, levelFilter, splitFilter, profile]);
+  }, [goalFilter, modalityFilter, placeFilter, levelFilter, splitFilter, profile]);
 
   function openPreview(p: ReadyProgram) {
     setAppliedMode(null);
     setError(null);
+    setPresetAdded(false);
     setPreview(p);
+  }
+
+  function scheduleCardioPreset(p: ReadyProgram) {
+    if (!p.cardioPresetId) return;
+    const preset = CARDIO_PRESETS.find(x => x.id === p.cardioPresetId);
+    if (!preset) return;
+    const existing = getActivitiesForDay(weeklySchedule[presetWeekday]);
+    const label = preset.title;
+    if (!existing.some(x => x.kind === 'cardio' && x.label === label)) {
+      setDaySchedule(presetWeekday, { kind: 'multi', activities: [
+        ...existing, { kind: 'cardio', label, suggestedDurationMin: preset.durationMin },
+      ] });
+    }
+    setPresetAdded(true);
   }
 
   function handleApply(withSchedule: boolean) {
@@ -113,6 +140,14 @@ export function ProgramLibrary() {
         <FilterChip label="Todos" active={goalFilter === null} onClick={() => setGoalFilter(null)} />
         {GOAL_FILTERS.map((g) =>
           <FilterChip key={g} label={GOAL_LABELS[g]} active={goalFilter === g} onClick={() => setGoalFilter(g)} />)}
+      </div>
+
+      <p className="text-xs font-medium mb-1.5" style={{ color: 'var(--text-dim)' }}>Tipo de treino</p>
+      <div className="flex flex-wrap gap-1.5 mb-3">
+        <FilterChip label="Todos" active={modalityFilter === null} onClick={() => setModalityFilter(null)} />
+        {MODALITY_FILTERS.map(m =>
+          <FilterChip key={m} label={MODALITY_LABELS[m]} active={modalityFilter === m}
+            onClick={() => setModalityFilter(m)} />)}
       </div>
 
       <p className="text-xs font-medium mb-1.5" style={{ color: 'var(--text-dim)' }}>Onde você treina?</p>
@@ -167,7 +202,7 @@ export function ProgramLibrary() {
         {filtered.length === 0 && (
           <div className="text-center py-8">
             <p className="text-sm mb-2" style={{ color: 'var(--text-dim)' }}>Nenhum programa com todos esses filtros.</p>
-            <button onClick={() => {setGoalFilter(null);setPlaceFilter(null);setLevelFilter(null);setSplitFilter(null);}}
+            <button onClick={() => {setGoalFilter(null);setModalityFilter(null);setPlaceFilter(null);setLevelFilter(null);setSplitFilter(null);}}
               className="text-xs font-semibold" style={{ color: 'var(--brand)' }}>Limpar filtros</button>
           </div>
         )}
@@ -176,6 +211,43 @@ export function ProgramLibrary() {
       <Sheet open={preview !== null} onClose={() => setPreview(null)} title={preview?.title ?? ''}>
         {preview && (
           <div className="flex flex-col gap-3">
+            {preview.cardioPresetId ? (() => {
+              const preset = CARDIO_PRESETS.find(p => p.id === preview.cardioPresetId);
+              return preset ? (
+                <>
+                  <div className="flex gap-2 flex-wrap">
+                    <Pill tone="brand">Emagrecimento</Pill>
+                    <Pill>Corrida / esteira</Pill>
+                    <Pill>{preset.durationMin} min</Pill>
+                  </div>
+                  <p className="text-xs" style={{color:'var(--text-dim)'}}>
+                    Caminhada inclinada dividida em cinco etapas. Confira o ritmo,
+                    ajuste conforme seu nível e registre somente após realizar.
+                  </p>
+                  <CardioPresetCard preset={preset}
+                    onRegister={p => {setPreview(null);navigate('/cardio?preset='+encodeURIComponent(p.id));}}/>
+                  <div className="rounded-xl p-3" style={{background:'var(--surface-2)'}}>
+                    <p className="text-xs font-semibold mb-2">Adicionar como opção da semana</p>
+                    <div className="flex gap-2 items-center">
+                      <select value={presetWeekday}
+                        onChange={e => {setPresetWeekday(e.target.value as Weekday);setPresetAdded(false);}}
+                        aria-label="Dia da semana" className="min-w-0 flex-1 rounded-xl px-2 py-2 text-xs"
+                        style={{background:'var(--surface)'}}>
+                        {WEEKDAYS.map(day=><option key={day} value={day}>{WEEKDAY_LABELS[day]}</option>)}
+                      </select>
+                      <Button onClick={() => scheduleCardioPreset(preview)}
+                        disabled={presetAdded}>{presetAdded?'Adicionado':'Adicionar'}</Button>
+                    </div>
+                    <p className="text-[11px] mt-2" style={{color:'var(--text-faint)'}}>
+                      Preserva as outras atividades do dia. Não registra o treino como realizado.
+                    </p>
+                  </div>
+                  {presetAdded && <p className="text-xs" style={{color:'var(--success)'}}>
+                    Treino adicionado à sua agenda semanal.
+                  </p>}
+                </>
+              ) : <p className="text-sm">Treino de cardio indisponível.</p>;
+            })() : (<>
             <div className="flex flex-wrap gap-1">
               <Pill tone="brand">{GOAL_LABELS[preview.goal]}</Pill>
               <Pill>{PLACE_LABELS[programPlace(preview)]}</Pill>
@@ -267,6 +339,7 @@ export function ProgramLibrary() {
                 )}
               </div>
             )}
+            </>)}
           </div>
         )}
       </Sheet>
