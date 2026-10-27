@@ -52,7 +52,7 @@ function WeeklyScheduleEditor() {
         <p className="text-sm font-semibold">Programação da semana</p>
       </div>
       <p className="text-xs mb-3" style={{ color: 'var(--text-faint)' }}>
-        Defina o treino híbrido: um treino de força, cardio (corrida/bike) ou descanso para cada dia.
+        Organize treinos de força, corrida/cardio ou descanso. Os programas prontos também podem preencher esta agenda.
       </p>
       <div className="flex flex-col gap-2">
         {WEEKDAY_ORDER.map((day) => (
