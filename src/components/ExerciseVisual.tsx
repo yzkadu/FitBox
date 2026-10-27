@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Dumbbell, Info, ImageOff, Maximize2, Minimize2, ChevronDown, ChevronUp } from 'lucide-react';
+import { Dumbbell, Info, ImageOff, Maximize2, Minimize2 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useProfile } from '../hooks/useProfile';
 import { AnatomyMap } from './AnatomyMap';
@@ -7,7 +7,7 @@ import { ANATOMY_GROUP_LABELS } from '../lib/anatomy';
 import type { AnatomyGender } from '../lib/anatomy';
 import type { Exercise } from '../types';
 import { MUSCLE_GROUP_LABELS } from '../lib/exercises';
-import { exerciseMedia, exerciseGuidance, MOVEMENT_GROUP_LABELS } from '../lib/exerciseMedia';
+import { exerciseMedia, exerciseGuidance } from '../lib/exerciseMedia';
 import { ExerciseAnatomy, getExerciseAnatomicalFocus, preferredAnatomicalView } from './ExerciseAnatomy';
 
 function ExercisePhoto({ src, alt }: { src: string; alt: string }) {
