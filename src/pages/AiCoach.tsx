@@ -32,11 +32,16 @@ interface ChatEntry {
   appliedWorkoutId?: string;
 }
 
-function describeChange(weekday: Weekday, kind: string, workoutId: string | undefined, suggestedDistanceKm: number | undefined, workouts: Workout[]): string {
+function describeChange(weekday: Weekday, kind: string, workoutId: string | undefined, suggestedDistanceKm: number | undefined, workouts: Workout[], workoutIds?: string[], includeCardio?: boolean): string {
   const dayLabel = WEEKDAY_LABELS[weekday];
   if (kind === 'treino') {
     const w = workouts.find((w) => w.id === workoutId);
     return `${dayLabel}: treino "${w?.name ?? '?'}"`;
+  }
+  if (kind === 'multi') {
+    const choices = (workoutIds ?? []).map(id => workouts.find(w => w.id === id)?.name).filter(Boolean);
+    if (includeCardio) choices.push('Corrida/cardio');
+    return `${dayLabel}: ${choices.join(' + ')} (opções livres, sem ordem)`;
   }
   if (kind === 'cardio') {
     return `${dayLabel}: cardio${suggestedDistanceKm ? ` (meta ${suggestedDistanceKm}km)` : ''}`;
@@ -197,7 +202,7 @@ export function AiCoach() {
                     <ul className="flex flex-col gap-1 mb-3">
                       {m.proposal.data.changes.map((c, ci) => (
                         <li key={ci} className="text-xs" style={{ color: 'var(--text-dim)' }}>
-                          • {describeChange(c.weekday, c.kind, c.workoutId, c.suggestedDistanceKm, workouts)}
+                          • {describeChange(c.weekday, c.kind, c.workoutId, c.suggestedDistanceKm, workouts, c.workoutIds, c.includeCardio)}
                         </li>
                       ))}
                     </ul>
