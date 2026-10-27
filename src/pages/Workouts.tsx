@@ -96,7 +96,10 @@ function WeeklyScheduleEditor() {
                 <span className="text-[11px]" style={{ color: 'var(--text-dim)' }}>Corrida antes:</span>
                 <input type="number" min={5} max={90} step={5} aria-label="Duração da corrida em minutos"
                   value={weeklySchedule[day].suggestedDurationMin ?? 15}
-                  onChange={(e) => setDaySchedule(day, { ...weeklySchedule[day], suggestedDurationMin: Math.min(90, Math.max(5, Number(e.target.value) || 5)) })}
+                  onChange={(e) => {
+                    const current = weeklySchedule[day];
+                    if (current?.kind === 'combo') setDaySchedule(day, { ...current, suggestedDurationMin: Math.min(90, Math.max(5, Number(e.target.value) || 5)) });
+                  }}
                   className="w-16 rounded-md py-1 px-2 text-xs" style={{ background: 'var(--surface-2)' }}/>
                 <span className="text-[11px]" style={{ color: 'var(--text-faint)' }}>min · ritmo fácil</span>
               </div>
