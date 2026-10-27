@@ -179,7 +179,7 @@ export const READY_PROGRAMS: ReadyProgram[] = [
     title: '4 dias (Peito/Ombro/Tríceps · Costas/Bíceps · Pernas/Abdômen · Peito/Ombro)',
     goal: 'hipertrofia',
     split: 'abcd',
-    description: 'Mesmo programa de 4 dias que o Kadu usa — dois dias de peito/ombro na semana, com foco extra nesses grupos.',
+    description: 'Divisão de 4 dias com ênfase em peito e ombro. Ajuste o volume para não negligenciar pernas e costas.',
     days: [
       {
         name: 'Dia 1: Peito, Ombro e Tríceps',
@@ -275,7 +275,7 @@ export const READY_PROGRAMS: ReadyProgram[] = [
         ],
       },
       {
-        name: 'Upper — Treino de Campeão',
+        name: 'Upper · Superior completo',
         emoji: 'crown',
         exercises: [
           { id: 'ex-supino-reto-barra', sets: 3, reps: '8-10' },
@@ -307,7 +307,7 @@ export const READY_PROGRAMS: ReadyProgram[] = [
     title: 'Full Body A / B',
     goal: 'emagrecimento',
     split: 'ab',
-    description: 'Corpo inteiro em cada sessão, repetições mais altas e menos descanso — some cardio à parte (aba Cardio) pra completar.',
+    description: 'Duas sessões de força de corpo inteiro para preservar massa muscular; combine com atividade aeróbica e alimentação compatível com sua meta.',
     days: [
       {
         name: 'A: Full Body',
@@ -339,7 +339,7 @@ export const READY_PROGRAMS: ReadyProgram[] = [
     title: 'Full Body A / B / C',
     goal: 'emagrecimento',
     split: 'abc',
-    description: '3 dias de corpo inteiro, mais frequência ainda — bom pra combinar com os dias de cardio da semana.',
+    description: 'Três sessões distribuídas na semana, com dias de descanso entre elas. Combinar com caminhada ou cardio moderado é uma opção.',
     days: [
       {
         name: 'A: Full Body',
@@ -383,7 +383,7 @@ export const READY_PROGRAMS: ReadyProgram[] = [
     title: 'Puxar / Empurrar + Pernas',
     goal: 'calistenia',
     split: 'ab',
-    description: '2 dias, só peso do corpo — bom ponto de partida pra quem treina em casa ou numa academia ao ar livre.',
+    description: 'Dois dias de calistenia com exercícios na barra fixa ou suporte seguro; não indicado para quem não tem nenhum equipamento.',
     days: [
       {
         name: 'A: Puxar (Costas, Bíceps)',
@@ -414,7 +414,7 @@ export const READY_PROGRAMS: ReadyProgram[] = [
     title: 'Push / Pull / Legs (calistenia)',
     goal: 'calistenia',
     split: 'abc',
-    description: 'A mesma divisão clássica, mas 100% com peso do corpo.',
+    description: 'Divisão de calistenia com peso do corpo e barra fixa estável para os exercícios de puxar.',
     days: [
       {
         name: 'A: Push',
