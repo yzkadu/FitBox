@@ -120,10 +120,11 @@ export const MOVEMENT_GROUP_LABELS: Record<string,string> = {
 
 export interface ExerciseMediaResult {
   first: string;
-  second: string;
+  second?: string;
   sourceId: string;
-  kind: 'foto' | 'ilustracao';
+  kind: 'foto';
   credit: string;
+  sourceUrl?: string;
 }
 export function exerciseMedia(exercise?: Exercise | null): ExerciseMediaResult | null {
   const exerciseId = exercise?.id;
@@ -142,7 +143,7 @@ export function exerciseMedia(exercise?: Exercise | null): ExerciseMediaResult |
   };
 }
 export function getHyroxMediaCoverage() {
-  return HYROX_EXPECTED_EXERCISES.map(id => ({id, covered: Boolean(HYROX_MEDIA[id] || VERIFIED_MEDIA_IDS[id])}));
+  return HYROX_EXPECTED_EXERCISES.map(id => ({id, photoAvailable: Boolean(HYROX_MEDIA[id] || VERIFIED_MEDIA_IDS[id])}));
 }
 
 export function exerciseGuidance(exercise?: Exercise | null): readonly string[] | null {
