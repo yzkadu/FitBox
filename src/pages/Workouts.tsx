@@ -75,6 +75,10 @@ function WeeklyScheduleEditor() {
               <option value={CARDIO_VALUE}>Cardio (corrida/bike)</option>
               <option value={REST_VALUE}>Descanso</option>
             </select>
+            {weeklySchedule[day]?.kind === 'cardio' && weeklySchedule[day].label && (
+              <span className="text-[11px] max-w-28 truncate" title={weeklySchedule[day].label}
+                style={{ color: 'var(--text-faint)' }}>{weeklySchedule[day].label}</span>
+            )}
           </div>
         ))}
       </div>
