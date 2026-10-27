@@ -83,13 +83,14 @@ export function assessWeightGoal(
   const weeksElapsed = Math.max(0, (Date.now() - Date.parse(goal.startDate)) / MS_PER_WEEK);
   const weeksRemaining = Math.max(0, goal.targetWeeks - weeksElapsed);
 
-  const progressKg = baselineWeightKg != null && currentWeightKg != null ? baselineWeightKg - currentWeightKg : null;
-  const expectedProgressKg = targetWeeklyRateKg * weeksElapsed;
+  const progressKg = baselineWeightKg != null && currentWeightKg != null ? Math.sign(goal.targetLossKg || 1) * (baselineWeightKg - currentWeightKg) : null;
+  const expectedProgressKg = Math.abs(targetWeeklyRateKg) * weeksElapsed;
 
   const plannedActiveDays = Object.values(weeklySchedule).filter((d) => d && d.kind !== 'descanso').length;
   const actualActiveDaysLast4Weeks = activeDaysInWindow(sessions, cardioLogs, 28);
   const consistencyPct = plannedActiveDays > 0 ? Math.round(((actualActiveDaysLast4Weeks / 4) / plannedActiveDays) * 100) : null;
 
+  const verb = goal.targetLossKg >= 0 ? 'perdeu' : 'ganhou';
   let verdict: GoalVerdict;
   let verdictMessage: string;
 
@@ -104,13 +105,13 @@ export function assessWeightGoal(
     verdictMessage = 'Registre seu peso regularmente pra gente comparar com a meta.';
   } else if (progressKg >= expectedProgressKg * 0.8) {
     verdict = 'no-caminho';
-    verdictMessage = `Você está no ritmo certo: perdeu ${progressKg.toFixed(1)}kg até agora, praticamente alinhado com o esperado.`;
+    verdictMessage = `Você está no ritmo certo: ${verb} ${progressKg.toFixed(1)}kg até agora, praticamente alinhado com o esperado.`;
   } else if (progressKg >= expectedProgressKg * 0.4) {
     verdict = 'atencao';
-    verdictMessage = `Um pouco abaixo do ritmo esperado (perdeu ${progressKg.toFixed(1)}kg, o esperado até agora seria por volta de ${expectedProgressKg.toFixed(1)}kg) — ainda dá pra recuperar.`;
+    verdictMessage = `Um pouco abaixo do ritmo esperado (${verb} ${progressKg.toFixed(1)}kg, o esperado até agora seria por volta de ${expectedProgressKg.toFixed(1)}kg) — ainda dá pra recuperar.`;
   } else {
     verdict = 'fora-do-ritmo';
-    verdictMessage = `Bem abaixo do ritmo esperado (perdeu ${progressKg.toFixed(1)}kg, o esperado seria por volta de ${expectedProgressKg.toFixed(1)}kg). Vale reavaliar o prazo ou a consistência dos treinos/alimentação.`;
+    verdictMessage = `Bem abaixo do ritmo esperado (${verb} ${progressKg.toFixed(1)}kg, o esperado seria por volta de ${expectedProgressKg.toFixed(1)}kg). Vale reavaliar o prazo ou a consistência dos treinos/alimentação.`;
   }
 
   if (consistencyPct != null && consistencyPct < 50 && (verdict === 'atencao' || verdict === 'fora-do-ritmo')) {
