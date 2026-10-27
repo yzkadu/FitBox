@@ -1,6 +1,6 @@
 import type { Exercise } from '../types';
 
-/** Correspondências CONFERIDAS de exercício com fotos de duas fases no
+/** Correspondências selecionadas e verificadas por ID de exercício com duas poses no
  * projeto livre yuhonas/free-exercise-db. Não inferir URLs apenas pelo nome:
  * certos arquivos não existem ou retratam outro movimento.
  * Fotografias são demonstrativas, não modelos biomecânicos infalíveis.
@@ -40,7 +40,6 @@ export const VERIFIED_MEDIA_IDS: Record<string, string> = {
   'ex-mergulho-paralelas': 'Dips_-_Triceps_Version',
   'ex-agachamento-livre': 'Barbell_Squat',
   'ex-agachamento-smith': 'Smith_Machine_Squat',
-  'ex-agachamento-bulgaro': 'Split_Squat_with_Dumbbells',
   'ex-leg-press': 'Leg_Press',
   'ex-cadeira-extensora': 'Leg_Extensions',
   'ex-mesa-flexora': 'Lying_Leg_Curls',
@@ -52,10 +51,8 @@ export const VERIFIED_MEDIA_IDS: Record<string, string> = {
   'ex-abdominal-supra': 'Crunches',
   'ex-prancha': 'Plank',
   'ex-abdominal-bicicleta': 'Air_Bike',
-  'ex-elevacao-pernas': 'Hanging_Leg_Raise',
   'ex-abdominal-cabo': 'Cable_Crunch',
   'ex-fedb-dead-bug': 'Dead_Bug',
-  'ex-fedb-plate-twist': 'Russian_Twist',
   'ex-esteira': 'Running_Treadmill',
   'ex-eliptico': 'Elliptical_Trainer',
   'ex-remo-ergometrico': 'Rowing_Stationary',
@@ -64,14 +61,10 @@ export const VERIFIED_MEDIA_IDS: Record<string, string> = {
   'ex-new-roscamarteloalternada': 'Alternate_Hammer_Curl',
   'ex-new-abwheelajoelhado': 'Ab_Roller',
   'ex-new-roscanobancoinclinado': 'Incline_Dumbbell_Curl',
-  'ex-new-extensaodepunhos': 'Seated_Dumbbell_Palms-Down_Wrist_Curl',
-  'ex-new-roscapunhoreversa': 'Barbell_Curl',
   'ex-new-pallofpress': 'Pallof_Press',
   'ex-new-deadbugalternado': 'Dead_Bug',
   'ex-new-sledpushtecnico': 'Sled_Push',
-  'ex-new-flexaocomtoquenoombro': 'Pushups',
   'ex-new-russiantwistcomanilha': 'Russian_Twist',
-  'ex-new-agachamentocomminiband': 'Bodyweight_Squat',
 };
 
 const STEPS: Record<string, readonly [string, string, string]> = {
