@@ -50,3 +50,17 @@ Uma validação automática em GitHub Actions executa a compilação de produç�
 6. Verifique se os registros criados aparecem no banco (e não só na tela).
 
 **Limitações pendentes:** testar a versão publicada em navegador real; confirmar o deploy da Vercel; implementar sincronização de alterações feitas totalmente offline, caso esse modo seja desejado.
+
+## Agenda flexível (múltiplas opções no mesmo dia)
+
+Abra **Meus treinos → Programação livre da semana** e toque em **Editar** no dia
+que quiser. Você pode adicionar qualquer quantidade de treinos diferentes,
+incluindo musculação, HYROX, core, e também corrida/cardio. Não existe ordem
+obrigatória: escolha uma opção, duas ou todas, conforme energia, tempo e
+recuperação. Cada atividade registrada é marcada independentemente na tela inicial.
+
+O **Treinador IA** também pode propor dias com várias atividades. As propostas
+mostram uma prévia e só são aplicadas depois de tocar em **Aplicar**.
+
+Os programas prontos híbridos acrescentam opções combinadas na mesma data, sem
+substituir automaticamente sua agenda até que você confirme a ativação.
