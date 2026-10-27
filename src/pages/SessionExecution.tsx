@@ -311,6 +311,13 @@ export function SessionExecution() {
                   <Trash2 size={14} />
                 </button>
               </div>
+              {(se.targetReps || se.notes) && (
+                <div className="text-xs mb-2 rounded-lg px-2.5 py-2" style={{ background: 'var(--surface-2)', color: 'var(--text-dim)' }}>
+                  {se.targetReps && <p><strong>Alvo:</strong> {se.targetReps}{se.restSeconds != null ? ` · pausa ${se.restSeconds}s` : ''}</p>}
+                  {se.notes && <p className="mt-1">{se.notes}</p>}
+                  {se.targetReps && /[a-z]/i.test(se.targetReps) && <p className="mt-1" style={{ color: 'var(--text-faint)' }}>Para metas de tempo/distância, marque a série como concluída ao finalizar; registre repetições quando se aplicar.</p>}
+                </div>
+              )}
               {coach.action !== 'no-data' && (
                 <p className="text-xs mb-2 flex items-start gap-1" style={{ color: coachColor }}>
                   <Bot size={13} className="shrink-0 mt-[1px]" />
