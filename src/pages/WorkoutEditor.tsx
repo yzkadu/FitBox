@@ -14,6 +14,7 @@ import { startSession } from '../lib/actions';
 import { Card, Button, EmptyState } from '../components/ui';
 import { ExercisePicker } from '../components/ExercisePicker';
 import { MUSCLE_GROUP_LABELS } from '../lib/exercises';
+import { ExerciseThumbnail, ExerciseGuide } from '../components/ExerciseVisual';
 import type { Exercise } from '../types';
 
 const QUICK_BLOCKS = [
@@ -46,6 +47,7 @@ export function WorkoutEditor() {
   const [pickerOpen, setPickerOpen] = useState(false);
   const [editingName, setEditingName] = useState(false);
   const [showQuickBlocks, setShowQuickBlocks] = useState(false);
+  const [guideEntryId, setGuideEntryId] = useState<string | null>(null);
   const [substitutingEntryId, setSubstitutingEntryId] = useState<string | null>(null);
 
   const workout = workouts.find((w) => w.id === workoutId);
@@ -184,8 +186,12 @@ export function WorkoutEditor() {
                       onClick={() => moveEntry(we.id, 1)} className="disabled:opacity-20"
                       style={{ color: 'var(--text-faint)' }}><ArrowDown size={14}/></button>
                   </div>
+                  <button type="button" aria-label={`Ver execução de ${ex?.name ?? 'exercício'}`}
+                    onClick={() => setGuideEntryId(guideEntryId === we.id ? null : we.id)}>
+                    <ExerciseThumbnail exercise={ex} size={55}/>
+                  </button>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{ex?.name ?? 'Exercício removido'}</p>
+                    <p className="text-sm font-medium">{ex?.name ?? 'Exercício removido'}</p>
                     <p className="text-xs" style={{ color: 'var(--text-faint)' }}>
                       {ex ? MUSCLE_GROUP_LABELS[ex.muscleGroup] : ''}
                     </p>
@@ -207,6 +213,13 @@ export function WorkoutEditor() {
                     <X size={16} />
                   </button>
                 </div>
+                <div className="flex justify-start pl-7">
+                  <button type="button" onClick={() => setGuideEntryId(guideEntryId === we.id ? null : we.id)}
+                    className="text-xs underline" style={{color:'var(--brand)'}}>
+                    {guideEntryId === we.id ? 'Ocultar execução' : 'Ver demonstração e execução'}
+                  </button>
+                </div>
+                {guideEntryId === we.id && <ExerciseGuide exercise={ex}/>}
                 <div className="flex items-center gap-1.5 pl-7">
                   <input
                     type="number"
