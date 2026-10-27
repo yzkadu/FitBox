@@ -9,16 +9,21 @@
 // semanal automaticamente), então a pessoa pode aplicar quantos quiser e
 // só depois decide os dias na "Programação da semana".
 
-import { createWorkout, addExerciseToWorkout } from './actions';
-import type { Workout } from '../types';
+import { createWorkout, addExerciseToWorkout, replaceWeeklySchedule } from './actions';
+import { WEEKDAY_ORDER } from '../types';
+import type { Workout, WeeklySchedule } from '../types';
 
-export type ProgramGoal = 'hipertrofia' | 'emagrecimento' | 'calistenia' | 'core';
+export type ProgramGoal = 'hipertrofia' | 'emagrecimento' | 'calistenia' | 'core' | 'hibrido' | 'corrida' | 'funcional' | 'mobilidade';
 
 export const GOAL_LABELS: Record<ProgramGoal, string> = {
   hipertrofia: 'Hipertrofia',
   emagrecimento: 'Emagrecimento',
   calistenia: 'Calistenia',
   core: 'Core',
+  hibrido: 'Híbrido / HYROX',
+  corrida: 'Corrida',
+  funcional: 'Condicionamento',
+  mobilidade: 'Mobilidade',
 };
 
 /** Quantos dias diferentes de treino o programa tem — 'unico' é um treino avulso de 1 dia só. */
@@ -36,13 +41,20 @@ interface ExerciseSpec {
   id: string;
   sets: number;
   reps: string;
+  notes?: string;
+  restSeconds?: number;
 }
 
 interface ReadyProgramDay {
   name: string;
   emoji: string;
+  focus?: string;
   exercises: ExerciseSpec[];
 }
+
+export type ProgramPlace = 'academia' | 'casa_equipamento' | 'peso_corporal' | 'misto' | 'ar_livre';
+export type ProgramLevel = 'iniciante' | 'intermediario' | 'avancado';
+export type WeekStep = { kind: 'workout'; index: number } | { kind: 'cardio'; label: string; distanceKm?: number } | { kind: 'rest' };
 
 export interface ReadyProgram {
   id: string;
@@ -51,7 +63,36 @@ export interface ReadyProgram {
   split: SplitLength;
   description: string;
   days: ReadyProgramDay[];
+  place?: ProgramPlace;
+  level?: ProgramLevel;
+  sessionMinutes?: number;
+  progression?: string;
+  recoveryNote?: string;
+  /** Sete posições, de segunda a domingo, para um plano de semana explícito. */
+  weekPlan?: WeekStep[];
 }
+
+export const PLACE_LABELS: Record<ProgramPlace, string> = {
+  academia: 'Academia',
+  casa_equipamento: 'Casa com equipamentos',
+  peso_corporal: 'Casa sem equipamentos',
+  misto: 'Academia + corrida',
+  ar_livre: 'Corrida / ar livre',
+};
+export const LEVEL_LABELS: Record<ProgramLevel, string> = {
+  iniciante: 'Iniciante', intermediario: 'Intermediário', avancado: 'Avançado',
+};
+export function programPlace(program: ReadyProgram): ProgramPlace {
+  if (program.place) return program.place;
+  if (program.goal === 'calistenia') return 'casa_equipamento'; // os antigos exigem barra fixa
+  if (program.goal === 'core') return 'peso_corporal';
+  return 'academia';
+}
+
+const ex = (id: string, sets: number, reps: string, notes?: string, restSeconds?: number): ExerciseSpec => ({ id, sets, reps, notes, restSeconds });
+const workoutDay = (index: number): WeekStep => ({ kind: 'workout', index });
+const runDay = (label: string, distanceKm?: number): WeekStep => ({ kind: 'cardio', label, distanceKm });
+const off: WeekStep = { kind: 'rest' };
 
 export const READY_PROGRAMS: ReadyProgram[] = [
   // ---------- Hipertrofia ----------
@@ -484,16 +525,283 @@ export const READY_PROGRAMS: ReadyProgram[] = [
       },
     ],
   },
+
+  // ---------- Programas orientados por modalidade, local e recuperação ----------
+  {
+    id: 'hyrox-inicio',
+    title: 'HYROX: Comece com base',
+    goal: 'hibrido',
+    split: 'abc',
+    place: 'misto',
+    level: 'iniciante',
+    sessionMinutes: 45,
+    description: 'Para iniciar no HYROX sem fazer simulações exaustivas: 2 dias de força, 1 de técnica das estações e 2 corridas fáceis.',
+    progression: 'Semanas 1–2: trabalhe em ritmo confortável (RPE 5–6/10). Depois aumente pouco a pouco a distância da corrida ou uma série por estação, não tudo ao mesmo tempo.',
+    recoveryNote: 'Mantenha quinta e domingo de descanso. Trenó, SkiErg e wall ball exigem academia equipada; adapte cargas à técnica.',
+    days: [
+      { name: 'HYROX A · Força total', emoji: 'dumbbell', focus: 'Agachar, empurrar, puxar e estabilizar',
+        exercises: [ex('ex-agachamento-livre',3,'8-10',undefined,90),ex('ex-supino-reto-halter',3,'8-12'),
+          ex('ex-remada-baixa',3,'10-12'),ex('ex-stiff-halter',2,'8-10'),ex('ex-prancha',2,'30-40s')] },
+      { name: 'HYROX B · Estações técnicas', emoji: 'activity', focus: 'Qualidade das transições; não é uma prova',
+        exercises: [ex('ex-hyrox-ski',2,'250 m','Ritmo fácil, concentre-se na técnica.'),
+          ex('ex-hyrox-sled-push',2,'10-15 m','Carga leve e postura neutra.'),
+          ex('ex-remo-ergometrico',2,'250 m','Movimento fluido.'),
+          ex('ex-hyrox-wall-ball',2,'10-15','Bola leve e amplitude controlada.')] },
+      { name: 'HYROX C · Força e estabilidade', emoji: 'footprints', focus: 'Unilateral, posterior e transporte',
+        exercises: [ex('ex-leg-press',3,'10-12'),ex('ex-puxada-frente',3,'10-12'),ex('ex-afundo',2,'8 cada perna'),
+          ex('ex-hyrox-farmers',2,'30 m','Use cargas que permitam andar ereto.'),ex('ex-fedb-dead-bug',2,'10 cada lado')] },
+    ],
+    weekPlan: [workoutDay(0),runDay('Corrida fácil ou caminhada/corrida (zona confortável)',3),
+      workoutDay(1),off,workoutDay(2),runDay('Corrida contínua tranquila',4),off],
+  },
+  {
+    id: 'hibrido-emagrecimento',
+    title: 'Emagrecimento híbrido · Força + corrida + HYROX',
+    goal: 'hibrido',
+    split: 'abc',
+    place: 'misto',
+    level: 'intermediario',
+    sessionMinutes: 45,
+    description: 'Modelo equilibrado: musculação 2x, estações HYROX 1x e corrida 2x. Progressão sustentável, sem exigir HIIT todos os dias.',
+    progression: 'Aumente primeiro a consistência. Progrida a corrida cerca de 5–10% quando tolerada; na musculação, aumente carga após atingir o topo das repetições com técnica.',
+    recoveryNote: 'Emagrecimento depende principalmente do balanço energético. Não é preciso treinar até a exaustão. Ajuste volume e recuperação.',
+    days: [
+      { name: 'Híbrido A · Força geral', emoji: 'dumbbell', focus: 'Manter força e massa muscular durante a perda de peso',
+        exercises: [ex('ex-agachamento-livre',3,'8-10'),ex('ex-supino-reto-halter',3,'8-12'),
+          ex('ex-remada-baixa',3,'8-12'),ex('ex-stiff-halter',2,'10-12'),ex('ex-prancha',3,'30s')] },
+      { name: 'Híbrido B · HYROX controlado', emoji: 'activity', focus: 'Técnica e condicionamento em intensidade moderada',
+        exercises: [ex('ex-hyrox-ski',2,'300 m'),ex('ex-hyrox-sled-push',3,'10 m'),
+          ex('ex-hyrox-burpee',2,'6-8'),ex('ex-hyrox-wall-ball',2,'12'),
+          ex('ex-remo-ergometrico',2,'300 m')] },
+      { name: 'Híbrido C · Força complementar', emoji: 'footprints', focus: 'Pernas, costas e core sem sessões intermináveis',
+        exercises: [ex('ex-leg-press',3,'10-12'),ex('ex-puxada-frente',3,'10-12'),
+          ex('ex-desenvolvimento-halter',2,'8-12'),ex('ex-hyrox-farmers',2,'40 m'),
+          ex('ex-fedb-dead-bug',2,'10 cada lado')] },
+    ],
+    weekPlan: [workoutDay(0),runDay('Corrida leve de base aeróbica',4),
+      workoutDay(1),off,workoutDay(2),runDay('Corrida progressiva confortável',5),off],
+  },
+  {
+    id: 'hyrox-intermediario',
+    title: 'HYROX · Resistência e estações',
+    goal: 'hibrido',
+    split: 'abc',
+    place: 'misto',
+    level: 'intermediario',
+    sessionMinutes: 55,
+    description: 'Para quem já treina e corre: força de membros superiores, força de pernas e um circuito de estações com carga controlada.',
+    progression: 'Nas primeiras semanas priorize técnica; amplie repetições/distâncias gradualmente e inclua simulações maiores somente após consolidar a base.',
+    recoveryNote: 'O HYROX completo alterna corrida com oito estações. Este programa é preparatório, não uma simulação de prova.',
+    days: [
+      { name: 'HYROX · Superior', emoji: 'dumbbell', exercises: [ex('ex-puxada-frente',3,'8-10'),ex('ex-supino-reto-barra',3,'8-10'),
+        ex('ex-remada-baixa',3,'10-12'),ex('ex-desenvolvimento-halter',2,'10-12'),ex('ex-prancha',2,'40s')] },
+      { name: 'HYROX · Inferior', emoji: 'footprints', exercises: [ex('ex-agachamento-livre',3,'6-8'),
+        ex('ex-stiff-halter',3,'8-10'),ex('ex-afundo',2,'10 cada perna'),ex('ex-hyrox-farmers',2,'40 m')] },
+      { name: 'HYROX · Estações', emoji: 'activity', exercises: [ex('ex-hyrox-ski',2,'500 m'),
+        ex('ex-hyrox-sled-push',3,'15 m'),ex('ex-hyrox-sled-pull',3,'15 m'),
+        ex('ex-hyrox-burpee',2,'8-10'),ex('ex-remo-ergometrico',2,'500 m'),
+        ex('ex-hyrox-sandbag',2,'12 cada perna'),ex('ex-hyrox-wall-ball',2,'15')] },
+    ],
+    weekPlan: [workoutDay(0),runDay('Corrida fácil',5),workoutDay(1),off,
+      workoutDay(2),runDay('Corrida aeróbica leve',6),off],
+  },
+  {
+    id: 'corrida-primeiros-5km',
+    title: 'Do zero aos 5 km · Corrida + força',
+    goal: 'corrida',
+    split: 'ab',
+    place: 'ar_livre',
+    level: 'iniciante',
+    sessionMinutes: 35,
+    description: 'Três dias de corrida/caminhada intercalados com dois treinos simples de força. Ajuste o ritmo ao seu nível.',
+    progression: 'Comece alternando 1–2 minutos correndo e 2 minutos andando por 20–30 minutos. Aumente os períodos de corrida com conforto até correr continuamente.',
+    recoveryNote: 'Os 5 km são um objetivo progressivo, não uma distância obrigatória na primeira semana.',
+    days: [
+      { name: '5 km · Força A', emoji: 'dumbbell', exercises: [ex('ex-agachamento-livre',2,'10-12'),
+        ex('ex-flexao',2,'6-12'),ex('ex-afundo',2,'8 cada perna'),ex('ex-prancha',2,'20-30s')] },
+      { name: '5 km · Força B', emoji: 'footprints', exercises: [ex('ex-fedb-single-leg-glute-bridge',2,'10 cada lado'),
+        ex('ex-agachamento-sumo',2,'12'),ex('ex-panturrilha-em-pe',3,'12-15'),
+        ex('ex-fedb-dead-bug',2,'10 cada lado')] },
+    ],
+    weekPlan: [runDay('Corrida/caminhada intervalada',2),workoutDay(0),runDay('Corrida/caminhada leve',2),
+      off,workoutDay(1),runDay('Corrida fácil mais longa conforme evolução',3),off],
+  },
+  {
+    id: 'corrida-10km',
+    title: 'Construindo 10 km com força',
+    goal: 'corrida',
+    split: 'ab',
+    place: 'misto',
+    level: 'intermediario',
+    sessionMinutes: 45,
+    description: 'Três estímulos aeróbicos distribuídos na semana com dois dias de fortalecimento e proteção da recuperação.',
+    progression: 'Comece apenas se 5 km já forem confortáveis. Amplie gradualmente a corrida longa, alternando semanas de carga mais leve.',
+    recoveryNote: 'A sessão de ritmo deve ser controlada; evite tentar recordes em todas as corridas.',
+    days: [
+      { name: 'Corrida 10 km · Força A', emoji: 'dumbbell', exercises: [ex('ex-agachamento-livre',3,'8'),
+        ex('ex-remada-baixa',3,'10'),ex('ex-supino-reto-halter',3,'10'),ex('ex-prancha',2,'40s')] },
+      { name: 'Corrida 10 km · Força B', emoji: 'footprints', exercises: [ex('ex-stiff-halter',3,'8-10'),
+        ex('ex-afundo',2,'10 cada perna'),ex('ex-panturrilha-em-pe',3,'15'),
+        ex('ex-fedb-dead-bug',2,'10 cada lado')] },
+    ],
+    weekPlan: [runDay('Corrida fácil',5),workoutDay(0),runDay('Treino de ritmo controlado',4),
+      off,workoutDay(1),runDay('Corrida longa em ritmo fácil',7),off],
+  },
+  {
+    id: 'casa-zero-equipamento',
+    title: 'Em casa · Corpo inteiro sem equipamentos',
+    goal: 'calistenia',
+    split: 'abc',
+    place: 'peso_corporal',
+    level: 'iniciante',
+    sessionMinutes: 25,
+    description: 'Três treinos diferentes usando somente o chão e o próprio corpo, sem barra, halteres, banco ou elásticos.',
+    progression: 'Comece com 2 séries e pausas livres. Avance para 3 séries quando o treino ficar confortável; ajuste as flexões para uma variação acessível.',
+    recoveryNote: 'Treinos sem equipamento têm limitações para puxadas de costas; adicionar elástico futuramente melhora o equilíbrio.',
+    days: [
+      { name: 'Casa A · Corpo inteiro', emoji: 'flame', exercises: [ex('ex-agachamento-livre',2,'10-15'),
+        ex('ex-flexao',2,'6-10','Adapte com joelhos apoiados, se necessário.'),
+        ex('ex-fedb-single-leg-glute-bridge',2,'8 cada perna'),ex('ex-fedb-dead-bug',2,'10 cada lado')] },
+      { name: 'Casa B · Estabilidade', emoji: 'footprints', exercises: [ex('ex-afundo',2,'8 cada perna'),
+        ex('ex-flexao',2,'6-10'),ex('ex-prancha-lateral',2,'20s cada lado'),
+        ex('ex-panturrilha-em-pe',2,'15')] },
+      { name: 'Casa C · Resistência leve', emoji: 'activity', exercises: [ex('ex-agachamento-sumo',2,'12-15'),
+        ex('ex-hyrox-burpee',2,'4-6','Opcional: substitua por agachamento se o impacto incomodar.'),
+        ex('ex-fedb-glute-kickback',2,'12 cada perna'),ex('ex-abdominal-bicicleta',2,'12')] },
+    ],
+    weekPlan: [workoutDay(0),off,workoutDay(1),off,workoutDay(2),
+      runDay('Caminhada ou corrida leve opcional',2),off],
+  },
+  {
+    id: 'casa-20min',
+    title: '20 minutos em casa · Rotina corrida',
+    goal: 'funcional',
+    split: 'ab',
+    place: 'peso_corporal',
+    level: 'iniciante',
+    sessionMinutes: 20,
+    description: 'Duas sessões curtas de corpo inteiro para quem tem pouco tempo, além de caminhada ou atividade leve nos outros dias.',
+    progression: 'Mantenha 1–2 repetições de reserva; ao ficar fácil, acrescente uma série antes de reduzir os descansos.',
+    days: [
+      { name: '20 min A · Força', emoji: 'dumbbell', exercises: [ex('ex-agachamento-livre',2,'12'),
+        ex('ex-flexao',2,'6-12'),ex('ex-fedb-single-leg-glute-bridge',2,'8 cada lado'),
+        ex('ex-prancha',2,'20-30s')] },
+      { name: '20 min B · Movimento', emoji: 'activity', exercises: [ex('ex-afundo',2,'8 cada perna'),
+        ex('ex-agachamento-sumo',2,'10'),ex('ex-fedb-dead-bug',2,'10 cada lado'),
+        ex('ex-abdominal-supra',2,'12')] },
+    ],
+    weekPlan: [workoutDay(0),off,runDay('Caminhada leve opcional',2),workoutDay(1),off,runDay('Movimento leve opcional',2),off],
+  },
+  {
+    id: 'halteres-em-casa',
+    title: 'Casa com halteres · 3 dias de força',
+    goal: 'hipertrofia',
+    split: 'abc',
+    place: 'casa_equipamento',
+    level: 'intermediario',
+    sessionMinutes: 40,
+    description: 'Treinos de corpo inteiro em casa com halteres; estímulos variados e descanso entre os dias.',
+    progression: 'Se completar o limite superior de repetições com técnica, suba um pouco a carga ou repetições na sessão seguinte.',
+    days: [
+      { name: 'Halteres A · Força geral', emoji: 'dumbbell', exercises: [ex('ex-fedb-goblet-squat',3,'8-12'),
+        ex('ex-remada-unilateral',3,'10 cada lado'),ex('ex-supino-reto-halter',3,'8-12'),
+        ex('ex-prancha',2,'40s')] },
+      { name: 'Halteres B · Posterior', emoji: 'footprints', exercises: [ex('ex-stiff-halter',3,'8-12'),
+        ex('ex-afundo',3,'10 cada perna'),ex('ex-desenvolvimento-halter',3,'8-12'),
+        ex('ex-rosca-martelo',2,'12')] },
+      { name: 'Halteres C · Corpo inteiro', emoji: 'activity', exercises: [ex('ex-fedb-goblet-squat',3,'10-12'),
+        ex('ex-remada-unilateral',3,'10'),ex('ex-flexao',3,'8-12'),
+        ex('ex-panturrilha-em-pe',2,'15'),ex('ex-fedb-dead-bug',2,'10')] },
+    ],
+    weekPlan: [workoutDay(0),off,workoutDay(1),off,workoutDay(2),runDay('Cardio leve opcional',3),off],
+  },
+  {
+    id: 'academia-comecar',
+    title: 'Primeiros passos na academia · Full Body',
+    goal: 'hipertrofia',
+    split: 'abc',
+    place: 'academia',
+    level: 'iniciante',
+    sessionMinutes: 40,
+    description: 'Três sessões de corpo inteiro com máquinas e exercícios simples, respeitando a adaptação e o descanso.',
+    progression: 'Comece com 2 séries por exercício e cargas confortáveis por 2 semanas. Depois progrida gradualmente.',
+    recoveryNote: 'A técnica vem antes da carga. Peça orientação presencial para regular aparelhos.',
+    days: [
+      { name: 'Academia A · Adaptação', emoji: 'dumbbell', exercises: [ex('ex-leg-press',2,'10-12'),
+        ex('ex-supino-maquina',2,'10-12'),ex('ex-puxada-frente',2,'10-12'),ex('ex-prancha',2,'20-30s')] },
+      { name: 'Academia B · Base', emoji: 'footprints', exercises: [ex('ex-mesa-flexora',2,'12'),
+        ex('ex-remada-baixa',2,'12'),ex('ex-desenvolvimento-maquina',2,'10-12'),
+        ex('ex-abdominal-supra',2,'12')] },
+      { name: 'Academia C · Consolidação', emoji: 'activity', exercises: [ex('ex-leg-press',2,'12'),
+        ex('ex-supino-maquina',2,'12'),ex('ex-remada-maquina',2,'12'),
+        ex('ex-panturrilha-em-pe',2,'15')] },
+    ],
+    weekPlan: [workoutDay(0),off,workoutDay(1),off,workoutDay(2),runDay('Cardio fácil opcional',2),off],
+  },
+  {
+    id: 'funcional-condicionamento',
+    title: 'Condicionamento funcional · Força + cardio',
+    goal: 'funcional',
+    split: 'abc',
+    place: 'academia',
+    level: 'intermediario',
+    sessionMinutes: 40,
+    description: 'Foco em padrões de movimento e condicionamento, alternando força e sessões metabólicas moderadas.',
+    progression: 'Priorize execução dos movimentos; mantenha RPE 6–7/10 e aumente trabalho só quando recuperar bem.',
+    days: [
+      { name: 'Funcional A · Base', emoji: 'dumbbell', exercises: [ex('ex-agachamento-livre',3,'10'),
+        ex('ex-remada-baixa',3,'10'),ex('ex-flexao',3,'10'),ex('ex-prancha',2,'30s')] },
+      { name: 'Funcional B · Estações', emoji: 'flame', exercises: [ex('ex-remo-ergometrico',3,'250 m'),
+        ex('ex-hyrox-farmers',3,'30 m'),ex('ex-hyrox-wall-ball',3,'12'),
+        ex('ex-fedb-dead-bug',2,'10')] },
+      { name: 'Funcional C · Resistência', emoji: 'activity', exercises: [ex('ex-leg-press',3,'12'),
+        ex('ex-puxada-frente',3,'12'),ex('ex-stiff-halter',2,'10'),
+        ex('ex-bike',2,'5 min')] },
+    ],
+    weekPlan: [workoutDay(0),off,workoutDay(1),off,workoutDay(2),runDay('Cardio contínuo leve',3),off],
+  },
+  {
+    id: 'mobilidade-recuperacao',
+    title: 'Mobilidade e core · Recuperação ativa',
+    goal: 'mobilidade',
+    split: 'unico',
+    place: 'peso_corporal',
+    level: 'iniciante',
+    sessionMinutes: 15,
+    description: 'Sessão curta de mobilidade suave e controle de tronco para alternar com dias de treino mais intenso.',
+    progression: 'Evite forçar amplitudes dolorosas. Busque movimentos lentos e confortáveis.',
+    days: [
+      { name: 'Mobilidade · Core suave', emoji: 'shield',
+        exercises: [ex('ex-fedb-dead-bug',2,'8 cada lado'),ex('ex-fedb-single-leg-glute-bridge',2,'8 cada lado'),
+          ex('ex-prancha-lateral',2,'15-20s cada lado'),ex('ex-fedb-reverse-crunch',2,'10')] },
+    ],
+    weekPlan: [off,off,workoutDay(0),off,off,off,off],
+  },
+
 ];
 
-/** Cria os treinos de um programa pronto (não mexe na agenda semanal — a
- * pessoa organiza os dias depois em "Programação da semana"). */
-export function applyReadyProgram(programId: string): Workout[] {
+/** Cria os treinos, sem alterar a agenda por padrão. */
+export function applyReadyProgram(programId: string, options?: { applySchedule?: boolean }): Workout[] {
   const program = READY_PROGRAMS.find((p) => p.id === programId);
   if (!program) return [];
-  return program.days.map((day) => {
+  const workouts = program.days.map((day) => {
     const workout = createWorkout(day.name, day.emoji);
-    day.exercises.forEach((ex) => addExerciseToWorkout(workout.id, ex.id, ex.sets, ex.reps));
+    day.exercises.forEach((e) => addExerciseToWorkout(workout.id, e.id, e.sets, e.reps, e.notes, e.restSeconds));
     return workout;
   });
+  if (options?.applySchedule && program.weekPlan?.length === 7) {
+    const schedule: WeeklySchedule = {};
+    WEEKDAY_ORDER.forEach((weekday, index) => {
+      const step = program.weekPlan![index];
+      if (step.kind === 'rest') schedule[weekday] = { kind: 'descanso' };
+      else if (step.kind === 'cardio') {
+        schedule[weekday] = { kind: 'cardio', suggestedDistanceKm: step.distanceKm, label: step.label };
+      } else {
+        const workout = workouts[step.index];
+        if (workout) schedule[weekday] = { kind: 'treino', workoutId: workout.id };
+      }
+    });
+    replaceWeeklySchedule(schedule);
+  }
+  return workouts;
 }
