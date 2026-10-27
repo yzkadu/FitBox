@@ -26,10 +26,12 @@ const IA_SUGGESTIONS = [
 const CARDIO_VALUE = '__cardio__';
 const REST_VALUE = '__descanso__';
 const NONE_VALUE = '__nenhum__';
+const COMBO_PREFIX = '__combo__:';
 
 function scheduleToValue(s: DaySchedule | undefined): string {
   if (!s) return NONE_VALUE;
   if (s.kind === 'cardio') return CARDIO_VALUE;
+  if (s.kind === 'combo') return COMBO_PREFIX + s.workoutId;
   if (s.kind === 'descanso') return REST_VALUE;
   return s.workoutId;
 }
@@ -42,6 +44,13 @@ function WeeklyScheduleEditor() {
     if (value === NONE_VALUE) setDaySchedule(day, null);
     else if (value === CARDIO_VALUE) setDaySchedule(day, { kind: 'cardio' });
     else if (value === REST_VALUE) setDaySchedule(day, { kind: 'descanso' });
+    else if (value.startsWith(COMBO_PREFIX)) {
+      const existing = weeklySchedule[day];
+      setDaySchedule(day, { kind: 'combo', workoutId: value.slice(COMBO_PREFIX.length), order: 'cardio-first',
+        suggestedDurationMin: existing?.kind === 'combo' ? existing.suggestedDurationMin : 15,
+        suggestedDistanceKm: existing?.kind === 'combo' ? existing.suggestedDistanceKm : undefined,
+        label: existing?.kind === 'combo' ? existing.label : 'Corrida leve antes da musculação' });
+    }
     else setDaySchedule(day, { kind: 'treino', workoutId: value });
   }
 
@@ -52,11 +61,12 @@ function WeeklyScheduleEditor() {
         <p className="text-sm font-semibold">Programação da semana</p>
       </div>
       <p className="text-xs mb-3" style={{ color: 'var(--text-faint)' }}>
-        Organize treinos de força, corrida/cardio ou descanso. Os programas prontos também podem preencher esta agenda.
+        Escolha musculação, cardio, descanso ou corrida → musculação no mesmo dia. No combo, registre a corrida primeiro para liberar a ficha.
       </p>
       <div className="flex flex-col gap-2">
         {WEEKDAY_ORDER.map((day) => (
-          <div key={day} className="flex items-center gap-3">
+          <div key={day} className="flex flex-col gap-1.5">
+            <div className="flex items-center gap-3">
             <span className="text-xs font-medium w-16 shrink-0" style={{ color: 'var(--text-dim)' }}>
               {WEEKDAY_LABELS[day]}
             </span>
@@ -73,11 +83,23 @@ function WeeklyScheduleEditor() {
                 </option>
               ))}
               <option value={CARDIO_VALUE}>Cardio (corrida/bike)</option>
+              {active.map((item) => <option key={'combo-'+item.id} value={COMBO_PREFIX+item.id}>Corrida → {item.name}</option>)}
               <option value={REST_VALUE}>Descanso</option>
             </select>
             {weeklySchedule[day]?.kind === 'cardio' && weeklySchedule[day].label && (
               <span className="text-[11px] max-w-28 truncate" title={weeklySchedule[day].label}
                 style={{ color: 'var(--text-faint)' }}>{weeklySchedule[day].label}</span>
+            )}
+            </div>
+            {weeklySchedule[day]?.kind === 'combo' && (
+              <div className="ml-16 flex items-center flex-wrap gap-2 px-1 pb-1">
+                <span className="text-[11px]" style={{ color: 'var(--text-dim)' }}>Corrida antes:</span>
+                <input type="number" min={5} max={90} step={5} aria-label="Duração da corrida em minutos"
+                  value={weeklySchedule[day].suggestedDurationMin ?? 15}
+                  onChange={(e) => setDaySchedule(day, { ...weeklySchedule[day], suggestedDurationMin: Math.min(90, Math.max(5, Number(e.target.value) || 5)) })}
+                  className="w-16 rounded-md py-1 px-2 text-xs" style={{ background: 'var(--surface-2)' }}/>
+                <span className="text-[11px]" style={{ color: 'var(--text-faint)' }}>min · ritmo fácil</span>
+              </div>
             )}
           </div>
         ))}
