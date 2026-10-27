@@ -183,9 +183,23 @@ function getCuratedPlan(input: RecommendationInput): RecommendedProgramPlan | nu
       if (schedule[day]?.kind === kind) schedule[day] = { kind: 'descanso' };
     }
   };
-  if (program.goal === 'corrida') {
-    removeFirst('treino');
-    removeFirst('cardio');
+  if (maxDays === 3 && program.goal === 'hibrido') {
+    // Uma sessão de força + uma de estações HYROX + uma corrida.
+    const stationIndex = program.days.findIndex((day) => /estaç|HYROX B|HYROX · Esta/i.test(day.name));
+    const kept = new Set<Weekday>();
+    const easyRun = WEEKDAY_ORDER.find((day) => schedule[day]?.kind === 'cardio');
+    const strength = WEEKDAY_ORDER.find((day) => schedule[day]?.kind === 'treino' && schedule[day]?.workoutIndex === 0);
+    const station = WEEKDAY_ORDER.find((day) => schedule[day]?.kind === 'treino' && schedule[day]?.workoutIndex === (stationIndex < 0 ? 1 : stationIndex));
+    if (strength) kept.add(strength);
+    if (station) kept.add(station);
+    if (easyRun) kept.add(easyRun);
+    WEEKDAY_ORDER.forEach((day) => { if (!kept.has(day)) schedule[day] = { kind: 'descanso' }; });
+  } else if (maxDays === 3 && program.goal === 'corrida') {
+    // Duas corridas e um treino de força, em vez de eliminar todo o fortalecimento.
+    const runDays = WEEKDAY_ORDER.filter((day) => schedule[day]?.kind === 'cardio').slice(0, 2);
+    const strengthDay = WEEKDAY_ORDER.find((day) => schedule[day]?.kind === 'treino');
+    const kept = new Set<Weekday>([...runDays, ...(strengthDay ? [strengthDay] : [])]);
+    WEEKDAY_ORDER.forEach((day) => { if (!kept.has(day)) schedule[day] = { kind: 'descanso' }; });
   } else {
     removeFirst('cardio');
     removeFirst('treino');
