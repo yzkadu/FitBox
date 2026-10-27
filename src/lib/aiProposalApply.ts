@@ -34,9 +34,19 @@ export function applyScheduleProposal(proposal: ScheduleProposal, workouts: Work
       if (!change.workoutId || !workouts.some((w) => w.id === change.workoutId)) continue; // treino inválido, pula essa mudança
       setDaySchedule(change.weekday, { kind: 'treino', workoutId: change.workoutId });
     } else if (change.kind === 'cardio') {
-      const schedule: DaySchedule = { kind: 'cardio' };
-      if (change.suggestedDistanceKm) schedule.suggestedDistanceKm = change.suggestedDistanceKm;
+      const schedule: DaySchedule = { kind: 'cardio', label: change.label, suggestedDistanceKm: change.suggestedDistanceKm };
       setDaySchedule(change.weekday, schedule);
+    } else if (change.kind === 'multi') {
+      const ids = [...new Set(change.workoutIds ?? [])].slice(0, 5);
+      const activities: import('../types').ScheduledActivity[] = ids
+        .filter(id => workouts.some(w => w.id === id && !w.archived))
+        .map(workoutId => ({kind: 'treino', workoutId}));
+      if (change.includeCardio) activities.push({
+        kind: 'cardio', label: change.label ?? 'Corrida / cardio',
+        suggestedDistanceKm: change.suggestedDistanceKm,
+        suggestedDurationMin: change.suggestedDurationMin,
+      });
+      if (activities.length) setDaySchedule(change.weekday, { kind: 'multi', activities });
     } else {
       setDaySchedule(change.weekday, { kind: 'descanso' });
     }
