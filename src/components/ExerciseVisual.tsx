@@ -85,7 +85,7 @@ export function ExerciseGuide({ exercise, compact = false }: { exercise?: Exerci
         </div>
         <span className="text-[10px] rounded-full px-2 py-1 shrink-0 font-semibold"
           style={{ background: 'var(--brand-dim)', color: 'var(--brand)' }}>
-          {images ? (images.kind === 'foto' ? '2 fotos' : '2 ilustrações') : 'Guia'}
+          {images ? (images.second ? '2 fotos reais' : 'Foto real') : 'Sem foto validada'}
         </span>
       </div>
 
@@ -103,9 +103,9 @@ export function ExerciseGuide({ exercise, compact = false }: { exercise?: Exerci
             )}
           </div>
           <div className="px-1.5 pb-2 text-center">
-            <p className="text-[10px] font-semibold">Músculos</p>
+            <p className="text-[10px] font-semibold">{focus ? "Músculos" : "Atividade"}</p>
             <p className="text-[10px] mt-0.5" style={{ color: 'var(--brand)' }}>
-              {focus ? ANATOMY_GROUP_LABELS[focus] : MUSCLE_GROUP_LABELS[exercise.muscleGroup]}
+              {focus ? ANATOMY_GROUP_LABELS[focus] : exercise.muscleGroup === 'cardio' ? 'Condicionamento' : MUSCLE_GROUP_LABELS[exercise.muscleGroup]}
             </p>
             {focus && !compact && (
               <button type="button" onClick={() => setMuscleExpanded(v => !v)}
@@ -121,25 +121,25 @@ export function ExerciseGuide({ exercise, compact = false }: { exercise?: Exerci
         <div className="min-w-0 flex flex-col gap-2">
           {images ? (
             <>
-              <div className="grid grid-cols-2 gap-1.5 min-w-0">
-                {[images.first, images.second].map((src, index) => (
+              <div className={images.second ? 'grid grid-cols-2 gap-1.5 min-w-0' : 'grid grid-cols-1 gap-1.5 min-w-0'}>
+                {[images.first, ...(images.second ? [images.second] : [])].map((src, index) => (
                   <div key={src} className="rounded-lg overflow-hidden min-w-0"
                     style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
-                    <div className={compact ? 'h-[96px] sm:h-[132px]' : 'h-[125px] sm:h-[158px]'}>
+                    <div className={compact ? 'h-[130px] sm:h-[162px]' : 'h-[172px] sm:h-[205px]'}>
                       <ExercisePhoto src={src}
-                        alt={exercise.name + ' — ' + (images.kind === 'foto' ? 'fotografia' : 'ilustração') + ' da fase ' + (index + 1)}/>
+                        alt={exercise.name + ' — fotografia real ' + (index + 1)}/>
                     </div>
                     <p className="text-[10px] py-1.5 text-center"
                       style={{ color: 'var(--text-faint)' }}>
-                      {index === 0 ? 'Fase 1' : 'Fase 2'}
+                      {images.second ? 'Posição ' + (index + 1) : 'Foto real do exercício'}
                     </p>
                   </div>
                 ))}
               </div>
               <p className="text-[10px] leading-relaxed" style={{ color: 'var(--text-faint)' }}>
-                {images.kind === 'foto'
-                  ? 'Fotografias reais em duas posições do movimento; não são animação.'
-                  : 'Ilustrações específicas do movimento para orientar a posição; não são fotos nem animações.'}
+                {images.second
+                  ? 'Duas fotografias do exercício; não são animação. Confira também o passo a passo.'
+                  : 'Fotografia real mostrando uma posição do exercício. Para executar o movimento completo, siga as instruções abaixo.'}
               </p>
             </>
           ) : (
@@ -248,13 +248,9 @@ export function ExerciseGuide({ exercise, compact = false }: { exercise?: Exerci
           <p className="text-[10px]" style={{ color: 'var(--text-faint)' }}>
             {images ? images.credit + ' ' : 'Ainda não há demonstração de execução revisada para esta variação. '}
             A técnica deve ser adaptada ao seu nível e às orientações profissionais.
-            {images?.sourceId === 'workout-guide/skierg' && (
-              <a className="underline ml-1" href="https://github.com/bryllim/workout-guide"
-                target="_blank" rel="noopener noreferrer">Fonte das ilustrações</a>
-            )}
-            {images?.kind === 'foto' && (
-              <a className="underline ml-1" href="https://github.com/yuhonas/free-exercise-db"
-                target="_blank" rel="noopener noreferrer">Fonte das fotos</a>
+            {images && (
+              <a className="underline ml-1" href={images.sourceUrl ?? 'https://github.com/yuhonas/free-exercise-db'}
+                target="_blank" rel="noopener noreferrer">Ver fotografia original e licença</a>
             )}
           </p>
         </div>
