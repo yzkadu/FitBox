@@ -13,7 +13,11 @@ export interface AiChatMessage {
 /** Uma mudança de agenda proposta pela IA, pendente de confirmação da pessoa. */
 export interface ScheduleChangeProposal {
   weekday: Weekday;
-  kind: 'treino' | 'cardio' | 'descanso';
+  kind: 'treino' | 'cardio' | 'multi' | 'descanso';
+  workoutIds?: string[];
+  includeCardio?: boolean;
+  label?: string;
+  suggestedDurationMin?: number;
   workoutId?: string;
   suggestedDistanceKm?: number;
 }
