@@ -140,11 +140,17 @@ export const WEEKDAY_LABELS: Record<Weekday, string> = {
   dom: 'Domingo',
 };
 
-/** Programação diária: treino de força, cardio, ambos em ordem, ou descanso. */
+/** Uma agenda pode conter várias opções independentes no mesmo dia. */
+export type ScheduledActivity =
+  | { kind: 'treino'; workoutId: string }
+  | { kind: 'cardio'; label?: string; suggestedDistanceKm?: number; suggestedDurationMin?: number };
+
+/** Compatibilidade: os formatos antigos continuam válidos após atualizar o app. */
 export type DaySchedule =
   | { kind: 'treino'; workoutId: string }
   | { kind: 'cardio'; suggestedDistanceKm?: number; label?: string }
   | { kind: 'combo'; workoutId: string; order: 'cardio-first'; suggestedDistanceKm?: number; suggestedDurationMin?: number; label?: string }
+  | { kind: 'multi'; activities: ScheduledActivity[] }
   | { kind: 'descanso' };
 
 export type WeeklySchedule = Partial<Record<Weekday, DaySchedule>>;
