@@ -342,6 +342,9 @@ export function Home() {
         age={profile?.age ?? null}
         gender={profile?.gender ?? null}
         initialWeightKg={profile?.initialWeightKg ?? null}
+        experienceLevel={profile?.experienceLevel ?? null}
+        weeklyFrequency={profile?.weeklyFrequency ?? null}
+        equipment={profile?.equipment ?? null}
         onSaved={refetchProfile}
       />
     </div>
