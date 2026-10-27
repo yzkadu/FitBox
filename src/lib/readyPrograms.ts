@@ -54,7 +54,7 @@ interface ReadyProgramDay {
 
 export type ProgramPlace = 'academia' | 'casa_equipamento' | 'peso_corporal' | 'misto' | 'ar_livre';
 export type ProgramLevel = 'iniciante' | 'intermediario' | 'avancado';
-export type WeekStep = { kind: 'workout'; index: number } | { kind: 'cardio'; label: string; distanceKm?: number } | { kind: 'rest' };
+export type WeekStep = { kind: 'workout'; index: number } | { kind: 'cardio'; label: string; distanceKm?: number } | { kind: 'combo'; index: number; label: string; durationMin?: number; distanceKm?: number } | { kind: 'rest' };
 
 export interface ReadyProgram {
   id: string;
@@ -92,6 +92,7 @@ export function programPlace(program: ReadyProgram): ProgramPlace {
 const ex = (id: string, sets: number, reps: string, notes?: string, restSeconds?: number): ExerciseSpec => ({ id, sets, reps, notes, restSeconds });
 const workoutDay = (index: number): WeekStep => ({ kind: 'workout', index });
 const runDay = (label: string, distanceKm?: number): WeekStep => ({ kind: 'cardio', label, distanceKm });
+const comboDay = (index: number, label: string, durationMin = 12): WeekStep => ({ kind: 'combo', index, label, durationMin });
 const off: WeekStep = { kind: 'rest' };
 
 export const READY_PROGRAMS: ReadyProgram[] = [
@@ -535,7 +536,7 @@ export const READY_PROGRAMS: ReadyProgram[] = [
     place: 'misto',
     level: 'iniciante',
     sessionMinutes: 45,
-    description: 'Para iniciar no HYROX sem fazer simulações exaustivas: 2 dias de força, 1 de técnica das estações e 2 corridas fáceis.',
+    description: 'Preparação HYROX progressiva: corrida leve antes do treino de força/estações, mais uma corrida separada e recuperação suficiente.',
     progression: 'Semanas 1–2: trabalhe em ritmo confortável (RPE 5–6/10). Depois aumente pouco a pouco a distância da corrida ou uma série por estação, não tudo ao mesmo tempo.',
     recoveryNote: 'Mantenha quinta e domingo de descanso. Trenó, SkiErg e wall ball exigem academia equipada; adapte cargas à técnica.',
     days: [
@@ -551,8 +552,8 @@ export const READY_PROGRAMS: ReadyProgram[] = [
         exercises: [ex('ex-leg-press',3,'10-12'),ex('ex-puxada-frente',3,'10-12'),ex('ex-afundo',2,'8 cada perna'),
           ex('ex-hyrox-farmers',2,'30 m','Use cargas que permitam andar ereto.'),ex('ex-fedb-dead-bug',2,'10 cada lado')] },
     ],
-    weekPlan: [workoutDay(0),runDay('Corrida fácil ou caminhada/corrida (zona confortável)',3),
-      workoutDay(1),off,workoutDay(2),runDay('Corrida contínua tranquila',4),off],
+    weekPlan: [comboDay(0,'Corrida/caminhada leve → força total',10),off,
+      comboDay(1,'Corrida fácil → técnica HYROX',8),off,workoutDay(2),runDay('Corrida contínua tranquila',3),off],
   },
   {
     id: 'hibrido-emagrecimento',
@@ -562,7 +563,7 @@ export const READY_PROGRAMS: ReadyProgram[] = [
     place: 'misto',
     level: 'intermediario',
     sessionMinutes: 45,
-    description: 'Modelo equilibrado: musculação 2x, estações HYROX 1x e corrida 2x. Progressão sustentável, sem exigir HIIT todos os dias.',
+    description: 'Corrida ANTES da musculação nos dias combinados, com dois dias de força, um de estações HYROX e corrida leve isolada. Volume reduzido para recuperar.',
     progression: 'Aumente primeiro a consistência. Progrida a corrida cerca de 5–10% quando tolerada; na musculação, aumente carga após atingir o topo das repetições com técnica.',
     recoveryNote: 'Emagrecimento depende principalmente do balanço energético. Não é preciso treinar até a exaustão. Ajuste volume e recuperação.',
     days: [
@@ -578,8 +579,8 @@ export const READY_PROGRAMS: ReadyProgram[] = [
           ex('ex-desenvolvimento-halter',2,'8-12'),ex('ex-hyrox-farmers',2,'40 m'),
           ex('ex-fedb-dead-bug',2,'10 cada lado')] },
     ],
-    weekPlan: [workoutDay(0),runDay('Corrida leve de base aeróbica',4),
-      workoutDay(1),off,workoutDay(2),runDay('Corrida progressiva confortável',5),off],
+    weekPlan: [comboDay(0,'Corrida leve → força geral',12),off,
+      comboDay(1,'Corrida curta → HYROX técnico',8),off,workoutDay(2),runDay('Corrida confortável',3),off],
   },
   {
     id: 'hyrox-intermediario',
@@ -602,9 +603,53 @@ export const READY_PROGRAMS: ReadyProgram[] = [
         ex('ex-hyrox-burpee',2,'8-10'),ex('ex-remo-ergometrico',2,'500 m'),
         ex('ex-hyrox-sandbag',2,'12 cada perna'),ex('ex-hyrox-wall-ball',2,'15')] },
     ],
-    weekPlan: [workoutDay(0),runDay('Corrida fácil',5),workoutDay(1),off,
-      workoutDay(2),runDay('Corrida aeróbica leve',6),off],
+    weekPlan: [comboDay(0,'Corrida leve → superior',15),off,workoutDay(1),off,
+      comboDay(2,'Corrida curta → estações HYROX',10),runDay('Corrida aeróbica leve',4),off],
   },
+
+  {
+    id: 'hibrido-4dias-run-first',
+    title: 'Combo 4 dias de musculação + HYROX · Corrida primeiro',
+    goal: 'hibrido',
+    split: 'abcd',
+    place: 'misto',
+    level: 'intermediario',
+    sessionMinutes: 55,
+    description: 'Combina os 4 dias tradicionais de musculação com uma sessão HYROX leve. Em dois dias, a corrida vem antes da ficha; sem acrescentar uma semana de treinos inteira.',
+    progression: 'Faça a corrida inicial leve (8–15 min) sem tiros; preserve as cargas técnicas dos exercícios. Comece com 2 séries se seu volume atual for baixo. Evolua depois de 2–3 semanas consistentes.',
+    recoveryNote: 'São cinco dias ativos com quatro fichas de musculação e uma técnica HYROX. Pode ser excessivo para iniciantes; reduza para 3–4 dias se necessário. Não faça corrida intensa antes de pernas pesadas.',
+    days: [
+      { name: 'Combo A · Peito, ombro e tríceps', emoji: 'dumbbell', focus: 'Força superior depois de corrida curta',
+        exercises: [ex('ex-supino-inclinado-halter',3,'8-12'),ex('ex-supino-maquina',2,'10-12'),
+          ex('ex-desenvolvimento-halter',2,'8-12'),ex('ex-elevacao-lateral',2,'12-15'),
+          ex('ex-triceps-pulley',2,'10-12')] },
+      { name: 'Combo B · Costas e bíceps', emoji: 'target', focus: 'Força de puxada e braços',
+        exercises: [ex('ex-puxada-frente',3,'8-12'),ex('ex-remada-baixa',3,'10-12'),
+          ex('ex-crucifixo-inverso-maquina',2,'12-15'),ex('ex-rosca-martelo',2,'10-12')] },
+      { name: 'Combo C · Pernas e core', emoji: 'footprints', focus: 'Musculação antes de qualquer corrida intensa',
+        exercises: [ex('ex-agachamento-livre',3,'8-10'),ex('ex-mesa-flexora',3,'10-12'),
+          ex('ex-leg-press',2,'10-12'),ex('ex-panturrilha-em-pe',2,'12-15'),
+          ex('ex-fedb-dead-bug',2,'10 cada lado')] },
+      { name: 'Combo D · Superior complementar', emoji: 'activity', focus: 'Volume moderado sem repetir o treino A completo',
+        exercises: [ex('ex-remada-unilateral',3,'10 por lado'),ex('ex-supino-maquina',2,'10-12'),
+          ex('ex-elevacao-lateral',2,'12-15'),ex('ex-puxada-frente',2,'10-12'),
+          ex('ex-triceps-pulley',2,'12')] },
+      { name: 'Combo E · Técnica HYROX', emoji: 'flame', focus: 'Corrida leve antes das estações; trabalho técnico, não simulação de prova',
+        exercises: [ex('ex-hyrox-ski',2,'250 m'),ex('ex-remo-ergometrico',2,'250 m'),
+          ex('ex-hyrox-sled-push',2,'10 m','Carga leve, técnica antes da velocidade.'),
+          ex('ex-hyrox-wall-ball',2,'10-12')] },
+    ],
+    weekPlan: [
+      comboDay(0,'Corrida fácil → peito/ombro/tríceps',12),
+      workoutDay(1),
+      comboDay(4,'Corrida leve → estações HYROX',8),
+      off,
+      workoutDay(2),
+      workoutDay(3),
+      off,
+    ],
+  },
+
   {
     id: 'corrida-primeiros-5km',
     title: 'Do zero aos 5 km · Corrida + força',
@@ -798,7 +843,12 @@ export function applyReadyProgram(programId: string, options?: { applySchedule?:
         schedule[weekday] = { kind: 'cardio', suggestedDistanceKm: step.distanceKm, label: step.label };
       } else {
         const workout = workouts[step.index];
-        if (workout) schedule[weekday] = { kind: 'treino', workoutId: workout.id };
+        if (workout) {
+          schedule[weekday] = step.kind === 'combo'
+            ? { kind: 'combo', workoutId: workout.id, order: 'cardio-first',
+                label: step.label, suggestedDurationMin: step.durationMin, suggestedDistanceKm: step.distanceKm }
+            : { kind: 'treino', workoutId: workout.id };
+        }
       }
     });
     replaceWeeklySchedule(schedule);
