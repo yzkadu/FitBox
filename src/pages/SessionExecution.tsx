@@ -133,7 +133,7 @@ export function SessionExecution() {
     if (!entry || !currentSet) return;
     // Série de força precisa de reps informadas. Distância/tempo podem
     // ser marcados após concluir o alvo; peso zero é legítimo no peso corporal.
-    const distanceOrTime = /\\b(?:m|km|min|seg|s)\\b/i.test(entry.targetReps ?? '');
+    const distanceOrTime = /\d+\s*(?:km|min|seg|m|s)\b/i.test(entry.targetReps ?? '');
     if (!currentlyCompleted && currentSet.reps <= 0 && !distanceOrTime) {
       setSetInputError({ entryId: sessionExerciseId, message: `Informe as repetições da série ${currentSet.setNumber} antes de concluí-la.` });
       return;
