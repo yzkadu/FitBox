@@ -211,7 +211,7 @@ function getCuratedPlan(input: RecommendationInput): RecommendedProgramPlan | nu
     summaryLines: [
       program.description,
       program.progression ?? 'Aumente o volume de treino gradualmente, respeitando sua recuperação.',
-      'Treinos distribuídos ao longo da semana com dias de recuperação. Tudo pode ser editado depois.',
+      'Nos dias combinados você pode fazer uma ou várias atividades, em qualquer ordem. Tudo pode ser editado depois.',
     ],
     workouts: program.days.map((d) => ({
       name: d.name, icon: d.emoji as IconKey,
@@ -332,7 +332,10 @@ export function applyRecommendedProgram(input: RecommendationInput): void {
     const entry = plan.schedule[day];
     if (!entry) continue;
     if (entry.kind === 'treino') schedule[day] = { kind: 'treino', workoutId: createdIds[entry.workoutIndex] };
-    else if (entry.kind === 'combo') schedule[day] = { kind: 'combo', workoutId: createdIds[entry.workoutIndex], order: 'cardio-first', label: entry.label, suggestedDurationMin: entry.suggestedDurationMin, suggestedDistanceKm: entry.suggestedDistanceKm };
+    else if (entry.kind === 'combo') schedule[day] = { kind: 'multi', activities: [
+      { kind: 'cardio', label: entry.label, suggestedDurationMin: entry.suggestedDurationMin, suggestedDistanceKm: entry.suggestedDistanceKm },
+      { kind: 'treino', workoutId: createdIds[entry.workoutIndex] },
+    ] };
     else schedule[day] = entry;
   }
   replaceWeeklySchedule(schedule);
