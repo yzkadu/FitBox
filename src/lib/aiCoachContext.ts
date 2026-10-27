@@ -44,6 +44,9 @@ export function buildCoachContext(data: AppData, profileName?: string): string {
     if (sched?.kind === 'treino') {
       const w = workouts.find((w) => w.id === sched.workoutId);
       desc = w ? `treino "${w.name}"` : 'treino (removido)';
+    } else if (sched?.kind === 'combo') {
+      const w = workouts.find(w => w.id === sched.workoutId);
+      desc = `COMBINADO: corrida leve primeiro (${sched.suggestedDurationMin ?? 15}min), depois treino "${w?.name ?? 'removido'}" (id "${sched.workoutId}")`;
     } else if (sched?.kind === 'cardio') {
       desc = sched.suggestedDistanceKm ? `cardio (meta ${sched.suggestedDistanceKm}km)` : 'cardio';
     } else if (sched?.kind === 'descanso') {
