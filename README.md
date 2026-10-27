@@ -1,78 +1,52 @@
 # FitBox 💪
 
-Personal trainer digital — uma plataforma pessoal de treinos inspirada na praticidade
-de apps como o Hevy, com foco em ser rápida, mobile-first e 100% sua (todos os dados
-ficam salvos localmente, no seu dispositivo).
+Aplicativo web de treinos e acompanhamento de evolução física.
 
-## Funcionalidades
+**Endereço de publicação indicado no repositório:** https://fit-box-gamma.vercel.app
 
-- **Perfis múltiplos**: cada pessoa que usa o app tem seus próprios dados isolados
-  (treinos, histórico, medidas, cardio, agenda) no mesmo dispositivo.
-- **Montar treinos**: crie treinos personalizados escolhendo exercícios de um catálogo
-  com mais de 40 opções (ou crie os seus próprios), definindo séries e repetições alvo.
-- **Treino híbrido e agenda semanal**: monte a programação da semana (treino de força,
-  cardio ou descanso por dia) e veja o plano do dia automaticamente na tela inicial.
-  Vem com um template pronto de 5 dias de força (Push/Pull/Legs/Upper/Lower) + cardio
-  no fim de semana.
-- **Treino do dia**: execute o treino registrando peso, repetições e marcando séries
-  concluídas em tempo real, com cronômetro de duração.
-- **Cardio**: registre corrida ou bike manualmente (duração, distância, pace calculado
-  automaticamente, frequência cardíaca e esforço percebido).
-- **Histórico**: veja todas as sessões concluídas, com detalhes de séries, volume total
-  e recordes pessoais (PRs) por exercício.
-- **Evolução**: gráficos de progressão de carga e volume por exercício, frequência
-  semanal de treinos, peso corporal e medidas ao longo do tempo.
-- **Medidas e fotos**: registre peso, percentual de gordura, medidas corporais (peito,
-  cintura, quadril, braço, coxa, panturrilha) e fotos de evolução.
-- **Personal Trainer virtual** (baseado em regras): acompanha seu histórico de cada
-  exercício e sugere progressões de carga, identificando evolução ou estagnação.
+## Funcionalidades existentes
 
-## Stack técnica
+- Cadastro e autenticação individuais com Supabase Auth.
+- **Dados cadastrais**: nome, idade, sexo, altura, peso inicial, nível de experiência, frequência semanal e locais/equipamentos de treino, com edição na tela **Conta**.
+- **Meta de peso**: escolher perder ou ganhar, informar quantidade em kg e ritmo em kg/semana; o app calcula automaticamente peso-alvo, semanas e data prevista, com opção de editar ou excluir.
+- Montagem e execução de treinos, agenda semanal, cardio e histórico.
+- Medidas corporais, fotos de evolução, gráficos e mapa muscular.
+- Recomendações de treino e personal virtual.
 
-- [React 19](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/)
-- [Vite](https://vite.dev/) como build tool
-- [Tailwind CSS v4](https://tailwindcss.com/) para estilização
-- [React Router](https://reactrouter.com/) para navegação
-- [Recharts](https://recharts.org/) para os gráficos de evolução
-- [Lucide](https://lucide.dev/) para ícones
-- Persistência local via `localStorage` — sem backend necessário para rodar
+## Persistência: como funciona de verdade
 
-O app é uma **PWA** (Progressive Web App): pode ser "instalado" na tela inicial do
-celular e usado como um app nativo, direto do navegador.
+- **Supabase é a fonte principal**: treinos, histórico, medidas, agenda, fotos, metas e perfil ficam associados ao usuário autenticado no servidor e podem ser carregados em outros dispositivos mediante login.
+- **localStorage é cópia complementar no navegador**: salva o último estado principal por usuário, sem fotos em base64. Ajuda a visualizar informações anteriores se a leitura do servidor falhar.
+- Ao perder a conexão, a interface sinaliza quando está mostrando a cópia local e permite tentar reconectar. Se não houver cópia local e o Supabase falhar, o app informa o erro em vez de exibir uma conta aparentemente vazia.
+- **A cópia local não equivale a sincronização offline**: lançamentos feitos sem rede não têm garantia de envio posterior; o usuário não deve presumir que estão sincronizados até serem confirmados pelo Supabase.
+- O navegador pode apagar o localStorage quando os dados do site são limpos; a conta Supabase é o armazenamento durável para registros sincronizados.
 
-## Rodando localmente
+## Estrutura técnica
+
+- React 19, TypeScript e Vite
+- Tailwind CSS, React Router, Recharts e Lucide
+- Supabase Auth + tabelas PostgreSQL protegidas por RLS
+- PWA instalável em navegadores compatíveis
+
+O projeto **não** é um único arquivo HTML e **não** depende de um Artifact temporário para funcionar. O link de publicação é gerenciado pela hospedagem Vercel. Enviar um commit ao GitHub não comprova sozinho que a publicação terminou: verifique o deploy da Vercel.
+
+## Desenvolvimento
 
 ```bash
-npm install
+npm ci
 npm run dev
-```
-
-Acesse `http://localhost:5173` no navegador (idealmente no modo responsivo/mobile
-do DevTools, já que o app é mobile-first).
-
-Para gerar a build de produção:
-
-```bash
 npm run build
-npm run preview
 ```
 
-## Estrutura do projeto
+Uma validação automática em GitHub Actions executa a compilação de produção a cada push na branch `main`.
 
-```
-src/
-  components/   componentes de UI reutilizáveis (cards, botões, navegação, modais, perfis)
-  hooks/        hooks React (acesso reativo ao estado global e aos perfis)
-  lib/          lógica de negócio: storage (multi-perfil), ações (actions), estatísticas,
-                catálogo de exercícios, personal trainer virtual, templates de programa
-  pages/        as telas do app (Hoje, Treinos, Treino do dia, Cardio, Histórico,
-                Evolução, Medidas)
-  types/        tipos TypeScript do domínio (Workout, Session, Exercise, CardioLog,
-                WeeklySchedule, Profile, etc.)
-```
+## Roteiro de verificação após publicar
 
-## Roadmap
+1. Abra o site e entre na conta.
+2. Na tela **Conta**, confira **Dados cadastrais**, edite nome, idade, altura, sexo, nível, frequência e local de treino, salve e reabra a tela.
+3. Acesse **Evolução**, escolha perder ou ganhar peso, ajuste a quantidade e o ritmo, confira semanas e data prevista e salve.
+4. Recarregue a página e entre novamente: confira se as alterações continuam.
+5. Teste em outro navegador/dispositivo usando a mesma conta para confirmar o carregamento de dados sincronizados via Supabase.
+6. Verifique se os registros criados aparecem no banco (e não só na tela).
 
-- [ ] Personal Trainer virtual v2 com IA generativa
-- [ ] Sincronização entre dispositivos (backend + autenticação)
-- [ ] Exportar/importar dados (backup)
+**Limitações pendentes:** testar a versão publicada em navegador real; confirmar o deploy da Vercel; implementar sincronização de alterações feitas totalmente offline, caso esse modo seja desejado.
