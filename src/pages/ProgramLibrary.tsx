@@ -12,6 +12,7 @@ import {
   type ProgramGoal, type ProgramPlace, type ProgramLevel, type SplitLength, type ReadyProgram,
 } from '../lib/readyPrograms';
 import { BUILTIN_EXERCISES } from '../lib/exercises';
+import { ExerciseThumbnail, ExerciseGuide } from '../components/ExerciseVisual';
 
 const GOAL_FILTERS: ProgramGoal[] = [
   'hibrido', 'emagrecimento', 'hipertrofia', 'corrida', 'calistenia', 'funcional', 'core', 'mobilidade',
@@ -283,20 +284,28 @@ function FilterChip({ label, active, onClick }: { label: string; active: boolean
   );
 }
 
-function exerciseName(id: string): string {
-  return BUILTIN_EXERCISES.find((e) => e.id === id)?.name ?? id;
-}
-
 function ExerciseSpecRow({ exerciseId, sets, reps, notes }: {
   exerciseId: string; sets: number; reps: string; notes?: string;
 }) {
+  const [showGuide, setShowGuide] = useState(false);
+  const exercise = BUILTIN_EXERCISES.find(ex => ex.id === exerciseId);
   return (
-    <li className="text-xs">
-      <div className="flex justify-between gap-2" style={{ color: 'var(--text-dim)' }}>
-        <span className="min-w-0">{exerciseName(exerciseId)}</span>
-        <span className="shrink-0" style={{ color: 'var(--text-faint)' }}>{sets} × {reps}</span>
+    <li className="text-xs rounded-lg px-2 py-1.5" style={{background:'var(--surface)'}}>
+      <div className="flex items-center gap-2">
+        <button type="button" onClick={() => setShowGuide(!showGuide)}
+          aria-label="Ver execução do exercício">
+          <ExerciseThumbnail exercise={exercise} size={45}/>
+        </button>
+        <div className="flex-1 min-w-0">
+          <span className="block font-medium">{exercise?.name ?? 'Exercício não encontrado'}</span>
+          <span className="block mt-1" style={{color:'var(--text-faint)'}}>{sets} × {reps}</span>
+          {notes && <span className="block mt-0.5" style={{color:'var(--text-faint)'}}>{notes}</span>}
+        </div>
+        <button type="button" onClick={()=>setShowGuide(!showGuide)}
+          aria-expanded={showGuide} className="px-1.5 py-1 text-xs underline"
+          style={{color:'var(--brand)'}}>{showGuide?'Fechar':'Ver'}</button>
       </div>
-      {notes && <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-faint)' }}>{notes}</p>}
+      {showGuide && <div className="pt-2"><ExerciseGuide exercise={exercise}/></div>}
     </li>
   );
 }
