@@ -20,7 +20,8 @@ const SUGGESTIONS = [
   'Como está minha evolução esse mês?',
   'O que eu treino hoje e com que carga?',
   'Estou estagnada em algum exercício?',
-  'Monta um treino de perna de 50 minutos',
+  'Monte uma semana com musculação, corrida e HYROX como opções, sem ordem obrigatória',
+  'Quero combinar dois programas sem excesso de volume. Avalie minha recuperação e proponha uma agenda',
 ];
 
 interface ChatEntry {
