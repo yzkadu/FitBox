@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Search, Plus } from 'lucide-react';
+import { Search, Plus, Eye, ChevronUp } from 'lucide-react';
+import { ExerciseThumbnail, ExerciseGuide } from './ExerciseVisual';
 import { Sheet } from './Sheet';
 import { useAppData } from '../hooks/useAppData';
 import { addCustomExercise } from '../lib/actions';
@@ -29,12 +30,14 @@ export function ExercisePicker({
   const [creating, setCreating] = useState(false);
   const [newName, setNewName] = useState('');
   const [newGroup, setNewGroup] = useState<MuscleGroup>('outro');
+  const [previewId, setPreviewId] = useState<string | null>(null);
 
   useEffect(() => {
     if (open) {
       setGroupFilter(defaultMuscleGroup ?? 'todos');
       setQuery('');
       setCreating(false);
+      setPreviewId(null);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, defaultMuscleGroup]);
@@ -158,6 +161,7 @@ export function ExercisePicker({
         </div>
       )}
 
+      <p className="text-xs mb-3" style={{color:'var(--text-faint)'}}>{grouped.reduce((count, [, items]) => count + items.length,0)} exercícios · toque na foto para ver fases e orientações</p>
       <div className="flex flex-col gap-4">
         {grouped.map(([group, list]) => (
           <div key={group}>
@@ -166,18 +170,29 @@ export function ExercisePicker({
             </p>
             <div className="flex flex-col gap-1">
               {list.map((ex) => (
-                <button
-                  key={ex.id}
-                  onClick={() => onSelect(ex)}
-                  className="text-left px-3 py-2.5 rounded-xl text-sm"
-                  style={{ background: 'var(--surface-2)', color: 'var(--text)' }}
-                >
-                  {ex.name}
-                  <span className="block text-xs mt-0.5" style={{ color: 'var(--text-faint)' }}>
-                    {MUSCLE_GROUP_LABELS[ex.muscleGroup]}
-                    {ex.equipment ? ` • ${ex.equipment}` : ''}
-                  </span>
-                </button>
+                <div key={ex.id} className="rounded-xl overflow-hidden" style={{background:'var(--surface-2)'}}>
+                  <div className="flex items-center gap-2 p-2">
+                    <button type="button" aria-label={`Ver execução de ${ex.name}`}
+                      onClick={() => setPreviewId(previewId === ex.id ? null : ex.id)}>
+                      <ExerciseThumbnail exercise={ex} size={58}/>
+                    </button>
+                    <button type="button" onClick={() => onSelect(ex)}
+                      className="flex-1 text-left min-w-0 py-1">
+                      <span className="text-sm font-medium block">{ex.name}</span>
+                      <span className="block text-[11px] mt-1" style={{color:'var(--text-faint)'}}>
+                        {MUSCLE_GROUP_LABELS[ex.muscleGroup]}{ex.equipment ? ` · ${ex.equipment}` : ''}
+                      </span>
+                      <span className="text-[11px] mt-1 block" style={{color:'var(--brand)'}}>Selecionar exercício</span>
+                    </button>
+                    <button type="button" aria-label="Expandir execução" onClick={() => setPreviewId(previewId === ex.id ? null : ex.id)}
+                      className="p-2" style={{color:'var(--text-faint)'}}>
+                      {previewId === ex.id ? <ChevronUp size={17}/> : <Eye size={17}/>}
+                    </button>
+                  </div>
+                  {previewId === ex.id && (
+                    <div className="p-2 pt-0"><ExerciseGuide exercise={ex}/></div>
+                  )}
+                </div>
               ))}
             </div>
           </div>
