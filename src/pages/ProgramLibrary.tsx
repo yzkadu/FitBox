@@ -99,7 +99,7 @@ export function ProgramLibrary() {
       <PageHeader title="Programas prontos" />
       <p className="text-sm mb-4" style={{ color: 'var(--text-dim)' }}>
         Treinos pensados para a vida real: musculação, HYROX, corrida, casa e condicionamento.
-        Confira o plano semanal e adapte conforme experiência e recuperação.
+        Confira as opções sugeridas, escolha quantas atividades quer fazer no mesmo dia e adapte conforme sua recuperação.
       </p>
 
       <div className="flex items-center gap-2 mb-3" style={{ color: 'var(--text-dim)' }}>
@@ -196,7 +196,7 @@ export function ProgramLibrary() {
                     style={{ borderTop: i ? '1px solid var(--border-soft)' : undefined }}>
                     <span className="w-16 shrink-0 font-medium" style={{ color: 'var(--text-dim)' }}>{WEEKDAY_LABELS[day]}</span>
                     <span style={{ color: step.kind === 'rest' ? 'var(--text-faint)' : 'var(--text)' }}>
-                      {description}{step.kind === 'cardio' && step.distanceKm ? ' · base ' + step.distanceKm + ' km' : ''}{step.kind === 'combo' && step.durationMin ? ' · ' + step.durationMin + ' min de corrida antes' : ''}
+                      {description}{step.kind === 'cardio' && step.distanceKm ? ' · base ' + step.distanceKm + ' km' : ''}{step.kind === 'combo' && step.durationMin ? ' · ' + step.durationMin + ' min de corrida (opcional)' : ''}
                     </span>
                   </div>
                 );
