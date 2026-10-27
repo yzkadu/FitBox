@@ -349,7 +349,8 @@ export function addSetToSessionExercise(sessionId: string, sessionExerciseId: st
       id: uid(),
       setNumber: se.sets.length + 1,
       weight: last?.weight ?? 0,
-      reps: last?.reps ?? 0,
+      // Peso anterior é sugestão; repetições são preenchidas somente após realizar.
+      reps: 0,
       completed: false,
     };
     se.sets.push(newSet);
