@@ -5,6 +5,7 @@ import { useAppData } from '../hooks/useAppData';
 import { getExerciseHistory, getPersonalRecord, getExerciseTrend } from '../lib/stats';
 import { getCoachSuggestion } from '../lib/coach';
 import { Card, EmptyState } from '../components/ui';
+import { ExerciseGuide } from '../components/ExerciseVisual';
 import { chartColors, tooltipStyle } from '../lib/chartTheme';
 
 export function ExerciseDetail() {
@@ -41,6 +42,8 @@ export function ExerciseDetail() {
         </button>
         <h1 className="text-lg font-semibold truncate">{exercise?.name ?? 'Exercício'}</h1>
       </div>
+
+      {exercise && <div className="mb-4"><ExerciseGuide exercise={exercise}/></div>}
 
       {!pr ? (
         <EmptyState title="Sem histórico ainda" subtitle="Registre esse exercício em um treino para ver sua evolução." />
