@@ -94,33 +94,32 @@ mantemos identificação e origem por precaução. As dez pranchas enviadas
 como referência estética não foram copiadas para o projeto público:
 seus direitos e a correção biomecânica de cada miniatura não foram verificados.
 
-## Imagens das estações HYROX (2026-10-27)
+## Fotografias HYROX e auditoria de execução — 2026-10-27
 
-O catálogo agora mapeia explicitamente as **oito estações oficiais** do
-HYROX e **cinco variações de treino** existentes (SkiErg intervalado,
-remo intervalado, trenó técnico, burpee broad jump e farmer unilateral).
-A cobertura visual dos 13 IDs é conferida em
-`HYROX_EXPECTED_EXERCISES` (`src/lib/hyroxMedia.ts`).
+Depois de identificar desenhos inadequados como demonstração, **removemos
+integralmente os bonecos esquemáticos**, tanto do catálogo quanto do código.
+Não exibir ilustrações improvisadas como se fossem etapas executáveis.
 
-**Importante:** "cobertura visual" não significa "13 fotografias".
-O aplicativo distingue:
+**Política A:** só fotografias de movimentos que correspondam ao exercício.
+Uma fotografia única deve ser apresentada como **foto de uma posição**;
+nunca declarar fase 1 + fase 2 sem duas fotos diferentes e verdadeiras.
 
-- **Fotografias exatas** de movimentos já existentes em
-  `yuhonas/free-exercise-db` (sled push, remo, farmer carry bilateral,
-  incluindo variantes de intervalo/técnica quando a execução é a mesma).
-- **Ilustrações do SkiErg** em quadros da biblioteca
-  `bryllim/workout-guide`, obra de Bryl Lim, imagens CC BY-SA 4.0.
-- **Ilustrações vetoriais específicas** produzidas para o FitBox:
-  puxada de trenó com corda, burpee com salto à frente, afundo com sandbag,
-  arremesso de wall ball e farmer unilateral. São imagens esquemáticas
-  de duas posições — não são fotos nem instrução biomecânica completa.
+- Origem livre/Commons com crédito individual, quando houver:
+  SkiErg (Kiet Le, CC BY 2.0);
+  burpee broad jump e wall balls HYROX (HybridFitty, CC BY 4.0);
+  sandbag lunges (fotografia militar em domínio público nos EUA).
+- Fotos da coleção pública free-exercise-db: sled push, remo ergométrico,
+  farmer carry bilateral e equivalentes de intervalo que não modificam
+  a execução.
+- Para sled pull HYROX (corda mão sobre mão) e farmer carry unilateral,
+  **não há foto exata confirmada nesta versão**. O app exibe instruções,
+  o status sem fotografia e a seção muscular, sem mentir sobre a cobertura.
+- As URLs e as fontes ficam em `src/lib/hyroxMedia.ts` e
+  `src/lib/exerciseMedia.ts`.
+- Como as fotos são externas, a imagem pode ficar indisponível sem internet.
+  Um erro de carregamento mostra explicitamente "Foto indisponível".
 
-A UI preserva a separação entre imagem de **execução** e personagem
-**anatômico**. Cada imagem tem origem explícita e texto indicando se é
-fotografia ou ilustração. Não reutilizar fotos de variações diferentes como
-se fossem a execução exata. Referência de movimentos oficiais:
-[HYROX APAC](https://hyroxapac.zendesk.com/hc/en-us/articles/13979737446927-What-are-the-workouts-done-during-a-HYROX-race).
-
-O protocolo de **esteira inclinada de 20 min** está listado como
-**Programas prontos → Emagrecimento → Corrida / esteira**; a aba Cardio
-continua responsável pelo **registro e histórico** dos treinos realizados.
+Os exercícios permanecem no catálogo mesmo sem fotografia. Não existe
+animação de execução pronta para todos os movimentos. A capa usa a
+identidade preto/roxo do FitBox; a seção de **execução** apresenta as
+fotografias de verdade, separadas do mapa muscular.
