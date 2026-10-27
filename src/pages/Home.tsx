@@ -179,7 +179,7 @@ export function Home() {
                   <ArrowRight size={16} style={{ color: 'var(--text-faint)' }}/>
                 </button>
                 <button type="button" onClick={() => handleStart(todayWorkout.id)}
-                  disabled={!comboProgress?.cardioDone || !!comboProgress.strengthDone || todayWorkout.exercises.length === 0}
+                  disabled={!comboProgress?.cardioDone || !!comboProgress?.strengthDone || todayWorkout.exercises.length === 0}
                   className="w-full rounded-xl px-3 py-3 text-left flex items-center gap-3 disabled:opacity-50"
                   style={{ background: 'var(--surface-2)' }}>
                   <span className="w-7 h-7 rounded-full grid place-items-center shrink-0"
