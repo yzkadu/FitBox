@@ -1,5 +1,7 @@
 import { useState } from 'react';
-import { Dumbbell, Info, ImageOff } from 'lucide-react';
+import { Dumbbell, Info, ImageOff, Scan } from 'lucide-react';
+import { AnatomyMap } from './AnatomyMap';
+import type { AnatomyGroup, AnatomyGender } from '../lib/anatomy';
 import type { Exercise } from '../types';
 import { MUSCLE_GROUP_LABELS } from '../lib/exercises';
 import { exerciseMedia, exerciseGuidance, MOVEMENT_GROUP_LABELS } from '../lib/exerciseMedia';
@@ -33,12 +35,29 @@ export function ExerciseThumbnail({ exercise, size = 60 }: { exercise?: Exercise
   );
 }
 
+/** Mapa anatômico: foco predominante, não percentuais de ativação muscular. */
+function anatomicalFocus(exercise: Exercise): AnatomyGroup | null {
+  const name = exercise.name.toLowerCase();
+  if (/panturrilha|tibial/.test(name)) return 'calves';
+  if (/flexora|stiff|romeno|nordic|nórdico|posterior de coxa/.test(name)) return 'hamstrings';
+  if (/adutora|adutor|adução/.test(name)) return 'adductors';
+  if (/punho|antebraço|wrist|pronação|supinação/.test(name)) return 'forearms';
+  const groups: Record<string, AnatomyGroup> = {
+    peito:'chest',costas:'back',ombro:'shoulders',biceps:'biceps',
+    triceps:'triceps',perna:'quadriceps',gluteo:'glutes',abdomen:'core',
+  };
+  return groups[exercise.muscleGroup] ?? null;
+}
+
 /** Duas fases estáticas do movimento, com rótulos claros e instruções
  * individuais somente quando validadas. A foto não é uma animação. */
 export function ExerciseGuide({ exercise, compact = false }: { exercise?: Exercise | null; compact?: boolean }) {
+  const [showAnatomy, setShowAnatomy] = useState(false);
+  const [model, setModel] = useState<AnatomyGender>('masculino');
   const images = exerciseMedia(exercise);
   const steps = exerciseGuidance(exercise);
   if (!exercise) return null;
+  const focus = anatomicalFocus(exercise);
   return (
     <section className="rounded-xl overflow-hidden p-3 flex flex-col gap-3"
       style={{ background:'var(--surface-2)', border:'1px solid var(--border)' }}>
@@ -73,6 +92,32 @@ export function ExerciseGuide({ exercise, compact = false }: { exercise?: Exerci
             Ainda não há imagem de execução conferida para esta variação.
             Não exibimos imagens de exercícios diferentes.
           </p>
+        </div>
+      )}
+      {!compact && focus && (
+        <div>
+          <button type="button" onClick={() => setShowAnatomy(v => !v)}
+            className="flex items-center gap-2 text-xs font-semibold"
+            style={{color:'var(--brand)'}} aria-expanded={showAnatomy}>
+            <Scan size={14}/>{showAnatomy ? 'Ocultar modelo muscular' : 'Ver personagem anatômico e região predominante'}
+          </button>
+          {showAnatomy && (
+            <div className="mt-2">
+              <div className="flex gap-2 justify-center mb-2">
+                <button type="button" onClick={() => setModel('masculino')}
+                  aria-pressed={model==='masculino'} className="rounded-full px-3 py-1.5 text-xs"
+                  style={{background:model==='masculino'?'var(--brand)':'var(--surface)',color:model==='masculino'?'white':'var(--text-dim)'}}>Modelo masculino</button>
+                <button type="button" onClick={() => setModel('feminino')}
+                  aria-pressed={model==='feminino'} className="rounded-full px-3 py-1.5 text-xs"
+                  style={{background:model==='feminino'?'var(--brand)':'var(--surface)',color:model==='feminino'?'white':'var(--text-dim)'}}>Modelo feminino</button>
+              </div>
+              <AnatomyMap key={exercise.id+'-'+model} variant="compact" gender={model}
+                initialSelectedGroups={[focus]}/>
+              <p className="text-[10px] mt-1" style={{color:'var(--text-faint)'}}>
+                Destaque aproximado do grupo muscular predominante; o exercício também pode recrutar outros músculos.
+              </p>
+            </div>
+          )}
         </div>
       )}
       {steps && !compact && (
