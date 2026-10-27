@@ -61,8 +61,12 @@ export function Cardio() {
   const [proofPhoto, setProofPhoto] = useState<string | undefined>(undefined);
 
   function openSheet() {
-    if (suggestedDistanceKm && form.date === todayIso() && !form.distanceKm) {
-      setForm((f) => ({ ...f, distanceKm: String(suggestedDistanceKm) }));
+    if (todaySchedule?.kind === 'cardio' && form.date === todayIso()) {
+      setForm((f) => ({
+        ...f,
+        distanceKm: suggestedDistanceKm && !f.distanceKm ? String(suggestedDistanceKm) : f.distanceKm,
+        notes: !f.notes && todaySchedule.label ? 'Plano: ' + todaySchedule.label : f.notes,
+      }));
     }
     setSheetOpen(true);
   }
@@ -127,12 +131,15 @@ export function Cardio() {
         }
       />
 
-      {suggestedDistanceKm && (
-        <Card className="mb-4 flex items-center gap-3" style={{ borderColor: 'var(--success)' }}>
+      {todaySchedule?.kind === 'cardio' && (todaySchedule.label || suggestedDistanceKm) && (
+        <Card className="mb-4 flex items-start gap-3" style={{ borderColor: 'var(--success)' }}>
           <RouteIcon size={18} style={{ color: 'var(--success)' }} />
-          <p className="text-sm">
-            Meta de hoje: <span className="font-semibold">{suggestedDistanceKm} km</span>
-          </p>
+          <div className="text-sm">
+            <p className="font-semibold">{todaySchedule.label ?? 'Cardio programado'}</p>
+            {suggestedDistanceKm && <p className="text-xs mt-1" style={{ color: 'var(--text-dim)' }}>
+              Distância de referência: {suggestedDistanceKm} km — adapte ao condicionamento.
+            </p>}
+          </div>
         </Card>
       )}
 
