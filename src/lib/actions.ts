@@ -635,17 +635,18 @@ export function setDaySchedule(weekday: Weekday, schedule: DaySchedule | null) {
 
 // ---------- Meta de peso ----------
 
-export function setWeightGoal(goal: WeightGoal | null) {
-  store.update((d) => {
-    d.weightGoal = goal;
-  });
+export async function setWeightGoal(goal: WeightGoal | null): Promise<{ ok: true } | { ok: false; error: string }> {
   const userId = requireUserId();
-  if (!userId) return;
-  if (goal === null) {
-    supabase.from('weight_goal').delete().eq('user_id', userId).then(logIfError('weight_goal.delete'));
-  } else {
-    supabase.from('weight_goal').upsert({ user_id: userId, goal }).then(logIfError('weight_goal.upsert'));
+  if (!userId) return { ok: false, error: 'Faça login novamente.' };
+  const { error } = goal === null
+    ? await supabase.from('weight_goal').delete().eq('user_id', userId)
+    : await supabase.from('weight_goal').upsert({ user_id: userId, goal });
+  if (error) {
+    console.error('Falha ao sincronizar (weight_goal):', error);
+    return { ok: false, error: 'Falha ao gravar a meta: ' + error.message };
   }
+  store.update((d) => { d.weightGoal = goal; });
+  return { ok: true };
 }
 
 // ---------- Dados básicos do perfil (altura/idade/sexo/peso inicial p/ IMC) ----------
