@@ -6,6 +6,33 @@ import { useAppData } from '../hooks/useAppData';
 import { addCustomExercise } from '../lib/actions';
 import { MUSCLE_GROUP_LABELS, MUSCLE_GROUP_ORDER } from '../lib/exercises';
 import type { Exercise, MuscleGroup } from '../types';
+type Specialty = 'todos' | 'hyrox' | 'calistenia' | 'mobilidade' | 'antebracos' | 'panturrilhas' | 'posteriores' | 'quadriceps';
+const SPECIALTIES: {key: Specialty; label: string}[] = [
+  {key:'todos',label:'Todas as modalidades'},
+  {key:'hyrox',label:'Funcional / HYROX'},
+  {key:'calistenia',label:'Calistenia / Casa'},
+  {key:'mobilidade',label:'Mobilidade / Alongamento'},
+  {key:'antebracos',label:'Antebraços'},
+  {key:'panturrilhas',label:'Panturrilhas'},
+  {key:'posteriores',label:'Posterior de coxa'},
+  {key:'quadriceps',label:'Quadríceps'},
+];
+
+function belongsToSpecialty(ex: Exercise, specialty: Specialty): boolean {
+  if (specialty === 'todos') return true;
+  const name = ex.name.toLowerCase();
+  const equipment = ex.equipment?.toLowerCase() ?? '';
+  if (specialty === 'hyrox') return ex.id.startsWith('ex-hyrox-') ||
+    /hyrox|sled|trenó|ski|thruster|burpee|wall ball|farmers|caminhada do fazendeiro|batalha naval|battle rope|kettlebell|shuttle run|corda naval|step-up na caixa/.test(name);
+  if (specialty === 'calistenia') return /peso corporal|barra fixa|argolas|trx/.test(equipment) ||
+    /flexão de braço|flexão arqueiro|flexão diamante|prancha|agachamento livre|afundo reverso|pike push-up|barra fixa|mergulho nas paralelas|burpee|abdominal/.test(name);
+  if (specialty === 'mobilidade') return /mobilidade|alongamento|rotação torácica|90\/90|world.s greatest|agachamento profundo sustentado/.test(name);
+  if (specialty === 'antebracos') return /punho|antebraço|pronação|supinação|wrist|hand gripper|farmer|pegada/.test(name);
+  if (specialty === 'panturrilhas') return /panturrilha|tibial/.test(name);
+  if (specialty === 'posteriores') return /stiff|flexora|posterior|romeno|nordic|nórdico|good morning/.test(name);
+  return /agachamento|extensora|leg press|passada|afundo|step-up|sissy|wall sit/.test(name);
+}
+
 
 export function ExercisePicker({
   open,
@@ -31,6 +58,7 @@ export function ExercisePicker({
   const [newName, setNewName] = useState('');
   const [newGroup, setNewGroup] = useState<MuscleGroup>('outro');
   const [previewId, setPreviewId] = useState<string | null>(null);
+  const [specialty, setSpecialty] = useState<Specialty>('todos');
 
   useEffect(() => {
     if (open) {
@@ -38,6 +66,7 @@ export function ExercisePicker({
       setQuery('');
       setCreating(false);
       setPreviewId(null);
+      setSpecialty('todos');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, defaultMuscleGroup]);
@@ -48,7 +77,8 @@ export function ExercisePicker({
       (e) =>
         (e.name.toLowerCase().includes(q) || (e.equipment?.toLowerCase().includes(q) ?? false)) &&
         e.id !== excludeExerciseId &&
-        (groupFilter === 'todos' || e.muscleGroup === groupFilter),
+        (groupFilter === 'todos' || e.muscleGroup === groupFilter) &&
+        belongsToSpecialty(e, specialty),
     );
     const map = new Map<string, Exercise[]>();
     for (const group of MUSCLE_GROUP_ORDER) map.set(group, []);
@@ -58,7 +88,7 @@ export function ExercisePicker({
     }
     for (const list of map.values()) list.sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
     return Array.from(map.entries()).filter(([, list]) => list.length > 0);
-  }, [exercises, query, groupFilter, excludeExerciseId]);
+  }, [exercises, query, groupFilter, specialty, excludeExerciseId]);
 
   function handleCreate() {
     if (!newName.trim()) return;
@@ -105,6 +135,18 @@ export function ExercisePicker({
             }}
           >
             {MUSCLE_GROUP_LABELS[g]}
+          </button>
+        ))}
+      </div>
+
+      <p className="text-[11px] font-semibold mb-1.5" style={{color:'var(--text-faint)'}}>Especialidades</p>
+      <div className="flex gap-1.5 mb-3 overflow-x-auto pb-1" style={{scrollbarWidth:'none'}}>
+        {SPECIALTIES.map(item=>(
+          <button key={item.key} type="button" onClick={() => setSpecialty(item.key)}
+            className="shrink-0 px-2.5 py-1.5 text-xs rounded-full font-medium"
+            style={{background:specialty===item.key ? 'var(--brand)' : 'var(--surface-2)',
+              color:specialty===item.key ? '#fff' : 'var(--text-faint)'}}>
+            {item.label}
           </button>
         ))}
       </div>
