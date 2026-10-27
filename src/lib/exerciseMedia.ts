@@ -1,4 +1,5 @@
 import type { Exercise } from '../types';
+import { HYROX_MEDIA, HYROX_EXPECTED_EXERCISES } from './hyroxMedia';
 
 /** Correspondências selecionadas e verificadas por ID de exercício com duas poses no
  * projeto livre yuhonas/free-exercise-db. Não inferir URLs apenas pelo nome:
@@ -56,6 +57,7 @@ export const VERIFIED_MEDIA_IDS: Record<string, string> = {
   'ex-esteira': 'Running_Treadmill',
   'ex-eliptico': 'Elliptical_Trainer',
   'ex-remo-ergometrico': 'Rowing_Stationary',
+  'ex-new-remoergometricointervalado': 'Rowing_Stationary',
   'ex-hyrox-sled-push': 'Sled_Push',
   'ex-hyrox-farmers': 'Farmers_Walk',
   'ex-new-roscamarteloalternada': 'Alternate_Hammer_Curl',
@@ -68,6 +70,19 @@ export const VERIFIED_MEDIA_IDS: Record<string, string> = {
 };
 
 const STEPS: Record<string, readonly [string, string, string]> = {
+  'ex-hyrox-ski': ['Fique de frente ao SkiErg, braços altos e tronco alinhado.', 'Puxe as duas alças para baixo, usando o quadril e o tronco, sem se jogar para trás.', 'Retorne de modo controlado; procure uma cadência sustentável.'],
+  'ex-new-skiergintervalado': ['Ajuste a resistência para manter técnica e ritmo estáveis.', 'Puxe as alças para baixo coordenando braços, tronco e quadril.', 'Recupere a posição inicial sem elevar os ombros excessivamente.'],
+  'ex-hyrox-sled-pull': ['Fique na zona marcada, segure a corda com as duas mãos e posicione os pés com estabilidade.', 'Puxe a corda mão sobre mão, usando tronco e pernas sem perder o controle do corpo.', 'Evite deixar a corda se enrolar nos pés; não avance para fora da zona de puxada.'],
+  'ex-hyrox-burpee': ['Apoie as mãos no chão e leve o tronco ao solo em um burpee controlado.', 'Volte à posição de pé e realize um salto horizontal para frente.', 'Aterre com os joelhos flexionados e repita no próprio ritmo; reduza distância quando necessário.'],
+  'ex-new-burpeebroadjump': ['Desça ao solo em um burpee com controle.', 'Levante-se e salte à frente com os dois pés.', 'Aterre suavemente e reinicie o próximo burpee sem pressa.'],
+  'ex-hyrox-sandbag': ['Apoie o sandbag horizontalmente na parte superior das costas, sem apoiar sobre o pescoço.', 'Dê uma passada e flexione os joelhos em amplitude confortável, mantendo controle do tronco.', 'Avance com a outra perna; não torça o tronco para compensar o peso.'],
+  'ex-hyrox-wall-ball': ['Segure a bola perto do peito, com os pés estáveis e o alvo à frente.', 'Agache dentro da sua amplitude segura e levante coordenando a extensão do quadril.', 'Use o impulso das pernas para arremessar ao alvo; receba a bola controladamente.'],
+  'ex-hyrox-farmers': ['Segure um kettlebell em cada mão, com as alças firmes.', 'Caminhe ereto, mantendo braços ao lado do corpo e passos estáveis.', 'Evite inclinar o tronco ou deixar as cargas balançarem.'],
+  'ex-new-farmercarryunilateral': ['Segure o kettlebell em apenas uma mão, com o braço ao lado do corpo.', 'Caminhe com passos controlados e o tronco alinhado, sem inclinar para o lado.', 'Troque de lado conforme sua prescrição e mantenha distância segura de outras pessoas.'],
+  'ex-remo-ergometrico': ['Ajuste os apoios dos pés e segure a barra com a coluna neutra.', 'Inicie empurrando com as pernas, depois abra o quadril e puxe com os braços.', 'Retorne estendendo braços e flexionando pernas progressivamente, sem puxões bruscos.'],
+  'ex-new-remoergometricointervalado': ['Fixe os pés e ajuste uma resistência em que controle a técnica.', 'Empurre com pernas, estenda o quadril e complete a puxada com braços.', 'Retorne suavemente antes do próximo ciclo; mantenha o mesmo padrão também nos intervalos fortes.'],
+  'ex-new-sledpushtecnico': ['Apoie as mãos nas alças do trenó, mantendo os braços estáveis.', 'Incline o tronco e empurre com passadas curtas e contínuas.', 'Treine primeiro com carga leve e espaço desobstruído.'],
+
   'ex-supino-reto-halter': ["Ajuste os pés no chão e estabilize escápulas no banco.","Desça os halteres de forma controlada e empurre sem bater um no outro.","Não force os ombros além da amplitude confortável."],
   'ex-supino-inclinado-halter': ["Ajuste o banco a uma inclinação moderada e mantenha os pés apoiados.","Desça com controle e empurre os halteres, sem compensar com a lombar.","Evite inclinação muito alta, que desloca o foco para os ombros."],
   'ex-flexao': ["Mantenha mãos firmes no solo e tronco alinhado.","Flexione cotovelos com controle, aproximando o peito do chão.","Evite deixar a lombar afundar; adapte a inclinação se necessário."],
@@ -103,11 +118,31 @@ export const MOVEMENT_GROUP_LABELS: Record<string,string> = {
   "outro": "Mobilidade / exercícios complementares"
 };
 
-export function exerciseMedia(exercise?: Exercise | null) {
-  const id = exercise?.id ? VERIFIED_MEDIA_IDS[exercise.id] : undefined;
+export interface ExerciseMediaResult {
+  first: string;
+  second: string;
+  sourceId: string;
+  kind: 'foto' | 'ilustracao';
+  credit: string;
+}
+export function exerciseMedia(exercise?: Exercise | null): ExerciseMediaResult | null {
+  const exerciseId = exercise?.id;
+  if (!exerciseId) return null;
+  const curated = HYROX_MEDIA[exerciseId];
+  if (curated) return curated;
+  const id = VERIFIED_MEDIA_IDS[exerciseId];
   if (!id) return null;
   const base = 'https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/';
-  return { first: base + encodeURIComponent(id) + '/0.jpg', second: base + encodeURIComponent(id) + '/1.jpg', sourceId: id };
+  return {
+    first: base + encodeURIComponent(id) + '/0.jpg',
+    second: base + encodeURIComponent(id) + '/1.jpg',
+    sourceId: id,
+    kind: 'foto',
+    credit: 'free-exercise-db (fotografias do acervo público)',
+  };
+}
+export function getHyroxMediaCoverage() {
+  return HYROX_EXPECTED_EXERCISES.map(id => ({id, covered: Boolean(HYROX_MEDIA[id] || VERIFIED_MEDIA_IDS[id])}));
 }
 
 export function exerciseGuidance(exercise?: Exercise | null): readonly string[] | null {
