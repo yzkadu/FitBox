@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { X, Plus, Check, Trash2, Clock, Bot, Repeat, Calculator, TimerReset } from 'lucide-react';
+import { X, Plus, Check, Trash2, Clock, Bot, Repeat, Calculator, TimerReset, Eye } from 'lucide-react';
 import { useAppData } from '../hooks/useAppData';
 import {
   addExerciseToSession,
@@ -17,6 +17,7 @@ import { calculatePlates, BAR_WEIGHT_OPTIONS } from '../lib/plateCalculator';
 import { primeRestBeep, playRestBeep } from '../lib/restBeep';
 import { Button } from '../components/ui';
 import { ExercisePicker } from '../components/ExercisePicker';
+import { ExerciseThumbnail, ExerciseGuide } from '../components/ExerciseVisual';
 import { Sheet } from '../components/Sheet';
 import { PhotoField } from '../components/PhotoField';
 import type { Exercise } from '../types';
@@ -77,6 +78,7 @@ export function SessionExecution() {
   const restBeepedRef = useRef(false);
 
   const [plateSheetExerciseId, setPlateSheetExerciseId] = useState<string | null>(null);
+  const [exerciseGuideId, setExerciseGuideId] = useState<string | null>(null);
   const [plateWeight, setPlateWeight] = useState('');
   const [barWeight, setBarWeight] = useState<number>(loadBarWeight);
 
@@ -287,8 +289,18 @@ export function SessionExecution() {
             coach.action === 'increase' ? 'var(--success)' : coach.action === 'deload' ? 'var(--warn)' : 'var(--text-faint)';
           return (
             <div key={se.id} className="rounded-2xl border p-3.5" style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
-              <div className="flex items-baseline justify-between gap-2 mb-1">
-                <p className="font-medium text-sm flex-1 min-w-0 truncate">{ex?.name ?? 'Exercício'}</p>
+              <div className="flex items-center gap-2 mb-2">
+                <button type="button" aria-label="Ver demonstração do exercício"
+                  onClick={() => setExerciseGuideId(exerciseGuideId === se.id ? null : se.id)}>
+                  <ExerciseThumbnail exercise={ex} size={57}/>
+                </button>
+                <p className="font-semibold text-sm flex-1 min-w-0">{ex?.name ?? 'Exercício'}</p>
+              </div>
+              <div className="flex items-center justify-between gap-2 mb-2">
+                <button type="button" onClick={() => setExerciseGuideId(exerciseGuideId === se.id ? null : se.id)}
+                  className="flex items-center gap-1 text-xs underline" style={{color:'var(--brand)'}}>
+                  <Eye size={12}/> {exerciseGuideId === se.id ? 'Ocultar execução' : 'Ver execução'}
+                </button>
                 {lastSession && (
                   <p className="text-xs shrink-0" style={{ color: 'var(--text-faint)' }}>
                     último: {lastSession.bestSet?.weight}kg × {lastSession.bestSet?.reps}
@@ -311,6 +323,7 @@ export function SessionExecution() {
                   <Trash2 size={14} />
                 </button>
               </div>
+              {exerciseGuideId === se.id && <div className="mb-3"><ExerciseGuide exercise={ex}/></div>}
               {(se.targetReps || se.notes) && (
                 <div className="text-xs mb-2 rounded-lg px-2.5 py-2" style={{ background: 'var(--surface-2)', color: 'var(--text-dim)' }}>
                   {se.targetReps && <p><strong>Alvo:</strong> {se.targetReps}{se.restSeconds != null ? ` · pausa ${se.restSeconds}s` : ''}</p>}
