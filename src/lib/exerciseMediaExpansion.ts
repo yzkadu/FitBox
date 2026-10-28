@@ -1,7 +1,7 @@
 /** Catálogo curado: fotografias de duas poses do exercício correspondente.
  * Não usar sem correspondência de variação/equipamento. Origem:
  * https://github.com/yuhonas/free-exercise-db
- * O arquivo e a variante foram conferidos por nome; revisão biomecânica visual
+ * Títulos, equipamentos explícitos e arquivos foram checados; revisão biomecânica visual
  * independente ainda é necessária antes de declarar validação técnica plena.
  */
 export const EXPANDED_EXECUTION_MEDIA_IDS: Record<string,string> = {
@@ -20,7 +20,6 @@ export const EXPANDED_EXECUTION_MEDIA_IDS: Record<string,string> = {
   'ex-cadeira-adutora': 'Thigh_Adductor', // Cadeira adutora
   'ex-panturrilha-leg-press': 'Calf_Press_On_The_Leg_Press_Machine', // Panturrilha no leg press
   'ex-fedb-goblet-squat': 'Goblet_Squat', // Agachamento goblet
-  'ex-fedb-weighted-sissy-squat': 'Weighted_Sissy_Squat', // Sissy squat
   'ex-fedb-zercher-squats': 'Zercher_Squats', // Agachamento zercher
   'ex-fedb-narrow-stance-leg-press': 'Narrow_Stance_Leg_Press', // Leg press pés fechados
   'ex-fedb-single-leg-leg-extension': 'Single-Leg_Leg_Extension', // Cadeira extensora unilateral
@@ -35,7 +34,6 @@ export const EXPANDED_EXECUTION_MEDIA_IDS: Record<string,string> = {
   'ex-fedb-smith-single-leg-split-squat': 'Smith_Single-Leg_Split_Squat', // Afundo búlgaro no Smith
   'ex-fedb-elevated-back-lunge': 'Elevated_Back_Lunge', // Afundo reverso elevado
   'ex-fedb-dumbbell-rear-lunge': 'Dumbbell_Rear_Lunge', // Afundo reverso com halteres
-  'ex-new-agachamentocaixa': 'Box_Squat', // Agachamento caixa
   'ex-new-agachamentocomsalto': 'Freehand_Jump_Squat', // Agachamento com salto
   'ex-puxada-supinada': 'Underhand_Cable_Pulldowns', // Puxada supinada (pegada inversa)
   'ex-fedb-wide-grip-lat-pulldown': 'Wide-Grip_Lat_Pulldown', // Puxada aberta
@@ -58,7 +56,6 @@ export const EXPANDED_EXECUTION_MEDIA_IDS: Record<string,string> = {
   'ex-new-remadacompeitoapoiadonobanco': 'Dumbbell_Incline_Row', // Remada com peito apoiado no banco
   'ex-new-remadaaustraliananotrx': 'Inverted_Row_with_Straps', // Remada australiana no TRX
   'ex-new-remadatbarcomapoiodepeito': 'Lying_T-Bar_Row', // Remada T-Bar com apoio de peito
-  'ex-new-remadarenegade': 'Alternating_Renegade_Row', // Remada renegade
   'ex-supino-reto-barra': 'Barbell_Bench_Press_-_Medium_Grip', // Supino reto com barra
   'ex-supino-inclinado-barra': 'Barbell_Incline_Bench_Press_-_Medium_Grip', // Supino inclinado com barra
   'ex-supino-declinado-barra': 'Decline_Barbell_Bench_Press', // Supino declinado com barra
@@ -83,7 +80,6 @@ export const EXPANDED_EXECUTION_MEDIA_IDS: Record<string,string> = {
   'ex-fedb-decline-push-up': 'Decline_Push-Up', // Flexão declinada
   'ex-new-supinocompegadafechada': 'Close-Grip_Barbell_Bench_Press', // Supino com pegada fechada
   'ex-new-flexaocommaoselevadas': 'Incline_Push-Up', // Flexão com mãos elevadas
-  'ex-new-crucifixounilateralnocabo': 'Single-Arm_Cable_Crossover', // Crucifixo unilateral no cabo
   'ex-new-pressdepeitonapoliaempe': 'Standing_Cable_Chest_Press', // Press de peito na polia em pé
   'ex-new-flexaonotrx': 'Suspended_Push-Up', // Flexão no TRX
 };
