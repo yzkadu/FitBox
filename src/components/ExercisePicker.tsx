@@ -5,6 +5,7 @@ import { Sheet } from './Sheet';
 import { useAppData } from '../hooks/useAppData';
 import { addCustomExercise } from '../lib/actions';
 import { MUSCLE_GROUP_LABELS, MUSCLE_GROUP_ORDER } from '../lib/exercises';
+import { exerciseMedia } from '../lib/exerciseMedia';
 import type { Exercise, MuscleGroup } from '../types';
 type Specialty = 'todos' | 'hyrox' | 'calistenia' | 'mobilidade' | 'antebracos' | 'panturrilhas' | 'posteriores' | 'quadriceps';
 const SPECIALTIES: {key: Specialty; label: string}[] = [
@@ -59,6 +60,7 @@ export function ExercisePicker({
   const [newGroup, setNewGroup] = useState<MuscleGroup>('outro');
   const [previewId, setPreviewId] = useState<string | null>(null);
   const [specialty, setSpecialty] = useState<Specialty>('todos');
+  const [photoFilter, setPhotoFilter] = useState<'todos' | 'com' | 'sem'>('todos');
 
   useEffect(() => {
     if (open) {
@@ -67,6 +69,7 @@ export function ExercisePicker({
       setCreating(false);
       setPreviewId(null);
       setSpecialty('todos');
+      setPhotoFilter('todos');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, defaultMuscleGroup]);
@@ -78,7 +81,8 @@ export function ExercisePicker({
         (e.name.toLowerCase().includes(q) || (e.equipment?.toLowerCase().includes(q) ?? false)) &&
         e.id !== excludeExerciseId &&
         (groupFilter === 'todos' || e.muscleGroup === groupFilter) &&
-        belongsToSpecialty(e, specialty),
+        belongsToSpecialty(e, specialty) &&
+        (photoFilter === 'todos' || (photoFilter === 'com' ? !!exerciseMedia(e) : !exerciseMedia(e))),
     );
     const map = new Map<string, Exercise[]>();
     for (const group of MUSCLE_GROUP_ORDER) map.set(group, []);
@@ -88,7 +92,7 @@ export function ExercisePicker({
     }
     for (const list of map.values()) list.sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
     return Array.from(map.entries()).filter(([, list]) => list.length > 0);
-  }, [exercises, query, groupFilter, specialty, excludeExerciseId]);
+  }, [exercises, query, groupFilter, specialty, photoFilter, excludeExerciseId]);
 
   function handleCreate() {
     if (!newName.trim()) return;
@@ -151,6 +155,22 @@ export function ExercisePicker({
         ))}
       </div>
 
+      <div className="flex flex-wrap gap-1.5 mb-3" aria-label="Filtrar fotografias de execução">
+        {([
+          {key:'todos', label:'Todas as execuções'},
+          {key:'com', label:'Com fotos'},
+          {key:'sem', label:'Sem foto cadastrada'},
+        ] as const).map(item=>(
+          <button key={item.key} type="button" onClick={()=>setPhotoFilter(item.key)}
+            aria-pressed={photoFilter===item.key}
+            className="rounded-full px-2.5 py-1.5 text-xs font-medium"
+            style={{background:photoFilter===item.key?'var(--brand)':'var(--surface-2)',
+              color:photoFilter===item.key?'white':'var(--text-faint)'}}>
+            {item.label}
+          </button>
+        ))}
+      </div>
+
       {!creating ? (
         <button
           onClick={() => {
@@ -203,7 +223,7 @@ export function ExercisePicker({
         </div>
       )}
 
-      <p className="text-xs mb-3" style={{color:'var(--text-faint)'}}>{grouped.reduce((count, [, items]) => count + items.length,0)} exercícios · toque na foto para ver fases e orientações</p>
+      <p className="text-xs mb-3" style={{color:'var(--text-faint)'}}>{grouped.reduce((count, [, items]) => count + items.length,0)} exercícios · abra "Ver" para consultar fotos, músculos e instruções</p>
       <div className="flex flex-col gap-4">
         {grouped.map(([group, list]) => (
           <div key={group}>
@@ -224,7 +244,7 @@ export function ExercisePicker({
                       <span className="block text-[11px] mt-1" style={{color:'var(--text-faint)'}}>
                         {MUSCLE_GROUP_LABELS[ex.muscleGroup]}{ex.equipment ? ` · ${ex.equipment}` : ''}
                       </span>
-                      <span className="text-[11px] mt-1 block" style={{color:'var(--brand)'}}>Selecionar exercício</span>
+                      <span className="text-[11px] mt-1 block" style={{color:exerciseMedia(ex)?'var(--brand)':'var(--text-faint)'}}>{exerciseMedia(ex) ? (exerciseMedia(ex)?.second ? '2 fotos disponíveis' : 'Foto disponível') : 'Foto pendente'} · Selecionar</span>
                     </button>
                     <button type="button" aria-label="Expandir execução" onClick={() => setPreviewId(previewId === ex.id ? null : ex.id)}
                       className="p-2" style={{color:'var(--text-faint)'}}>
