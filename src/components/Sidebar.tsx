@@ -1,10 +1,11 @@
 import { NavLink } from 'react-router-dom';
-import { Dumbbell, Calendar, History, TrendingUp, Ruler, Bike, Bot, ChevronDown } from 'lucide-react';
+import { Dumbbell, Calendar, History, TrendingUp, Ruler, Bike, Bot, ChevronDown, LayoutGrid } from 'lucide-react';
 import { AppIcon } from './ui';
 
 const links = [
   { to: '/', label: 'Hoje', icon: Calendar, end: true },
-  { to: '/treinos', label: 'Treinos', icon: Dumbbell, end: false },
+  { to: '/treinos', label: 'Meus treinos', icon: Dumbbell, end: false },
+  { to: '/programas', label: 'Programas prontos', icon: LayoutGrid, end: true },
   { to: '/treinador', label: 'Treinador IA', icon: Bot, end: false },
   { to: '/cardio', label: 'Cardio', icon: Bike, end: false },
   { to: '/historico', label: 'Histórico', icon: History, end: false },
