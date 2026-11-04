@@ -84,6 +84,7 @@ export function ProgramLibrary() {
   const [searchQuery, setSearchQuery] = useState('');
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [confirmAgendaReplace, setConfirmAgendaReplace] = useState(false);
   const [modalityFilter, setModalityFilter] = useState<ProgramModality | null>(null);
   const [presetWeekday, setPresetWeekday] = useState<Weekday>('seg');
   const [presetAdded, setPresetAdded] = useState(false);
@@ -118,6 +119,7 @@ export function ProgramLibrary() {
     setError(null);
     setPresetAdded(false);
     setDetailsOpen(false);
+    setConfirmAgendaReplace(false);
     setPreview(p);
   }
 
@@ -369,11 +371,28 @@ export function ProgramLibrary() {
                 </Button>
                 {preview.weekPlan && (
                   <>
-                    <Button full variant="secondary" onClick={() => handleApply(true)} disabled={applying}>
-                      Criar treinos e ativar a agenda sugerida
-                    </Button>
-                    <p className="text-xs" style={{ color: 'var(--text-faint)' }}>
-                      Atenção: ativar a agenda substitui os sete dias programados atualmente. Seus treinos e histórico antigos não são apagados.
+                    {!confirmAgendaReplace ? (
+                      <Button full variant="secondary" onClick={() => setConfirmAgendaReplace(true)} disabled={applying}>
+                        Ativar agenda semanal sugerida
+                      </Button>
+                    ) : (
+                      <div className="rounded-xl p-3 flex flex-col gap-2"
+                        style={{background:'var(--surface-2)',border:'1px solid var(--brand)'}}>
+                        <p className="text-sm font-semibold">Substituir sua agenda semanal?</p>
+                        <p className="text-xs" style={{color:'var(--text-dim)'}}>
+                          Os sete dias programados serão substituídos. Seus treinos, registros e histórico
+                          anteriores não serão apagados. Confira a distribuição acima.
+                        </p>
+                        <Button full onClick={() => handleApply(true)} disabled={applying}>
+                          {applying?'Aplicando...':'Confirmar troca da agenda'}
+                        </Button>
+                        <Button full variant="secondary" onClick={() => setConfirmAgendaReplace(false)} disabled={applying}>
+                          Manter minha agenda
+                        </Button>
+                      </div>
+                    )}
+                    <p className="text-xs" style={{color:'var(--text-faint)'}}>
+                      Para preservar os dias atuais, use “Adicionar treinos sem mudar agenda”.
                     </p>
                   </>
                 )}
