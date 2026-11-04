@@ -158,6 +158,19 @@ export function ProgramLibrary() {
   return (
     <div className="px-4 lg:px-0">
       <PageHeader title="Programas prontos" />
+      <button type="button" onClick={()=>navigate('/montador')}
+        className="flex items-center gap-3 w-full p-3.5 mb-4 rounded-xl text-left"
+        style={{background:'var(--brand-dim)',border:'1px solid var(--brand)'}}>
+        <span className="w-9 h-9 rounded-lg shrink-0 flex items-center justify-center"
+          style={{background:'var(--brand)',color:'white'}}><Sparkles size={17}/></span>
+        <span className="flex-1">
+          <span className="text-sm font-semibold block">Não sabe qual programa escolher?</span>
+          <span className="text-xs block mt-1" style={{color:'var(--text-dim)'}}>
+            Monte sua semana em 3 etapas: objetivo, modalidades e dias disponíveis.
+          </span>
+        </span>
+        <ChevronRight size={17} style={{color:'var(--brand)'}}/>
+      </button>
       <p className="text-sm mb-4" style={{ color: 'var(--text-dim)' }}>
         Treinos pensados para a vida real: musculação, HYROX, corrida, casa e condicionamento.
         Confira as opções sugeridas, escolha quantas atividades quer fazer no mesmo dia e adapte conforme sua recuperação.
