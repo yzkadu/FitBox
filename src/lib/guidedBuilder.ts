@@ -114,7 +114,7 @@ export function exerciseMatchesPlace(exercise: Exercise, place: ProgramPlace): b
   return true;
 }
 
-function safeExercises(program: ReadyProgram, day: ReadyProgram['days'][number], prefs: BuilderPrefs): BuilderExercise[] {
+function safeExercises(day: ReadyProgram['days'][number], prefs: BuilderPrefs): BuilderExercise[] {
   // Do not assign movements whose equipment is unavailable.
   const maxExercises = Math.max(3,Math.min(8,Math.floor(prefs.minutes / 8)));
   const available = day.exercises
@@ -150,7 +150,7 @@ export function createBuilderDraft(prefs: BuilderPrefs, mainId: string, inspirat
   const workouts: BuilderWorkout[] = primary.days.map(day=>({
     title:day.name,
     emoji:day.emoji,
-    exercises:safeExercises(primary,day,prefs),
+    exercises:safeExercises(day,prefs),
   })).filter(w=>w.exercises.length>0).slice(0,desired);
 
   const warnings: string[] = [];
@@ -159,7 +159,7 @@ export function createBuilderDraft(prefs: BuilderPrefs, mainId: string, inspirat
   }
   if (secondary?.days.length && workouts.length >= 2) {
     const candidate = secondary.days.map(day=>({
-      title:day.name, emoji:day.emoji, exercises:safeExercises(secondary,day,prefs),
+      title:day.name, emoji:day.emoji, exercises:safeExercises(day,prefs),
     })).find(d=>d.exercises.length>=3);
     if (candidate) {
       workouts[workouts.length-1] = {...candidate,title:candidate.title+' · combinação'};
