@@ -83,6 +83,7 @@ export function ProgramLibrary() {
   const [quickCategory, setQuickCategory] = useState<QuickCategory>('todos');
   const [searchQuery, setSearchQuery] = useState('');
   const [advancedOpen, setAdvancedOpen] = useState(false);
+  const [detailsOpen, setDetailsOpen] = useState(false);
   const [modalityFilter, setModalityFilter] = useState<ProgramModality | null>(null);
   const [presetWeekday, setPresetWeekday] = useState<Weekday>('seg');
   const [presetAdded, setPresetAdded] = useState(false);
@@ -116,6 +117,7 @@ export function ProgramLibrary() {
     setAppliedMode(null);
     setError(null);
     setPresetAdded(false);
+    setDetailsOpen(false);
     setPreview(p);
   }
 
@@ -349,37 +351,6 @@ export function ProgramLibrary() {
               )}
             </div>
 
-            {preview.progression && (
-              <p className="text-xs rounded-xl px-3 py-2.5 flex gap-2"
-                style={{ background: 'var(--surface-2)', color: 'var(--text-dim)' }}>
-                <Target size={15} className="shrink-0" style={{ color: 'var(--brand)' }} />
-                <span><strong>Progressão:</strong> {preview.progression}</span>
-              </p>
-            )}
-            {preview.recoveryNote && (
-              <p className="text-xs flex gap-2" style={{ color: 'var(--text-dim)' }}>
-                <Info size={15} className="shrink-0" />
-                <span>{preview.recoveryNote}</span>
-              </p>
-            )}
-
-            <div className="flex items-center gap-2">
-              <Clock size={15} style={{ color: 'var(--text-faint)' }} />
-              <p className="text-sm font-semibold">Treinos incluídos ({preview.days.length})</p>
-            </div>
-            {preview.days.map((day, di) => (
-              <div key={di} className="rounded-xl px-3 py-2.5" style={{ background: 'var(--surface-2)' }}>
-                <p className="text-sm font-medium mb-1.5 flex items-center gap-1.5">
-                  <AppIcon value={day.emoji} size={15} /> {day.name}
-                </p>
-                {day.focus && <p className="text-xs mb-2" style={{ color: 'var(--text-faint)' }}>{day.focus}</p>}
-                <ul className="flex flex-col gap-1.5">
-                  {day.exercises.map((ex, ei) =>
-                    <ExerciseSpecRow key={ei} exerciseId={ex.id} sets={ex.sets} reps={ex.reps} notes={ex.notes} />)}
-                </ul>
-              </div>
-            ))}
-
             {appliedMode ? (
               <div className="flex flex-col gap-2 mt-1">
                 <div className="rounded-xl px-3 py-2.5 text-xs flex items-center gap-2"
@@ -408,6 +379,50 @@ export function ProgramLibrary() {
                 )}
               </div>
             )}
+
+            {preview.progression && (
+              <p className="text-xs rounded-xl px-3 py-2.5 flex gap-2"
+                style={{ background: 'var(--surface-2)', color: 'var(--text-dim)' }}>
+                <Target size={15} className="shrink-0" style={{ color: 'var(--brand)' }} />
+                <span><strong>Progressão:</strong> {preview.progression}</span>
+              </p>
+            )}
+            {preview.recoveryNote && (
+              <p className="text-xs flex gap-2" style={{ color: 'var(--text-dim)' }}>
+                <Info size={15} className="shrink-0" />
+                <span>{preview.recoveryNote}</span>
+              </p>
+            )}
+
+            <button type="button" onClick={() => setDetailsOpen(v=>!v)}
+              aria-expanded={detailsOpen}
+              className="flex items-center justify-between w-full rounded-xl p-3 text-sm font-semibold"
+              style={{background:'var(--surface-2)',color:'var(--text)'}}>
+              <span className="flex items-center gap-2"><Clock size={15} style={{color:'var(--brand)'}}/>
+                Ver exercícios de cada ficha ({preview.days.length})
+              </span>
+              {detailsOpen ? <ChevronUp size={17}/> : <ChevronDown size={17}/>}
+            </button>
+            {detailsOpen && <div className="flex flex-col gap-3">
+            <div className="flex items-center gap-2">
+              <Clock size={15} style={{ color: 'var(--text-faint)' }} />
+              <p className="text-sm font-semibold">Treinos incluídos ({preview.days.length})</p>
+            </div>
+            {preview.days.map((day, di) => (
+              <div key={di} className="rounded-xl px-3 py-2.5" style={{ background: 'var(--surface-2)' }}>
+                <p className="text-sm font-medium mb-1.5 flex items-center gap-1.5">
+                  <AppIcon value={day.emoji} size={15} /> {day.name}
+                </p>
+                {day.focus && <p className="text-xs mb-2" style={{ color: 'var(--text-faint)' }}>{day.focus}</p>}
+                <ul className="flex flex-col gap-1.5">
+                  {day.exercises.map((ex, ei) =>
+                    <ExerciseSpecRow key={ei} exerciseId={ex.id} sets={ex.sets} reps={ex.reps} notes={ex.notes} />)}
+                </ul>
+              </div>
+            ))}
+
+
+            </div>}
             </>)}
           </div>
         )}
