@@ -252,6 +252,7 @@ export function Workouts() {
   const [mode, setMode] = useState<'manual' | 'ia'>('manual');
   const [workoutQuery, setWorkoutQuery] = useState('');
   const [plannerOpen, setPlannerOpen] = useState(false);
+  const [chooseIconOpen, setChooseIconOpen] = useState(false);
   const [name, setName] = useState('');
   const [emoji, setEmoji] = useState<string>(ICON_KEYS[0]);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
@@ -287,6 +288,7 @@ export function Workouts() {
   function openCreate() {
     setMode('manual');
     resetIaState();
+    setChooseIconOpen(false);
     setCreating(true);
   }
 
@@ -441,31 +443,54 @@ export function Workouts() {
 
           {mode === 'manual' ? (
             <>
-              <p className="text-sm font-medium mb-2">Novo treino</p>
-              <div className="flex gap-2 mb-3 flex-wrap">
-                {ICON_KEYS.map((k) => (
-                  <button
-                    key={k}
-                    onClick={() => setEmoji(k)}
-                    className="w-9 h-9 rounded-lg flex items-center justify-center"
-                    style={{
-                      background: emoji === k ? 'var(--brand)' : 'var(--surface-2)',
-                      color: emoji === k ? 'white' : 'var(--text-dim)',
-                    }}
-                  >
-                    <AppIcon value={k} size={17} />
-                  </button>
-                ))}
-              </div>
+              <p className="text-sm font-semibold mb-1">Criar uma ficha personalizada</p>
+              <p className="text-xs mb-3" style={{color:'var(--text-dim)'}}>
+                Comece pelo nome. Depois você escolhe exercícios, carga, séries e repetições.
+              </p>
+              <label htmlFor="new-workout-name" className="block text-xs font-medium mb-1.5"
+                style={{color:'var(--text-dim)'}}>Nome da ficha</label>
               <input
+                id="new-workout-name"
                 autoFocus
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
-                placeholder="Ex: Treino A - Peito e Tríceps"
-                className="w-full rounded-xl px-3 py-2.5 text-sm mb-3"
-                style={{ background: 'var(--surface-2)', color: 'var(--text)' }}
+                placeholder="Ex.: Treino A · Peito e tríceps"
+                className="w-full rounded-xl px-3 py-3 text-sm mb-3"
+                style={{background:'var(--surface-2)',color:'var(--text)'}}
               />
+              <div className="flex gap-1.5 flex-wrap mb-3" aria-label="Sugestões de nomes para ficha">
+                {['Superior A','Pernas e glúteos','Full body','HYROX + core'].map(suggestion=>(
+                  <button key={suggestion} type="button" onClick={()=>setName(suggestion)}
+                    className="rounded-full px-2.5 py-1.5 text-[11px]"
+                    style={{background:'var(--surface-2)',color:'var(--text-dim)'}}>
+                    {suggestion}
+                  </button>
+                ))}
+              </div>
+              <button type="button" onClick={()=>setChooseIconOpen(v=>!v)}
+                aria-expanded={chooseIconOpen}
+                className="text-xs mb-3 flex items-center gap-1.5"
+                style={{color:'var(--brand)'}}>
+                <AppIcon value={emoji} size={15}/> Escolher ícone (opcional)
+                {chooseIconOpen?<ChevronUp size={14}/>:<ChevronDown size={14}/>}
+              </button>
+              {chooseIconOpen && (
+                <div className="flex gap-2 mb-3 flex-wrap">
+                  {ICON_KEYS.map((k) => (
+                    <button type="button" key={k}
+                      aria-pressed={emoji===k} aria-label={`Ícone ${k}`}
+                      onClick={() => setEmoji(k)}
+                      className="w-9 h-9 rounded-lg flex items-center justify-center"
+                      style={{
+                        background: emoji === k ? 'var(--brand)' : 'var(--surface-2)',
+                        color: emoji === k ? 'white' : 'var(--text-dim)',
+                      }}>
+                      <AppIcon value={k} size={17}/>
+                    </button>
+                  ))}
+                </div>
+              )}
               <div className="flex gap-2">
                 <Button variant="secondary" full onClick={closeCreate}>
                   Cancelar
