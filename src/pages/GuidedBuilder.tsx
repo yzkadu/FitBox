@@ -1,8 +1,10 @@
 import { useMemo, useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, Check, CheckCircle2, ChevronDown, ChevronUp, Dumbbell, Info, Minus, Plus, Search, Trash2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, CheckCircle2, ChevronDown, ChevronUp, Dumbbell, Info, Minus, Plus, Search, Sparkles, Trash2 } from 'lucide-react';
 import { Button, Card, PageHeader, AppIcon } from '../components/ui';
 import { useAppData } from '../hooks/useAppData';
+import { useAuth } from '../hooks/useAuth';
+import { useProfile } from '../hooks/useProfile';
 import { BUILTIN_EXERCISES } from '../lib/exercises';
 import { WEEKDAY_ORDER, WEEKDAY_LABELS } from '../types';
 import type { Weekday } from '../types';
@@ -48,6 +50,8 @@ const MAX_EXERCISES = 8;
 export function GuidedBuilder() {
   const navigate = useNavigate();
   const {weeklySchedule} = useAppData();
+  const {user} = useAuth();
+  const [profile] = useProfile(user?.id);
   const [step,setStep] = useState<1|2|3>(1);
   const [prefs,setPrefs] = useState<BuilderPrefs>(DEFAULT_BUILDER_PREFS);
   const [chosen,setChosen] = useState<string|null>(null);
@@ -67,6 +71,31 @@ export function GuidedBuilder() {
     !search.trim() || (p.title+' '+p.description+' '+GOAL_LABELS[p.goal])
       .toLocaleLowerCase('pt-BR').includes(search.toLocaleLowerCase('pt-BR').trim()));
   const visibleCandidates = showAll?filteredCandidates:filteredCandidates.slice(0,6);
+
+  function useMyProfile() {
+    if (!profile) return;
+    const goals = profile.trainingGoals ?? [];
+    const trainingTypes = profile.trainingTypes ?? [];
+    const equipment = profile.equipment ?? [];
+    const goal: BuilderGoal = goals.includes('emagrecer') ? 'emagrecimento'
+      : goals.includes('ganhar_massa') ? 'hipertrofia'
+      : goals.includes('performance') ? 'condicionamento'
+      : 'emagrecimento';
+    const place: ProgramPlace = equipment.includes('academia') ? 'academia'
+      : equipment.includes('casa_equipamento') ? 'casa_equipamento'
+      : 'peso_corporal';
+    const level: ProgramLevel = profile.experienceLevel === 'avancado' ? 'avancado'
+      : profile.experienceLevel === 'intermediario' ? 'intermediario' : 'iniciante';
+    const weekdays: Weekday[] = profile.weeklyFrequency === '6-7'
+      ? ['seg','ter','qua','qui','sex','sab']
+      : profile.weeklyFrequency === '2-3'
+        ? ['seg','qua','sex'] : ['seg','ter','qui','sex'];
+    const modes: BuilderMode[] = [];
+    if (trainingTypes.includes('hirox')) modes.push('hyrox');
+    if (trainingTypes.includes('aerobico')) modes.push('cardio');
+    if (!modes.includes('forca')) modes.unshift('forca');
+    patchPrefs({goal,place,level,weekdays,modes});
+  }
 
   function patchPrefs(patch:Partial<BuilderPrefs>) {
     setPrefs(old=>({...old,...patch}));
@@ -178,6 +207,20 @@ export function GuidedBuilder() {
 
       {step===1 && (
         <div className="flex flex-col gap-4">
+          {profile && (
+            <button type="button" onClick={useMyProfile}
+              className="rounded-xl px-4 py-3 text-left flex items-center gap-3 w-full"
+              style={{border:'1px solid var(--brand)',background:'var(--brand-dim)'}}>
+              <Sparkles size={19} style={{color:'var(--brand)'}}/>
+              <span className="flex-1">
+                <span className="text-sm font-semibold block">Preencher com meu perfil</span>
+                <span className="text-xs mt-1 block" style={{color:'var(--text-dim)'}}>
+                  Aproveitar objetivo, experiência e frequência do cadastro. Você ainda pode mudar tudo.
+                </span>
+              </span>
+              <ArrowRight size={17} style={{color:'var(--brand)'}}/>
+            </button>
+          )}
           <Card>
             <FieldTitle hint="Qual resultado você quer priorizar?">Objetivo principal</FieldTitle>
             <div className="grid grid-cols-2 gap-2">
