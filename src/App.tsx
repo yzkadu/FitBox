@@ -4,6 +4,7 @@ import { Dumbbell } from 'lucide-react';
 import { Layout } from './components/Layout';
 import { Home } from './pages/Home';
 import { Workouts } from './pages/Workouts';
+import { GuidedBuilder } from './pages/GuidedBuilder';
 import { WorkoutEditor } from './pages/WorkoutEditor';
 import { SessionExecution } from './pages/SessionExecution';
 import { SessionEditor } from './pages/SessionEditor';
@@ -120,6 +121,7 @@ export default function App() {
         <Route element={<Layout />}>
           <Route path="/" element={<Home />} />
           <Route path="/treinos" element={<Workouts />} />
+          <Route path="/montador" element={<GuidedBuilder />} />
           <Route path="/treinos/:workoutId" element={<WorkoutEditor />} />
           <Route path="/historico" element={<History />} />
           <Route path="/exercicio/:exerciseId" element={<ExerciseDetail />} />
