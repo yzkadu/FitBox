@@ -377,8 +377,23 @@ export function Workouts() {
         <div className="mb-3">
           <p className="text-xs font-semibold uppercase tracking-widest" style={{color:'var(--brand)'}}>Comece por aqui</p>
           <h2 className="text-xl font-semibold mt-1">Como quer montar seu treino?</h2>
-          <p className="text-xs mt-1" style={{color:'var(--text-dim)'}}>Escolha um programa, peça ajuda à IA ou monte sua própria ficha.</p>
+          <p className="text-xs mt-1" style={{color:'var(--text-dim)'}}>Use o montador guiado, explore programas prontos ou crie uma ficha livre.</p>
         </div>
+        <button type="button" onClick={() => navigate('/montador')}
+          className="w-full text-left rounded-2xl p-4 mb-2 flex items-center gap-3"
+          style={{background:'var(--brand)',color:'white',border:'1px solid var(--brand)'}}>
+          <span className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
+            style={{background:'rgba(255,255,255,.16)'}}><Sparkles size={23}/></span>
+          <span className="flex-1 min-w-0">
+            <span className="text-base font-semibold block">Montar minha semana</span>
+            <span className="text-xs mt-1 block" style={{opacity:.85}}>
+              Objetivo, modalidades, equipamentos e dias — tudo em 3 etapas
+            </span>
+            <span className="text-xs font-semibold mt-2 block">
+              Começar montador guiado <ArrowRight size={13} className="inline"/>
+            </span>
+          </span>
+        </button>
         <button type="button" onClick={() => navigate('/programas')}
           className="w-full text-left rounded-2xl p-4 mb-2 flex items-center gap-3"
           style={{background:'linear-gradient(110deg, var(--brand-dim), var(--surface-2))',border:'1px solid var(--brand)'}}>
