@@ -182,7 +182,7 @@ export function Cardio() {
         </Card>
       )}
 
-      <button type="button" onClick={() => navigate('/treinos/programas')}
+      <button type="button" onClick={() => navigate('/programas')}
         className="w-full text-left rounded-xl p-3 mb-4 text-xs"
         style={{background:'var(--surface-2)',color:'var(--brand)'}}>
         Procurando treinos prontos? Veja Emagrecimento → Corrida / esteira em Programas prontos.
