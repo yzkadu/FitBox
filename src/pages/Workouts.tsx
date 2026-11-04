@@ -563,7 +563,7 @@ export function Workouts() {
           <div>
             <h2 className="text-lg font-semibold">Suas fichas</h2>
             <p className="text-xs" style={{color:'var(--text-faint)'}}>
-              ${active.length} treino${active.length === 1 ? '' : 's'} salvo${active.length === 1 ? '' : 's'}
+              {active.length} treino{active.length === 1 ? '' : 's'} salvo{active.length === 1 ? '' : 's'}
             </p>
           </div>
           <button type="button" onClick={() => navigate('/musculos')}
