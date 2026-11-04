@@ -213,10 +213,10 @@ export function saveBuilderDraft(draft: BuilderDraft, existingSchedule: WeeklySc
     for (const slot of draft.slots) {
       const current = getActivitiesForDay(next[slot.weekday]);
       const newItems = [...current];
-      if (slot.workoutIndex!==null && newIds[slot.workoutIndex]) {
-        if (!newItems.some(x=>x.kind==='treino' && x.workoutId===newIds[slot.workoutIndex])) {
-          newItems.push({kind:'treino',workoutId:newIds[slot.workoutIndex]});
-        }
+      const workoutIndex = slot.workoutIndex;
+      const createdId = workoutIndex === null ? null : newIds[workoutIndex];
+      if (createdId && !newItems.some(x=>x.kind==='treino' && x.workoutId===createdId)) {
+        newItems.push({kind:'treino',workoutId:createdId});
       }
       if (slot.cardio && !newItems.some(x=>x.kind==='cardio' && x.label===slot.cardioLabel)) {
         newItems.push({kind:'cardio',label:slot.cardioLabel,suggestedDurationMin:slot.cardioMinutes});
