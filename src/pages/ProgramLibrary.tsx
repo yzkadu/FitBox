@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronRight, Check, CalendarDays, Info, Clock, Target, SlidersHorizontal } from 'lucide-react';
+import { ChevronRight, Check, CalendarDays, Info, Clock, Target, SlidersHorizontal, Search, Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
 import { PageHeader, Card, Button, Pill, AppIcon } from '../components/ui';
 import { Sheet } from '../components/Sheet';
 import { useAuth } from '../hooks/useAuth';
@@ -28,6 +28,26 @@ const PLACE_FILTERS: ProgramPlace[] = ['academia', 'misto', 'peso_corporal', 'ca
 const LEVEL_FILTERS: ProgramLevel[] = ['iniciante', 'intermediario', 'avancado'];
 const SPLIT_FILTERS: SplitLength[] = ['unico', 'ab', 'abc', 'abcd', 'abcde'];
 const WEEKDAYS = ['seg', 'ter', 'qua', 'qui', 'sex', 'sab', 'dom'] as const;
+type QuickCategory = 'todos'|'emagrecimento'|'hipertrofia'|'hyrox'|'corrida'|'casa';
+const QUICK_CATEGORIES: {id:QuickCategory;label:string}[] = [
+  {id:'todos',label:'Todos'},
+  {id:'emagrecimento',label:'Emagrecimento'},
+  {id:'hipertrofia',label:'Musculação'},
+  {id:'hyrox',label:'HYROX'},
+  {id:'corrida',label:'Corrida / esteira'},
+  {id:'casa',label:'Em casa'},
+];
+function matchesQuickCategory(p: ReadyProgram, category: QuickCategory): boolean {
+  if(category==='todos') return true;
+  if(category==='hyrox') return p.id.toLowerCase().includes('hyrox') || p.title.toLowerCase().includes('hyrox');
+  if(category==='corrida') return programModality(p)==='corrida' || p.goal==='corrida';
+  if(category==='casa') return ['peso_corporal','casa_equipamento'].includes(programPlace(p));
+  if(category==='hipertrofia') return p.goal==='hipertrofia' || (p.goal==='emagrecimento' && programModality(p)==='forca');
+  return p.goal==='emagrecimento' || (p.goal==='hibrido' && p.title.toLowerCase().includes('emagrecimento'));
+}
+function normalizeSearch(s: string): string {
+  return s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
+}
 
 function fitScore(p: ReadyProgram, user: {
   experienceLevel?: string | null;
@@ -60,6 +80,9 @@ export function ProgramLibrary() {
   const [profile] = useProfile(user?.id);
   const { weeklySchedule } = useAppData();
   const [goalFilter, setGoalFilter] = useState<ProgramGoal | null>(null);
+  const [quickCategory, setQuickCategory] = useState<QuickCategory>('todos');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [advancedOpen, setAdvancedOpen] = useState(false);
   const [modalityFilter, setModalityFilter] = useState<ProgramModality | null>(null);
   const [presetWeekday, setPresetWeekday] = useState<Weekday>('seg');
   const [presetAdded, setPresetAdded] = useState(false);
@@ -72,7 +95,13 @@ export function ProgramLibrary() {
   const [error, setError] = useState<string | null>(null);
 
   const filtered = useMemo(() => {
+    const query = normalizeSearch(searchQuery);
     return READY_PROGRAMS
+      .filter(p => matchesQuickCategory(p, quickCategory))
+      .filter(p => !query || normalizeSearch([
+        p.title, p.description, GOAL_LABELS[p.goal], MODALITY_LABELS[programModality(p)],
+        PLACE_LABELS[programPlace(p)], ...p.days.map(d => d.name),
+      ].join(' ')).includes(query))
       .filter((p) => (!goalFilter || p.goal === goalFilter) &&
         (!modalityFilter || programModality(p) === modalityFilter) &&
         (!placeFilter || programPlace(p) === placeFilter) &&
@@ -81,7 +110,7 @@ export function ProgramLibrary() {
       .map((p, index) => ({ p, index, score: profile ? fitScore(p, profile) : 0 }))
       .sort((a, b) => b.score - a.score || a.index - b.index)
       .map((entry) => entry.p);
-  }, [goalFilter, modalityFilter, placeFilter, levelFilter, splitFilter, profile]);
+  }, [goalFilter, modalityFilter, placeFilter, levelFilter, splitFilter, profile, quickCategory, searchQuery]);
 
   function openPreview(p: ReadyProgram) {
     setAppliedMode(null);
@@ -130,6 +159,32 @@ export function ProgramLibrary() {
         Confira as opções sugeridas, escolha quantas atividades quer fazer no mesmo dia e adapte conforme sua recuperação.
       </p>
 
+      <div className="relative mb-3">
+        <Search size={17} className="absolute left-3 top-1/2 -translate-y-1/2" style={{color:'var(--text-faint)'}}/>
+        <input type="search" value={searchQuery} onChange={e=>setSearchQuery(e.target.value)}
+          placeholder="Buscar: corrida, HYROX, 4 dias, casa..." aria-label="Pesquisar programas prontos"
+          className="w-full rounded-xl pl-10 pr-3 py-3 text-sm"
+          style={{background:'var(--surface-2)',color:'var(--text)'}}/>
+      </div>
+      <div className="flex flex-wrap gap-2 mb-3" aria-label="Categorias de programas">
+        {QUICK_CATEGORIES.map(item=>(
+          <button type="button" key={item.id} aria-pressed={quickCategory===item.id}
+            onClick={()=>setQuickCategory(item.id)}
+            className="rounded-full px-3 py-2 text-xs font-semibold"
+            style={{background:quickCategory===item.id?'var(--brand)':'var(--surface-2)',
+              color:quickCategory===item.id?'white':'var(--text-dim)',
+              border:'1px solid '+(quickCategory===item.id?'var(--brand)':'var(--border)')}}>
+            {item.label}
+          </button>
+        ))}
+      </div>
+      <button type="button" onClick={()=>setAdvancedOpen(v=>!v)} aria-expanded={advancedOpen}
+        className="flex items-center justify-between w-full rounded-xl px-3 py-2.5 text-xs mb-3"
+        style={{background:'var(--surface-2)',color:'var(--text-dim)'}}>
+        <span className="flex items-center gap-2"><SlidersHorizontal size={15}/> Mais filtros: objetivo, local, nível, divisão</span>
+        {advancedOpen?<ChevronUp size={16}/>:<ChevronDown size={16}/>}
+      </button>
+      {advancedOpen && <div className="rounded-xl p-3 mb-4" style={{border:'1px solid var(--border)'}}>
       <div className="flex items-center gap-2 mb-3" style={{ color: 'var(--text-dim)' }}>
         <SlidersHorizontal size={15} />
         <span className="text-xs font-semibold">Encontre um programa para você</span>
@@ -171,14 +226,22 @@ export function ProgramLibrary() {
           <FilterChip key={s} label={SPLIT_LABELS[s]} active={splitFilter === s} onClick={() => setSplitFilter(s)} />)}
       </div>
 
+
+        <button type="button" className="text-xs font-semibold underline" style={{color:'var(--brand)'}}
+          onClick={()=>{setGoalFilter(null);setModalityFilter(null);setPlaceFilter(null);setLevelFilter(null);setSplitFilter(null);}}>
+          Limpar filtros avançados
+        </button>
+      </div>}
+
       <p className="text-xs mb-3" style={{ color: 'var(--text-faint)' }}>
         {filtered.length} programa{filtered.length !== 1 ? 's' : ''} encontrado{filtered.length !== 1 ? 's' : ''}.
         {profile ? ' Ordenados por afinidade com seu perfil.' : ''}
       </p>
 
       <div className="flex flex-col gap-2.5 pb-6">
-        {filtered.map((p) => (
-          <Card key={p.id} className="!p-0 overflow-hidden">
+        {filtered.map((p,index) => (
+          <Card key={p.id} className="!p-0 overflow-hidden"
+            style={index===0 && profile ? {borderColor:'var(--brand)'} : undefined}>
             <button type="button" onClick={() => openPreview(p)}
               className="w-full flex items-start gap-3 px-4 py-3.5 text-left">
               <span className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
@@ -186,6 +249,8 @@ export function ProgramLibrary() {
                 <AppIcon value={p.days[0]?.emoji} size={18} />
               </span>
               <div className="flex-1 min-w-0">
+                {index===0 && profile && <p className="text-[10px] uppercase tracking-wide font-semibold mb-1 flex items-center gap-1"
+                  style={{color:'var(--brand)'}}><Sparkles size={12}/> Sugestão pelo seu perfil</p>}
                 <p className="font-semibold text-sm">{p.title}</p>
                 <p className="text-xs mt-1.5" style={{ color: 'var(--text-dim)' }}>{p.description}</p>
                 <div className="flex flex-wrap gap-1 mt-2">
@@ -193,7 +258,11 @@ export function ProgramLibrary() {
                   <Pill>{PLACE_LABELS[programPlace(p)]}</Pill>
                   {p.level && <Pill>{LEVEL_LABELS[p.level]}</Pill>}
                   {p.sessionMinutes && <Pill>{p.sessionMinutes} min</Pill>}
+                  {p.days.length>0 && <Pill>{p.days.length} ficha{p.days.length===1?'':'s'}</Pill>}
                 </div>
+                <span className="text-[11px] font-semibold block mt-2" style={{color:'var(--brand)'}}>
+                  Ver treinos e escolher <ChevronRight size={12} className="inline"/>
+                </span>
               </div>
               <ChevronRight size={18} style={{ color: 'var(--text-faint)' }} className="shrink-0 mt-1" />
             </button>
@@ -202,7 +271,7 @@ export function ProgramLibrary() {
         {filtered.length === 0 && (
           <div className="text-center py-8">
             <p className="text-sm mb-2" style={{ color: 'var(--text-dim)' }}>Nenhum programa com todos esses filtros.</p>
-            <button onClick={() => {setGoalFilter(null);setModalityFilter(null);setPlaceFilter(null);setLevelFilter(null);setSplitFilter(null);}}
+            <button onClick={() => {setSearchQuery('');setQuickCategory('todos');setGoalFilter(null);setModalityFilter(null);setPlaceFilter(null);setLevelFilter(null);setSplitFilter(null);}}
               className="text-xs font-semibold" style={{ color: 'var(--brand)' }}>Limpar filtros</button>
           </div>
         )}
