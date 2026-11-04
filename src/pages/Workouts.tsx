@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Dumbbell, ChevronRight, Trash2, CalendarDays, Bot, Check, X as XIcon, Sparkles, LayoutGrid, Wand2, PersonStanding } from 'lucide-react';
+import { Plus, Dumbbell, ChevronRight, Trash2, CalendarDays, Bot, Check, X as XIcon, Sparkles, LayoutGrid, Wand2, PersonStanding, Search, ArrowRight, ChevronDown, ChevronUp } from 'lucide-react';
 import { useAppData } from '../hooks/useAppData';
 import { useAuth } from '../hooks/useAuth';
 import { useProfile } from '../hooks/useProfile';
@@ -250,6 +250,8 @@ export function Workouts() {
   const navigate = useNavigate();
   const [creating, setCreating] = useState(false);
   const [mode, setMode] = useState<'manual' | 'ia'>('manual');
+  const [workoutQuery, setWorkoutQuery] = useState('');
+  const [plannerOpen, setPlannerOpen] = useState(false);
   const [name, setName] = useState('');
   const [emoji, setEmoji] = useState<string>(ICON_KEYS[0]);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
@@ -270,8 +272,9 @@ export function Workouts() {
   }
   const featuredId =
     [...lastUsedByWorkout.entries()].sort((a, b) => Date.parse(b[1]) - Date.parse(a[1]))[0]?.[0] ?? active[0]?.id;
-  const featuredWorkout = active.find((w) => w.id === featuredId) ?? null;
-  const secondaryWorkouts = active.filter((w) => w.id !== featuredId);
+  const matches = active.filter(w => w.name.toLocaleLowerCase('pt-BR').includes(workoutQuery.trim().toLocaleLowerCase('pt-BR')));
+  const featuredWorkout = matches.find(w => w.id === featuredId) ?? matches[0] ?? null;
+  const secondaryWorkouts = matches.filter(w => w.id !== featuredWorkout?.id);
 
   function resetIaState() {
     setIaPrompt('');
@@ -368,39 +371,48 @@ export function Workouts() {
         </div>
       </div>
 
+      <section className="mb-5" aria-label="Como começar a treinar">
+        <div className="mb-3">
+          <p className="text-xs font-semibold uppercase tracking-widest" style={{color:'var(--brand)'}}>Comece por aqui</p>
+          <h2 className="text-xl font-semibold mt-1">Como quer montar seu treino?</h2>
+          <p className="text-xs mt-1" style={{color:'var(--text-dim)'}}>Escolha um programa, peça ajuda à IA ou monte sua própria ficha.</p>
+        </div>
+        <button type="button" onClick={() => navigate('/programas')}
+          className="w-full text-left rounded-2xl p-4 mb-2 flex items-center gap-3"
+          style={{background:'linear-gradient(110deg, var(--brand-dim), var(--surface-2))',border:'1px solid var(--brand)'}}>
+          <span className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
+            style={{background:'var(--brand)',color:'white'}}><LayoutGrid size={23}/></span>
+          <span className="flex-1 min-w-0">
+            <span className="text-base font-semibold block">Explorar programas prontos</span>
+            <span className="text-xs mt-1 block" style={{color:'var(--text-dim)'}}>
+              Emagrecimento, HYROX, musculação, corrida e treinos em casa
+            </span>
+            <span className="text-xs font-semibold mt-2 block" style={{color:'var(--brand)'}}>
+              Encontrar meu programa <ArrowRight size={12} className="inline"/>
+            </span>
+          </span>
+        </button>
+        <div className="grid grid-cols-2 gap-2">
+          <button type="button" onClick={() => {setMode('ia');resetIaState();setCreating(true);}}
+            className="rounded-xl p-3 flex items-start gap-2 text-left"
+            style={{background:'var(--surface-2)',border:'1px solid var(--border)'}}>
+            <Wand2 size={19} className="shrink-0 mt-0.5" style={{color:'var(--brand)'}}/>
+            <span><span className="text-sm font-semibold block">Criar com IA</span>
+              <span className="text-[11px] block mt-1" style={{color:'var(--text-faint)'}}>Descreva seu objetivo e revise a sugestão</span>
+            </span>
+          </button>
+          <button type="button" onClick={openCreate}
+            className="rounded-xl p-3 flex items-start gap-2 text-left"
+            style={{background:'var(--surface-2)',border:'1px solid var(--border)'}}>
+            <Plus size={19} className="shrink-0 mt-0.5" style={{color:'var(--brand)'}}/>
+            <span><span className="text-sm font-semibold block">Criar do zero</span>
+              <span className="text-[11px] block mt-1" style={{color:'var(--text-faint)'}}>Escolha exercícios, séries e repetições</span>
+            </span>
+          </button>
+        </div>
+      </section>
+
       <KaduProgramBanner workouts={workouts} exercises={exercises} />
-
-      <Card className="mb-4 !p-0 overflow-hidden">
-        <button onClick={() => navigate('/programas')} className="w-full flex items-center gap-3 px-4 py-3.5 text-left">
-          <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0" style={{ background: 'var(--brand-dim)' }}>
-            <LayoutGrid size={16} style={{ color: 'var(--brand)' }} />
-          </div>
-          <div className="flex-1">
-            <p className="font-medium text-sm">Programas prontos</p>
-            <p className="text-xs" style={{ color: 'var(--text-faint)' }}>
-              Hipertrofia, emagrecimento, calistenia — AB, ABC, ABCD, ABCDE
-            </p>
-          </div>
-          <ChevronRight size={18} style={{ color: 'var(--text-faint)' }} />
-        </button>
-      </Card>
-
-      <Card className="mb-4 !p-0 overflow-hidden">
-        <button onClick={() => navigate('/musculos')} className="w-full flex items-center gap-3 px-4 py-3.5 text-left">
-          <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0" style={{ background: 'var(--brand-dim)' }}>
-            <PersonStanding size={16} style={{ color: 'var(--brand)' }} />
-          </div>
-          <div className="flex-1">
-            <p className="font-medium text-sm">Mapa muscular</p>
-            <p className="text-xs" style={{ color: 'var(--text-faint)' }}>
-              Veja quais exercícios trabalham cada grupo muscular
-            </p>
-          </div>
-          <ChevronRight size={18} style={{ color: 'var(--text-faint)' }} />
-        </button>
-      </Card>
-
-      <WeeklyScheduleEditor />
 
       {creating && (
         <Card className="mb-4">
@@ -546,6 +558,31 @@ export function Workouts() {
         </Card>
       )}
 
+      <section className="mb-4" aria-label="Suas fichas de treino">
+        <div className="flex items-center justify-between gap-2 mb-2">
+          <div>
+            <h2 className="text-lg font-semibold">Suas fichas</h2>
+            <p className="text-xs" style={{color:'var(--text-faint)'}}>
+              ${active.length} treino${active.length === 1 ? '' : 's'} salvo${active.length === 1 ? '' : 's'}
+            </p>
+          </div>
+          <button type="button" onClick={() => navigate('/musculos')}
+            className="text-xs flex items-center gap-1" style={{color:'var(--brand)'}}>
+            <PersonStanding size={15}/> Mapa muscular
+          </button>
+        </div>
+        {active.length > 3 && (
+          <div className="relative mb-3">
+            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2"
+              style={{color:'var(--text-faint)'}}/>
+            <input type="search" value={workoutQuery} onChange={e=>setWorkoutQuery(e.target.value)}
+              placeholder="Encontrar uma ficha pelo nome..." aria-label="Buscar treino salvo"
+              className="w-full rounded-xl pl-9 pr-3 py-3 text-sm"
+              style={{background:'var(--surface-2)',color:'var(--text)'}}/>
+          </div>
+        )}
+      </section>
+
       {active.length === 0 && !creating ? (
         <EmptyState
           title="Nenhum treino criado ainda"
@@ -558,6 +595,10 @@ export function Workouts() {
             </Button>
           }
         />
+      ) : matches.length === 0 && active.length > 0 ? (
+        <p className="text-sm text-center py-8" style={{color:'var(--text-dim)'}}>
+          Nenhuma ficha encontrada. Tente outro nome.
+        </p>
       ) : (
         <div className="flex flex-col gap-2.5 pb-4">
           {featuredWorkout && (
@@ -607,6 +648,22 @@ export function Workouts() {
           <span>Toque em um treino para editar os exercícios</span>
         </div>
       )}
+      <div className="mb-6 mt-5">
+        <button type="button" onClick={() => setPlannerOpen(v => !v)}
+          aria-expanded={plannerOpen}
+          className="w-full flex items-center gap-3 rounded-xl p-3.5 text-left"
+          style={{background:'var(--surface-2)',border:'1px solid var(--border)'}}>
+          <CalendarDays size={20} style={{color:'var(--brand)'}}/>
+          <span className="flex-1">
+            <span className="block text-sm font-semibold">Organizar minha semana</span>
+            <span className="block text-xs mt-1" style={{color:'var(--text-dim)'}}>
+              Distribua fichas e cardio livremente pelos dias
+            </span>
+          </span>
+          {plannerOpen ? <ChevronUp size={19}/> : <ChevronDown size={19}/>}
+        </button>
+        {plannerOpen && <div className="mt-3"><WeeklyScheduleEditor /></div>}
+      </div>
     </div>
   );
 }
