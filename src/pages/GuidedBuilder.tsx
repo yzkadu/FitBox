@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, Check, CheckCircle2, ChevronDown, ChevronUp, Dumbbell, Info, Minus, Plus, Search, Sparkles, Trash2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, CheckCircle2, ChevronDown, ChevronUp, Dumbbell, Info, Minus, Plus, Search, Trash2 } from 'lucide-react';
 import { Button, Card, PageHeader, AppIcon } from '../components/ui';
 import { useAppData } from '../hooks/useAppData';
 import { BUILTIN_EXERCISES } from '../lib/exercises';
@@ -20,7 +20,7 @@ const PLACES: ProgramPlace[] = ['academia','casa_equipamento','peso_corporal','a
 const LEVELS: ProgramLevel[] = ['iniciante','intermediario','avancado'];
 const MODES: BuilderMode[] = ['forca','cardio','hyrox'];
 
-function Chip({onClick,active,children}:{onClick:()=>void;active:boolean;children:React.ReactNode}) {
+function Chip({onClick,active,children}:{onClick:()=>void;active:boolean;children:ReactNode}) {
   return (
     <button type="button" onClick={onClick} aria-pressed={active}
       className="rounded-xl px-3 py-2.5 text-xs font-medium text-left"
@@ -281,7 +281,7 @@ export function GuidedBuilder() {
           {filteredCandidates.length>6 && (
             <button type="button" className="text-sm text-center py-2" style={{color:'var(--brand)'}}
               onClick={()=>setShowAll(v=>!v)}>
-              {showAll?'Ver menos opções':\`Ver mais \${filteredCandidates.length-6} programas\`}
+              {showAll?'Ver menos opções':`Ver mais ${filteredCandidates.length-6} programas`}
             </button>
           )}
           {filteredCandidates.length===0 && <p className="text-sm" style={{color:'var(--text-dim)'}}>Nenhum programa com esse nome.</p>}
@@ -324,7 +324,7 @@ export function GuidedBuilder() {
                 <label className="text-xs block mb-1" style={{color:'var(--text-dim)'}}>Ficha do dia</label>
                 <select value={slot.workoutIndex===null?'':String(slot.workoutIndex)}
                   onChange={e=>updateSlot(slot.weekday,{workoutIndex:e.target.value===''?null:Number(e.target.value)})}
-                  aria-label={\`Treino de \${WEEKDAY_LABELS[slot.weekday]}\`}
+                  aria-label={`Treino de ${WEEKDAY_LABELS[slot.weekday]}`}
                   className="w-full rounded-lg px-3 py-2.5 text-sm mb-2"
                   style={{background:'var(--surface)',color:'var(--text)'}}>
                   <option value="">Sem musculação / sessão de força</option>
@@ -340,12 +340,12 @@ export function GuidedBuilder() {
                   <div className="grid grid-cols-[minmax(0,1fr)_78px] gap-2">
                     <input value={slot.cardioLabel}
                       onChange={e=>updateSlot(slot.weekday,{cardioLabel:e.target.value})}
-                      aria-label={\`Tipo de cardio de \${WEEKDAY_LABELS[slot.weekday]}\`}
+                      aria-label={`Tipo de cardio de ${WEEKDAY_LABELS[slot.weekday]}`}
                       className="min-w-0 rounded-lg px-2 py-2 text-xs"
                       style={{background:'var(--surface)',color:'var(--text)'}}/>
                     <InputNumber value={slot.cardioMinutes} min={5} max={90}
                       onChange={v=>updateSlot(slot.weekday,{cardioMinutes:v})}
-                      label={\`Minutos de cardio em \${WEEKDAY_LABELS[slot.weekday]}\`}/>
+                      label={`Minutos de cardio em ${WEEKDAY_LABELS[slot.weekday]}`}/>
                   </div>
                 )}
               </div>
@@ -389,7 +389,7 @@ export function GuidedBuilder() {
                         <button type="button" onClick={()=>updateWorkout(dayIndex,w=>({...w,exercises:w.exercises.filter((_,i)=>i!==ei)}))}
                           aria-label="Remover exercício" style={{color:'var(--danger)'}}><Trash2 size={16}/></button>
                       </div>
-                      <select value={entry.id} aria-label={\`Substituir exercício \${ei+1}\`}
+                      <select value={entry.id} aria-label={`Substituir exercício ${ei+1}`}
                         onChange={e=>updateExercise(dayIndex,ei,{id:e.target.value,notes:undefined})}
                         className="w-full rounded-lg px-2 py-2 text-xs mb-2"
                         style={{background:'var(--surface)',color:'var(--text)'}}>
@@ -399,12 +399,12 @@ export function GuidedBuilder() {
                       <div className="grid grid-cols-2 gap-2">
                         <div>
                           <label className="text-[11px] block mb-1" style={{color:'var(--text-faint)'}}>Séries</label>
-                          <InputNumber value={entry.sets} min={1} max={5} label={\`Séries \${ei+1}\`}
+                          <InputNumber value={entry.sets} min={1} max={5} label={`Séries ${ei+1}`}
                             onChange={sets=>updateExercise(dayIndex,ei,{sets})}/>
                         </div>
                         <div>
                           <label className="text-[11px] block mb-1" style={{color:'var(--text-faint)'}}>Repetições / tempo</label>
-                          <input type="text" value={entry.reps} aria-label={\`Repetições \${ei+1}\`}
+                          <input type="text" value={entry.reps} aria-label={`Repetições ${ei+1}`}
                             onChange={e=>updateExercise(dayIndex,ei,{reps:e.target.value})}
                             className="w-full rounded-lg px-2 py-2 text-sm"
                             style={{background:'var(--surface)',border:'1px solid var(--border)',color:'var(--text)'}}/>
