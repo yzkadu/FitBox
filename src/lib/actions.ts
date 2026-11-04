@@ -41,14 +41,37 @@ function requireUserId(): string | null {
 const pendingWorkoutInserts = new Map<string, PromiseLike<unknown>>();
 const pendingSessionInserts = new Map<string, PromiseLike<unknown>>();
 
-/** Reenvia o array de exercícios (jsonb) inteiro de um treino para o Supabase. */
-async function syncWorkoutExercises(workoutId: string) {
-  const userId = requireUserId();
-  if (!userId) return;
-  await pendingWorkoutInserts.get(workoutId);
-  const workout = store.getSnapshot().workouts.find((w) => w.id === workoutId);
-  if (!workout) return;
-  supabase.from('workouts').update({ exercises: workout.exercises }).eq('id', workoutId).then(logIfError('workouts.exercises'));
+/** Serializa gravações de exercícios por ficha. O montador guiado cria
+ * várias séries rapidamente: requisições anteriores não podem chegar depois
+ * e sobrescrever as últimas alterações.
+ */
+const pendingWorkoutUpdates = new Map<string, Promise<void>>();
+const dirtyWorkouts = new Set<string>();
+
+function syncWorkoutExercises(workoutId: string) {
+  if (!requireUserId()) return;
+  if (pendingWorkoutUpdates.has(workoutId)) {
+    dirtyWorkouts.add(workoutId);
+    return;
+  }
+  const task = (async () => {
+    try {
+      await pendingWorkoutInserts.get(workoutId);
+      do {
+        dirtyWorkouts.delete(workoutId);
+        const workout = store.getSnapshot().workouts.find(w => w.id === workoutId);
+        if (!workout) return;
+        const exercises = JSON.parse(JSON.stringify(workout.exercises));
+        const { error } = await supabase.from('workouts')
+          .update({ exercises }).eq('id',workoutId);
+        if (error) console.error('Falha ao sincronizar (workouts.exercises):',error);
+      } while (dirtyWorkouts.has(workoutId));
+    } finally {
+      pendingWorkoutUpdates.delete(workoutId);
+      dirtyWorkouts.delete(workoutId);
+    }
+  })();
+  pendingWorkoutUpdates.set(workoutId,task);
 }
 
 /** Coalesce edições rápidas de peso/reps em uma fila por sessão. Uma gravação
