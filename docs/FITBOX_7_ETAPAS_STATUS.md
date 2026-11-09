@@ -36,3 +36,12 @@ Supabase FitBox reportou em 09/11/2026:
 3. Biblioteca de exercícios com todas as imagens presentes, URLs acessíveis e ilustrações revisadas.
 4. CI com build, lint, regressões e testes de interação passando.
 5. Avisos de segurança e performance triados e corrigidos quando aplicável, sem aplicar alterações destrutivas sem validação.
+
+## Atualização adicional — proteção de dados e criação de fichas (09/11/2026)
+
+- **PR #9 — integrado:** verifica que o Supabase efetivamente atualizou linhas de fichas e sessões antes de afirmar sucesso; concluir sessão exige confirmação real; exclusões de fichas, sessões em andamento e histórico só alteram a tela após confirmação online, exibindo erros recuperáveis.
+- **PR #10 — integrado:** cronômetro de descanso usa horário absoluto e recalcula duração ao voltar de uma aba/app em segundo plano.
+- **PR #11 — integrado:** botão de duplicar ficha cria uma cópia independente, preservando exercícios, séries, repetições, notas e pausas; não muda a agenda nem o treino de origem.
+- Nos PRs #9, #10 e #11, os dois workflows de validação foram concluídos com sucesso antes da integração.
+- O build/deploy automático da Vercel foi confirmado para #9 e #10; a verificação do deploy mais recente é uma etapa separada.
+- **Pendências:** teste autenticado em celulares, persistência de fila offline, mídia WebP dos 89 exercícios e revisão de segurança/performance do Supabase.
