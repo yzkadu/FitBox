@@ -160,7 +160,7 @@ function syncWeeklySchedule() {
         console.error('Falha ao sincronizar (weekly_schedule):', error);
         syncFailed(syncKey, 'A programação semanal não foi confirmada pelo servidor.', async () => syncWeeklySchedule());
       } else syncSucceeded(syncKey);
-    }).catch((error: unknown) => {
+    }, (error: unknown) => {
       console.error('Falha de rede na programação semanal:', error);
       syncFailed(syncKey, 'A programação semanal não foi sincronizada.', async () => syncWeeklySchedule());
     });
