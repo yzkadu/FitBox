@@ -225,7 +225,24 @@ class Store {
       supabase.from('weekly_schedule').select('*').eq('user_id', userId).maybeSingle(),
       supabase.from('weight_goal').select('*').eq('user_id', userId).maybeSingle(),
       supabase.from('nutrition_goals').select('*').eq('user_id', userId).maybeSingle(),
-      supabase.from('nutrition_entries').select('*').eq('user_id',userId).order('entry_date', {ascending:false}).limit(365),
+      // Supabase limita o número de linhas por requisição; buscar em páginas evita
+      // ocultar silenciosamente registros antigos de quem registra várias refeições por dia.
+      (async () => {
+        const allRows: Record<string, unknown>[] = [];
+        const pageSize = 1000;
+        for (let offset = 0; ; offset += pageSize) {
+          const page = await supabase.from('nutrition_entries')
+            .select('*').eq('user_id', userId)
+            .order('entry_date', { ascending: false })
+            .order('id', { ascending: false })
+            .range(offset, offset + pageSize - 1);
+          if (page.error) return { data: null, error: page.error };
+          const rows = (page.data ?? []) as Record<string, unknown>[];
+          allRows.push(...rows);
+          if (rows.length < pageSize) break;
+        }
+        return { data: allRows, error: null };
+      })(),
     ]);
 
     const responses = [workoutsRes, sessionsRes, customExRes, measurementsRes, photosRes, cardioRes, scheduleRes, goalRes, nutritionGoalRes, nutritionEntriesRes];
