@@ -7,7 +7,7 @@ const binary = path => readFileSync(new URL('../'+path,import.meta.url));
 
 test('guia de bíceps contém 28 imagens vinculadas sem duplicações',()=>{
   const guide=source('src/lib/bicepsIllustrationMedia.ts');
-  const match=guide.match(/export const BICEPS_GUIDE_IDS = (\\[[\\s\\S]*?\\]) as const;/);
+  const match=guide.match(/export const BICEPS_GUIDE_IDS = ([^;]+) as const;/);
   assert.ok(match,'lista de imagens de bíceps ausente');
   const ids=JSON.parse(match[1]);
   assert.equal(ids.length,28);
