@@ -3,6 +3,7 @@ import { BUILTIN_EXERCISES } from './exercises';
 import { createWorkout, addExerciseToWorkout, replaceWeeklySchedule } from './actions';
 import { getActivitiesForDay } from './nextTraining';
 import { WEEKDAY_ORDER, type Exercise, type Weekday, type WeeklySchedule } from '../types';
+import { equipmentMatches, type EquipmentCategory } from './equipmentCategories';
 
 export type BuilderGoal = 'emagrecimento' | 'hipertrofia' | 'hibrido' | 'corrida' | 'condicionamento';
 export type BuilderMode = 'forca' | 'cardio' | 'hyrox';
@@ -14,6 +15,7 @@ export interface BuilderPrefs {
   minutes: number;
   weekdays: Weekday[];
   modes: BuilderMode[];
+  equipmentCategories: EquipmentCategory[];
 }
 export interface BuilderExercise {
   id: string;
@@ -48,6 +50,7 @@ export const DEFAULT_BUILDER_PREFS: BuilderPrefs = {
   minutes: 45,
   weekdays: ['seg','ter','qui','sex'],
   modes: ['forca','cardio'],
+  equipmentCategories: [],
 };
 export const BUILDER_GOALS: Record<BuilderGoal,string> = {
   emagrecimento: 'Emagrecimento',
@@ -94,7 +97,10 @@ export function findBuilderPrograms(prefs: BuilderPrefs): ReadyProgram[] {
   return READY_PROGRAMS
     .filter(p => !p.cardioPresetId && p.days.length > 0 && placeCompatible(p,prefs.place))
     .filter(p => prefs.level !== 'iniciante' || p.level !== 'avancado')
-    .filter(p => p.days.every(d => d.exercises.some(e => workoutIds.has(e.id))))
+    .filter(p => p.days.some(d=>d.exercises.some(entry => {
+      const ex=BUILTIN_EXERCISES.find(e=>e.id===entry.id);
+      return ex && exerciseMatchesPlace(ex,prefs.place) && equipmentMatches(ex,prefs.equipmentCategories);
+    })))
     .map((p,index) => ({p,index,score:rankProgram(p,prefs)}))
     .sort((a,b)=>b.score-a.score || a.index-b.index)
     .map(x=>x.p);
@@ -121,7 +127,7 @@ function safeExercises(day: ReadyProgram['days'][number], prefs: BuilderPrefs): 
     .filter(e => workoutIds.has(e.id))
     .filter(e => {
       const exercise = BUILTIN_EXERCISES.find(x => x.id === e.id);
-      return exercise && exerciseMatchesPlace(exercise,prefs.place);
+      return exercise && exerciseMatchesPlace(exercise,prefs.place) && equipmentMatches(exercise,prefs.equipmentCategories);
     }).slice(0,maxExercises);
   return available.map(e=>({
     id:e.id,
