@@ -306,6 +306,19 @@ export async function deleteWorkout(workoutId: string): Promise<{ok:true}|{ok:fa
   return {ok:true};
 }
 
+/** Cria uma cópia independente da ficha, preservando séries, repetições,
+ * descanso, notas e ordem sem alterar o treino nem a agenda originais.
+ * Usa a mesma fila de criação/sincronização das demais fichas.
+ */
+export function duplicateWorkout(source: Workout): Workout {
+  const copy = createWorkout(source.name + ' (cópia)',source.emoji);
+  for (const item of [...source.exercises].sort((a,b)=>a.order-b.order)) {
+    addExerciseToWorkout(copy.id,item.exerciseId,item.targetSets,
+      item.targetReps,item.notes,item.restSeconds);
+  }
+  return copy;
+}
+
 export function addExerciseToWorkout(
   workoutId: string,
   exerciseId: string,
