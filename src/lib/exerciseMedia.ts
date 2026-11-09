@@ -1,5 +1,6 @@
 import type { Exercise } from '../types';
 import { getChestIllustration } from './chestIllustrationMedia';
+import { getBicepsIllustration } from './bicepsIllustrationMedia';
 import { getBackShoulderIllustration } from './backShoulderIllustrationMedia';
 import { HYROX_MEDIA, HYROX_EXPECTED_EXERCISES } from './hyroxMedia';
 import { EXPANDED_EXECUTION_MEDIA_IDS } from './exerciseMediaExpansion';
@@ -137,6 +138,18 @@ export interface ExerciseMediaResult {
 export function exerciseMedia(exercise?: Exercise | null): ExerciseMediaResult | null {
   const exerciseId = exercise?.id;
   if (!exerciseId) return null;
+  const bicepsIllustration = getBicepsIllustration(exerciseId);
+  if (bicepsIllustration) {
+    return {
+      first:bicepsIllustration.src,
+      spriteIndex:bicepsIllustration.index,
+      spriteRows:bicepsIllustration.rows,
+      spriteAspectRatio:bicepsIllustration.aspectRatio,
+      sourceId:exerciseId,
+      kind:'ilustracao',
+      credit:'Guia visual de bíceps fornecido pelo usuário.',
+    };
+  }
   const chestIllustration = getChestIllustration(exerciseId);
   if (chestIllustration) {
     return {
