@@ -15,6 +15,8 @@ import type {
   Weekday,
   DaySchedule,
   WeightGoal,
+  NutritionGoal,
+  NutritionEntry,
 } from '../types';
 
 // Toda ação muda o estado local na hora (otimista, pra UI responder instantaneamente)
@@ -700,6 +702,66 @@ export function setDaySchedule(weekday: Weekday, schedule: DaySchedule | null) {
     }
   });
   syncWeeklySchedule();
+}
+
+// ---------- Nutrição: gravação confirmada no servidor (RLS por usuário) ----------
+
+type NutritionResult = {ok:true} | {ok:false;error:string};
+
+function isValidMacro(value:number) {
+  return Number.isFinite(value) && value >= 0 && value <= 1500;
+}
+function validateNutritionValues(values: Pick<NutritionGoal,'proteinG'|'carbsG'|'fatG'>, calories:number | null) {
+  if (![values.proteinG,values.carbsG,values.fatG].every(isValidMacro)) return false;
+  return calories === null || (Number.isFinite(calories) && calories >= 0 && calories <= 15000);
+}
+
+export async function saveNutritionGoal(goal:NutritionGoal):Promise<NutritionResult> {
+  const userId=requireUserId();
+  if (!userId) return {ok:false,error:'Faça login novamente.'};
+  if (!validateNutritionValues(goal,goal.caloriesKcal))
+    return {ok:false,error:'Confira as metas: valores devem ser positivos e plausíveis.'};
+  const {error}=await supabase.from('nutrition_goals').upsert({
+    user_id:userId,goal_kind:goal.goalKind,calories_kcal:goal.caloriesKcal,
+    protein_g:goal.proteinG,carbs_g:goal.carbsG,fat_g:goal.fatG,
+    updated_at:new Date().toISOString(),
+  },{onConflict:'user_id'});
+  if (error) return {ok:false,error:'Não foi possível salvar sua meta: '+error.message};
+  store.update(d=>{d.nutritionGoal=goal;});
+  return {ok:true};
+}
+
+export async function addNutritionEntry(entry:Omit<NutritionEntry,'id'>)
+  :Promise<{ok:true;entry:NutritionEntry}|{ok:false;error:string}> {
+  const userId=requireUserId();
+  if (!userId) return {ok:false,error:'Faça login novamente.'};
+  if (!entry.label.trim() || entry.label.trim().length>120 ||
+    !/^\d{4}-\d{2}-\d{2}$/.test(entry.date) ||
+    !validateNutritionValues(entry,entry.caloriesKcal)) {
+    return {ok:false,error:'Revise a refeição, a data e os valores informados.'};
+  }
+  const id=uid();
+  const {error}=await supabase.from('nutrition_entries').insert({
+    id,user_id:userId,entry_date:entry.date,label:entry.label.trim(),
+    calories_kcal:entry.caloriesKcal,protein_g:entry.proteinG,
+    carbs_g:entry.carbsG,fat_g:entry.fatG,
+  });
+  if (error) return {ok:false,error:'Erro ao registrar refeição: '+error.message};
+  const saved={...entry,id,label:entry.label.trim()};
+  store.update(d=>{d.nutritionEntries=[saved,...d.nutritionEntries];});
+  return {ok:true,entry:saved};
+}
+
+export async function deleteNutritionEntry(id:string):Promise<NutritionResult> {
+  const userId=requireUserId();
+  if (!userId) return {ok:false,error:'Faça login novamente.'};
+  const existing=store.getSnapshot().nutritionEntries.find(e=>e.id===id);
+  if (!existing) return {ok:false,error:'Registro não encontrado.'};
+  const {error}=await supabase.from('nutrition_entries').delete()
+    .eq('id',id).eq('user_id',userId);
+  if (error) return {ok:false,error:'Não foi possível excluir: '+error.message};
+  store.update(d=>{d.nutritionEntries=d.nutritionEntries.filter(e=>e.id!==id);});
+  return {ok:true};
 }
 
 // ---------- Meta de peso ----------
