@@ -10,10 +10,12 @@ import { MUSCLE_GROUP_LABELS } from '../lib/exercises';
 import { exerciseMedia, exerciseGuidance } from '../lib/exerciseMedia';
 import { ExerciseAnatomy, getExerciseAnatomicalFocus, preferredAnatomicalView } from './ExerciseAnatomy';
 
-function ExercisePhoto({ src, alt, spriteIndex }: { src: string; alt: string; spriteIndex?: number }) {
+function ExercisePhoto({ src, alt, spriteIndex, spriteRows = 8, spriteAspectRatio = '280 / 205' }: {
+  src: string; alt: string; spriteIndex?: number; spriteRows?: number; spriteAspectRatio?: string;
+}) {
   const [broken, setBroken] = useState(false);
   if (spriteIndex !== undefined) {
-    // Quadro n de um atlas WebP fixo (5 colunas × 8 linhas).
+    // Quadro n de atlas com 5 colunas e quantidade variável de linhas.
     // Evita fotos antigas e URLs inexistentes: o binário está no próprio deploy.
     const column = spriteIndex % 5;
     const row = Math.floor(spriteIndex / 5);
@@ -21,10 +23,10 @@ function ExercisePhoto({ src, alt, spriteIndex }: { src: string; alt: string; sp
       <div className="w-full h-full flex items-center justify-center overflow-hidden"
         style={{ background: 'white' }}>
         <div role="img" aria-label={alt} style={{
-          width: '100%', aspectRatio: '280 / 205',
+          width: '100%', aspectRatio: spriteAspectRatio,
           backgroundImage: `url("${src}")`,
-          backgroundSize: '500% 800%',
-          backgroundPosition: `${column * 25}% ${row * 100 / 7}%`,
+          backgroundSize: `500% ${spriteRows * 100}%`,
+          backgroundPosition: `${column * 25}% ${spriteRows > 1 ? row * 100 / (spriteRows - 1) : 0}%`,
           backgroundRepeat: 'no-repeat',
         }}/>
       </div>
@@ -145,6 +147,7 @@ export function ExerciseGuide({ exercise, compact = false }: { exercise?: Exerci
                     style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
                     <div className={compact ? 'h-[130px] sm:h-[162px]' : 'h-[172px] sm:h-[205px]'}>
                       <ExercisePhoto src={src} spriteIndex={index === 0 ? images.spriteIndex : undefined}
+                        spriteRows={images.spriteRows} spriteAspectRatio={images.spriteAspectRatio}
                         alt={exercise.name + (images.kind === 'ilustracao' ? ' — ilustração do movimento' : ' — fotografia real ' + (index + 1))}/>
                     </div>
                     <p className="text-[10px] py-1.5 text-center"
