@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { Dumbbell, Calendar, History, TrendingUp, Ruler, Bike, Bot, ChevronDown, LayoutGrid } from 'lucide-react';
+import { Dumbbell, Calendar, History, TrendingUp, Ruler, Bike, Bot, ChevronDown, LayoutGrid, Apple } from 'lucide-react';
 import { AppIcon } from './ui';
 
 const links = [
@@ -9,7 +9,8 @@ const links = [
   { to: '/treinador', label: 'Treinador IA', icon: Bot, end: false },
   { to: '/cardio', label: 'Cardio', icon: Bike, end: false },
   { to: '/historico', label: 'Histórico', icon: History, end: false },
-  { to: '/evolucao', label: 'Evolução', icon: TrendingUp, end: false },
+  { to: '/evolucao', label: 'Evolução e metas', icon: TrendingUp, end: false },
+  { to: '/nutricao', label: 'Nutrição', icon: Apple, end: true },
   { to: '/medidas', label: 'Medidas', icon: Ruler, end: false },
 ];
 
