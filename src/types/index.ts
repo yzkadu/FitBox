@@ -127,6 +127,26 @@ export interface CardioLog {
   proofPhotoDataUrl?: string;
 }
 
+/** Metas nutricionais definidas manualmente pelo usuário.
+ * Não equivalem a prescrição nem são calculadas com déficit automático.
+ */
+export interface NutritionGoal {
+  goalKind: 'emagrecer' | 'ganhar_massa' | 'manter';
+  caloriesKcal: number | null;
+  proteinG: number;
+  carbsG: number;
+  fatG: number;
+}
+export interface NutritionEntry {
+  id: string;
+  date: string;
+  label: string;
+  caloriesKcal: number;
+  proteinG: number;
+  carbsG: number;
+  fatG: number;
+}
+
 export type Weekday = 'seg' | 'ter' | 'qua' | 'qui' | 'sex' | 'sab' | 'dom';
 
 export const WEEKDAY_ORDER: Weekday[] = ['seg', 'ter', 'qua', 'qui', 'sex', 'sab', 'dom'];
@@ -180,5 +200,7 @@ export interface AppData {
   cardioLogs: CardioLog[];
   weeklySchedule: WeeklySchedule;
   weightGoal: WeightGoal | null;
+  nutritionGoal: NutritionGoal | null;
+  nutritionEntries: NutritionEntry[];
   activeSessionId: string | null;
 }
