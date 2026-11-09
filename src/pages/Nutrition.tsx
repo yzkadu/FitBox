@@ -80,6 +80,18 @@ export function Nutrition() {
   const [calories,setCalories]=useState('');
   const [explicitCalories,setExplicitCalories]=useState(false);
 
+  // Reutilize porções já registradas sem presumir valores nutricionais pelo nome.
+  const recentMeals=useMemo(() => {
+    const seen=new Set<string>();
+    return [...nutritionEntries]
+      .sort((a,b)=>b.date.localeCompare(a.date))
+      .filter(item=>{
+        const key=item.label.trim().toLocaleLowerCase('pt-BR');
+        if (!key || seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      }).slice(0,6);
+  },[nutritionEntries]);
   const entries=useMemo(()=>nutritionEntries.filter(e=>e.date===date),[nutritionEntries,date]);
   const totals=useMemo(()=>entries.reduce((acc,e)=>({
     caloriesKcal:acc.caloriesKcal+e.caloriesKcal,
@@ -111,6 +123,17 @@ export function Nutrition() {
       else {setEditingTarget(false);setNotice('Metas atualizadas. Seus registros anteriores foram mantidos.');}
     } catch {setError('Não foi possível salvar. Verifique a conexão.');}
     finally {setSaving(false);}
+  }
+  function reuseMeal(item: NutritionEntry) {
+    setLabel(item.label);
+    setProtein(String(item.proteinG));
+    setCarbs(String(item.carbsG));
+    setFat(String(item.fatG));
+    setCalories(String(item.caloriesKcal));
+    setExplicitCalories(true);
+    setError('');
+    setNotice('Valores preenchidos a partir de um registro anterior. Confira a porção e toque em Adicionar ao dia.');
+    document.getElementById('nutrition-meal-form')?.scrollIntoView({behavior:'smooth',block:'start'});
   }
   async function submitEntry() {
     if (!validEntry) {setError('Informe um nome e valores válidos. Use zero quando não souber a quantidade.');return;}
@@ -230,6 +253,7 @@ export function Nutrition() {
       </Card>
 
       <Card className="mb-4">
+        <div id="nutrition-meal-form" className="scroll-mt-6" />
         <p className="font-semibold flex items-center gap-2 mb-1">
           <Plus size={17} style={{color:'var(--brand)'}}/> Registrar alimento ou refeição
         </p>
@@ -237,6 +261,22 @@ export function Nutrition() {
           Informe os valores da porção consumida, conforme o rótulo ou uma fonte nutricional confiável.
           Não estimamos automaticamente nutrientes apenas pelo nome.
         </p>
+        {recentMeals.length>0 && (
+          <div className="mb-4">
+            <p className="text-xs font-semibold mb-2" style={{color:'var(--text-dim)'}}>Repetir refeição recente</p>
+            <div className="flex gap-2 overflow-x-auto pb-1">
+              {recentMeals.map(item=>(
+                <button type="button" key={item.id} onClick={()=>reuseMeal(item)} disabled={saving}
+                  className="shrink-0 rounded-xl px-3 py-2 text-xs text-left max-w-48"
+                  style={{background:'var(--brand-dim)',color:'var(--brand)'}}
+                  title={item.label}>
+                  <span className="block font-semibold truncate">{item.label}</span>
+                  <span className="block opacity-75">{fmt(item.caloriesKcal)} kcal</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
         <label className="text-xs block mb-3">Alimento ou refeição
           <input value={label} onChange={e=>setLabel(e.target.value)} maxLength={120}
             placeholder="Ex.: Almoço, lanche, frango com arroz"
@@ -295,6 +335,11 @@ export function Nutrition() {
                 {fmt(item.caloriesKcal)} kcal · P {fmt(item.proteinG)} g · C {fmt(item.carbsG)} g · G {fmt(item.fatG)} g
               </p>
             </div>
+            <button type="button" onClick={()=>reuseMeal(item)} disabled={saving}
+              aria-label={'Usar novamente '+item.label} title="Usar novamente"
+              className="p-2 shrink-0 disabled:opacity-50" style={{color:'var(--brand)'}}>
+              <Plus size={16}/>
+            </button>
             <button type="button" onClick={()=>removeEntry(item)} disabled={saving}
               aria-label={'Excluir '+item.label} style={{color:'var(--text-faint)'}}
               className="p-2 shrink-0 disabled:opacity-50"><Trash2 size={16}/></button>
