@@ -1,0 +1,1198 @@
+{
+  "format": "one_image_per_exercise",
+  "version": 1,
+  "description": "Uma URL por exercício com correspondência existente; imagem não substitui revisão técnica",
+  "count": 238,
+  "images": {
+    "ex-supino-reto-halter": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Bench_Press/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-supino-inclinado-halter": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Incline_Dumbbell_Press/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-crucifixo-halter": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Flyes/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-flexao": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Pushups/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-crossover": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cable_Crossover/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-voador-peck-deck": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Butterfly/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-puxada-frente": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Wide-Grip_Lat_Pulldown/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-remada-curvada": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Bent_Over_Barbell_Row/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-remada-cavalinho": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/T-Bar_Row_with_Handle/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-remada-baixa": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Seated_Cable_Rows/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-remada-unilateral": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/One-Arm_Dumbbell_Row/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-barra-fixa": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Pullups/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-levantamento-terra": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Deadlift/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-levantamento-terra-romeno": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Romanian_Deadlift/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-desenvolvimento-militar": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Standing_Military_Press/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-desenvolvimento-halter": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Shoulder_Press/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-desenvolvimento-arnold": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Arnold_Dumbbell_Press/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-elevacao-lateral": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Side_Lateral_Raise/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-elevacao-frontal": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Front_Dumbbell_Raise/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-face-pull": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Face_Pull/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-rosca-direta": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Curl/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-rosca-martelo": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Alternate_Hammer_Curl/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-rosca-scott": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Preacher_Curl/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-rosca-concentrada": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Concentration_Curls/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-rosca-cabo": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Standing_Biceps_Cable_Curl/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-incline-dumbbell-curl": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Incline_Dumbbell_Curl/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-triceps-pulley-barra": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Triceps_Pushdown/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-triceps-testa": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Lying_Triceps_Press/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-triceps-frances": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Standing_Dumbbell_Triceps_Extension/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-triceps-coice": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Tricep_Dumbbell_Kickback/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-mergulho-banco": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Bench_Dips/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-mergulho-paralelas": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dips_-_Triceps_Version/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-agachamento-livre": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Squat/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-agachamento-smith": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Smith_Machine_Squat/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-leg-press": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Leg_Press/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-cadeira-extensora": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Leg_Extensions/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-mesa-flexora": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Lying_Leg_Curls/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-cadeira-flexora": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Seated_Leg_Curl/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-stiff-barra": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Stiff-Legged_Barbell_Deadlift/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-panturrilha-em-pe": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Standing_Calf_Raises/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-panturrilha-sentado": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Seated_Calf_Raise/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-elevacao-pelvica": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Hip_Thrust/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-abdominal-supra": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Crunches/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-prancha": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Plank/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-abdominal-bicicleta": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Air_Bike/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-abdominal-cabo": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cable_Crunch/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-dead-bug": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dead_Bug/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-esteira": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Running_Treadmill/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-eliptico": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Elliptical_Trainer/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-remo-ergometrico": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Rowing_Stationary/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-new-remoergometricointervalado": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Rowing_Stationary/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-hyrox-sled-push": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Sled_Push/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-hyrox-farmers": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Farmers_Walk/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-new-roscamarteloalternada": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Alternate_Hammer_Curl/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-new-abwheelajoelhado": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Ab_Roller/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-new-roscanobancoinclinado": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Incline_Dumbbell_Curl/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-new-pallofpress": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Pallof_Press/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-new-deadbugalternado": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dead_Bug/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-new-sledpushtecnico": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Sled_Push/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-new-russiantwistcomanilha": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Russian_Twist/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-gluteo-cabo": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/One-Legged_Cable_Kickback/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-abducao-quadril": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Thigh_Abductor/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-single-leg-glute-bridge": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Single_Leg_Glute_Bridge/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-physioball-hip-bridge": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Physioball_Hip_Bridge/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-floor-glute-ham-raise": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Floor_Glute-Ham_Raise/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-monster-walk": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Monster_Walk/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-reverse-hyperextension": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Reverse_Hyperextension/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-glute-kickback": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Glute_Kickback/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-new-pullthroughnocabo": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Pull_Through/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-new-passadaparatrascomhalteres": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Rear_Lunge/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-agachamento-frontal": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Front_Barbell_Squat/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-stiff-halter": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Stiff-Legged_Dumbbell_Deadlift/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-cadeira-adutora": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Thigh_Adductor/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-panturrilha-leg-press": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Calf_Press_On_The_Leg_Press_Machine/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-goblet-squat": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Goblet_Squat/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-zercher-squats": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Zercher_Squats/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-narrow-stance-leg-press": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Narrow_Stance_Leg_Press/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-single-leg-leg-extension": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Single-Leg_Leg_Extension/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-standing-leg-curl": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Standing_Leg_Curl/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-plie-dumbbell-squat": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Plie_Dumbbell_Squat/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-donkey-calf-raises": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Donkey_Calf_Raises/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-freehand-jump-squat": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Freehand_Jump_Squat/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-wide-stance-barbell-squat": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Wide_Stance_Barbell_Squat/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-narrow-stance-squats": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Narrow_Stance_Squats/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-one-leg-barbell-squat": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/One_Leg_Barbell_Squat/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-kettlebell-pistol-squat": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Kettlebell_Pistol_Squat/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-smith-single-leg-split-squat": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Smith_Single-Leg_Split_Squat/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-elevated-back-lunge": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Elevated_Back_Lunge/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-dumbbell-rear-lunge": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Rear_Lunge/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-new-agachamentocomsalto": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Freehand_Jump_Squat/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-puxada-supinada": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Underhand_Cable_Pulldowns/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-wide-grip-lat-pulldown": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Wide-Grip_Lat_Pulldown/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-close-grip-front-lat-pulldown": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Close-Grip_Front_Lat_Pulldown/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-one-arm-lat-pulldown": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/One_Arm_Lat_Pulldown/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-straight-arm-pulldown": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Straight-Arm_Pulldown/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-inverted-row": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Inverted_Row/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-smith-machine-bent-over-row": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Smith_Machine_Bent_Over_Row/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-trap-bar-deadlift": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Trap_Bar_Deadlift/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-reverse-grip-bent-over-rows": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Reverse_Grip_Bent-Over_Rows/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-wide-grip-rear-pull-up": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Wide-Grip_Rear_Pull-Up/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-barbell-shrug-behind-the-back": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Shrug_Behind_The_Back/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-elevated-cable-rows": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Elevated_Cable_Rows/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-lying-t-bar-row": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Lying_T-Bar_Row/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-scapular-pull-up": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Scapular_Pull-Up/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-seated-one-arm-cable-pulley-rows": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Seated_One-arm_Cable_Pulley_Rows/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-leverage-high-row": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Leverage_High_Row/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-rope-straight-arm-pulldown": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Rope_Straight-Arm_Pulldown/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-v-bar-pulldown": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/V-Bar_Pulldown/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-new-remadacompeitoapoiadonobanco": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Incline_Row/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-new-remadaaustraliananotrx": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Inverted_Row_with_Straps/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-new-remadatbarcomapoiodepeito": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Lying_T-Bar_Row/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-supino-reto-barra": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Bench_Press_-_Medium_Grip/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-supino-inclinado-barra": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Incline_Bench_Press_-_Medium_Grip/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-supino-declinado-barra": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Decline_Barbell_Bench_Press/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-supino-maquina": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Machine_Bench_Press/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-decline-dumbbell-bench-press": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Decline_Dumbbell_Bench_Press/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-decline-dumbbell-flyes": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Decline_Dumbbell_Flyes/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-incline-dumbbell-flyes": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Incline_Dumbbell_Flyes/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-incline-cable-flye": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Incline_Cable_Flye/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-flat-bench-cable-flyes": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Flat_Bench_Cable_Flyes/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-one-arm-dumbbell-bench-press": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/One_Arm_Dumbbell_Bench_Press/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-wide-grip-barbell-bench-press": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Wide-Grip_Barbell_Bench_Press/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-svend-press": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Svend_Press/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-smith-machine-bench-press": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Smith_Machine_Bench_Press/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-smith-machine-incline-bench-press": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Smith_Machine_Incline_Bench_Press/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-smith-machine-decline-press": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Smith_Machine_Decline_Press/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-dumbbell-bench-press-with-neutral-grip": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Bench_Press_with_Neutral_Grip/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-cable-chest-press": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cable_Chest_Press/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-push-ups-with-feet-elevated": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Push-Ups_With_Feet_Elevated/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-incline-dumbbell-bench-with-palms-facing-in": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Incline_Dumbbell_Bench_With_Palms_Facing_In/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-push-up-wide": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Push-Up_Wide/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-leverage-chest-press": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Leverage_Chest_Press/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-decline-push-up": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Decline_Push-Up/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-new-supinocompegadafechada": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Close-Grip_Barbell_Bench_Press/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-new-flexaocommaoselevadas": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Incline_Push-Up/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-new-pressdepeitonapoliaempe": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Standing_Cable_Chest_Press/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-new-flexaonotrx": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Suspended_Push-Up/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-abdominal-maquina": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Ab_Crunch_Machine/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-agachamento-hack": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Hack_Squat/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-corda": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Rope_Jumping/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-crucifixo-inverso": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Reverse_Flyes/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-encolhimento-ombro": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Shrug/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-escada-stairmaster": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Stairmaster/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-3-4-sit-up": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/3_4_Sit-Up/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-ab-roller": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Ab_Roller/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-alternate-heel-touchers": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Alternate_Heel_Touchers/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-cable-hammer-curls-rope-attachment": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cable_Hammer_Curls_-_Rope_Attachment/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-cable-rear-delt-fly": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cable_Rear_Delt_Fly/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-cable-reverse-crunch": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cable_Reverse_Crunch/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-cable-rope-overhead-triceps-extension": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cable_Rope_Overhead_Triceps_Extension/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-cable-shoulder-press": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cable_Shoulder_Press/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-close-grip-barbell-bench-press": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Close-Grip_Barbell_Bench_Press/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-cross-body-hammer-curl": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cross_Body_Hammer_Curl/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-cuban-press": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cuban_Press/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-decline-crunch": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Decline_Crunch/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-drag-curl": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Drag_Curl/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-exercise-ball-crunch": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Exercise_Ball_Crunch/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-external-rotation-with-band": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/External_Rotation_with_Band/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-flutter-kicks": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Flutter_Kicks/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-front-plate-raise": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Front_Plate_Raise/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-hanging-leg-raise": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Hanging_Leg_Raise/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-high-cable-curls": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/High_Cable_Curls/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-internal-rotation-with-band": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Internal_Rotation_with_Band/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-jm-press": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/JM_Press/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-kettlebell-arnold-press": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Kettlebell_Arnold_Press/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-leverage-shoulder-press": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Leverage_Shoulder_Press/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-lying-dumbbell-tricep-extension": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Lying_Dumbbell_Tricep_Extension/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-oblique-crunches": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Oblique_Crunches/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-one-arm-supinated-dumbbell-triceps-extension": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/One_Arm_Supinated_Dumbbell_Triceps_Extension/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-plate-twist": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Plate_Twist/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-preacher-hammer-dumbbell-curl": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Preacher_Hammer_Dumbbell_Curl/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-prowler-sprint": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Prowler_Sprint/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-push-ups-close-triceps-position": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Push-Ups_-_Close_Triceps_Position/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-reverse-barbell-curl": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Reverse_Barbell_Curl/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-reverse-crunch": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Reverse_Crunch/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-reverse-grip-triceps-pushdown": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Reverse_Grip_Triceps_Pushdown/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-ring-dips": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Ring_Dips/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-russian-twist": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Russian_Twist/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-seated-palm-up-barbell-wrist-curl": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Seated_Palm-Up_Barbell_Wrist_Curl/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-seated-palms-down-barbell-wrist-curl": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Seated_Palms-Down_Barbell_Wrist_Curl/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-seated-side-lateral-raise": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Seated_Side_Lateral_Raise/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-side-jackknife": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Side_Jackknife/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-smith-machine-overhead-shoulder-press": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Smith_Machine_Overhead_Shoulder_Press/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-spider-curl": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Spider_Curl/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-standing-one-arm-cable-curl": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Standing_One-Arm_Cable_Curl/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-standing-palms-in-dumbbell-press": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Standing_Palms-In_Dumbbell_Press/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-step-up-with-knee-raise": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Step-up_with_Knee_Raise/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-tate-press": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Tate_Press/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-weighted-bench-dip": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Weighted_Bench_Dip/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-weighted-crunches": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Weighted_Crunches/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-weighted-sissy-squat": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Weighted_Sissy_Squat/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-wind-sprints": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Wind_Sprints/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-wrist-roller": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Wrist_Roller/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-fedb-zottman-curl": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Zottman_Curl/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-new-caminhadalateralcomminiband": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Monster_Walk/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-new-cordanavalemondas": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Battling_Ropes/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-new-desenvolvimentopushpress": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Push_Press/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-new-extensaolombar45graus": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Hyperextensions_Back_Extensions/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-new-pranchafrontalcomapoiodecotovelo": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Plank/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-new-remadaunilateralnapoliabaixa": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Seated_One-arm_Cable_Pulley_Rows/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-new-subidadeescadas": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Stairmaster/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-new-tricepsbarravnopulley": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Triceps_Pushdown_-_V-Bar_Attachment/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-new-tricepsnacordaacimadacabeca": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cable_Rope_Overhead_Triceps_Extension/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-new-tricepsnapoliapegadainvertida": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Reverse_Grip_Triceps_Pushdown/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-new-tricepstestacomhalteres": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Lying_Dumbbell_Tricep_Extension/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-passada-halteres": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Lunges/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-prancha-lateral": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Side_Bridge/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-pullover-halter": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Straight-Arm_Dumbbell_Pullover/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-triceps-pulley": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Triceps_Pushdown_-_Rope_Attachment/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-supino-inclinado-maquina": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Leverage_Incline_Chest_Press/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-remada-maquina": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Leverage_Iso_Row/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-desenvolvimento-maquina": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Machine_Shoulder_Military_Press/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-elevacao-frontal-barra": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Standing_Front_Barbell_Raise_Over_Head/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-remada-alta": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Upright_Barbell_Row/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-remada-alta-cabo": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Upright_Cable_Row/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-crucifixo-inverso-maquina": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Reverse_Machine_Flyes/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-rosca-direta-w": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/EZ-Bar_Curl/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-rosca-alternada": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Alternate_Bicep_Curl/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-rosca-scott-maquina": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Machine_Preacher_Curls/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-triceps-maquina": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Machine_Triceps_Extension/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-rotacao-tronco-cabo": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Standing_Cable_Wood_Chop/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-new-crucifixounilateralnocabo": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Single-Arm_Cable_Crossover/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-new-pulldownnapoliacomcorda": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Rope_Straight-Arm_Pulldown/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-new-remadaaltaparacostascomcorda": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cable_Rope_Rear-Delt_Rows/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-new-scaptioncomhalteres": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Scaption/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-new-elevacaolateralinclinado": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/One-Arm_Incline_Lateral_Raise/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-new-elevacaofrontalunilateralnocabo": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Front_Cable_Raise/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-new-roscainversanocabo": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Reverse_Cable_Curl/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-new-extensaoacimadacabecaunilateral": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_One-Arm_Triceps_Extension/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-new-extensaodequadrilemquatroapoios": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Glute_Kickback/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-new-corridaintervaladanaesteira": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Jogging_Treadmill/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-new-tricepsemargolas": {
+      "url": "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Ring_Dips/0.jpg",
+      "source": "free-exercise-db",
+      "status": "matched_unverified"
+    },
+    "ex-hyrox-ski": {
+      "url": "https://commons.wikimedia.org/wiki/Special:FilePath/CrossFit_workout_on_SkiErg_DSC1807.jpg",
+      "source": "Wikimedia Commons",
+      "status": "matched_unverified"
+    },
+    "ex-new-skiergintervalado": {
+      "url": "https://commons.wikimedia.org/wiki/Special:FilePath/CrossFit_workout_on_SkiErg_DSC1807.jpg",
+      "source": "Wikimedia Commons",
+      "status": "matched_unverified"
+    },
+    "ex-hyrox-burpee": {
+      "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Lauren_at_2021_WC_burpee_broad_jump.png",
+      "source": "Wikimedia Commons",
+      "status": "matched_unverified"
+    },
+    "ex-new-burpeebroadjump": {
+      "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Lauren_at_2021_WC_burpee_broad_jump.png",
+      "source": "Wikimedia Commons",
+      "status": "matched_unverified"
+    },
+    "ex-hyrox-wall-ball": {
+      "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Lauren_at_EU_Championships_2023_Wall_Balls.png",
+      "source": "Wikimedia Commons",
+      "status": "matched_unverified"
+    },
+    "ex-hyrox-sandbag": {
+      "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Sandbag_competition.jpg",
+      "source": "Wikimedia Commons",
+      "status": "matched_unverified"
+    }
+  }
+}
