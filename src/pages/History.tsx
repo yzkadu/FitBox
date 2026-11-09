@@ -11,6 +11,8 @@ export function History() {
   const navigate = useNavigate();
   const [expanded, setExpanded] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+  const [deleting,setDeleting] = useState<string | null>(null);
+  const [deleteError,setDeleteError] = useState('');
 
   const exerciseById = new Map(exercises.map((e) => [e.id, e]));
   const finished = sessions
@@ -38,6 +40,8 @@ export function History() {
   return (
     <div className="px-4">
       <PageHeader title="Histórico" />
+      {deleteError && <p role="alert" className="text-xs rounded-lg px-3 py-2 mb-3"
+        style={{color:'var(--danger)',background:'var(--surface-2)'}}>{deleteError}</p>}
 
       {records.length > 0 && (
         <div className="mb-5">
@@ -138,14 +142,20 @@ export function History() {
                           Cancelar
                         </button>
                         <button
-                          onClick={() => {
-                            deleteSession(s.id);
-                            setConfirmDelete(null);
+                          disabled={deleting === s.id}
+                          onClick={async () => {
+                            if (deleting) return;
+                            setDeleting(s.id);
+                            setDeleteError('');
+                            const result=await deleteSession(s.id);
+                            setDeleting(null);
+                            if (result.ok) setConfirmDelete(null);
+                            else setDeleteError(result.error);
                           }}
                           className="flex-1 text-xs py-2 rounded-lg text-white"
                           style={{ background: 'var(--danger)' }}
                         >
-                          Confirmar exclusão
+                          {deleting === s.id ? 'Excluindo...' : 'Confirmar exclusão'}
                         </button>
                       </div>
                     ) : (
