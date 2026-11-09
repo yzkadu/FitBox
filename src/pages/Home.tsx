@@ -1,7 +1,8 @@
 import { useMemo, useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Play, Check, Flame, Plus, ArrowRight, Bot, Bike, BedDouble, MessageCircle, Zap, Timer, ChevronDown, Gauge, Apple } from 'lucide-react';
+import { Play, Check, Flame, Plus, ArrowRight, Bot, Bike, BedDouble, MessageCircle, Zap, Timer, ChevronDown, Gauge } from 'lucide-react';
 import { useAppData } from '../hooks/useAppData';
+import { NutritionQuickCard } from '../components/NutritionQuickCard';
 import { useAuth } from '../hooks/useAuth';
 import { useProfile } from '../hooks/useProfile';
 import { startSession } from '../lib/actions';
@@ -134,6 +135,8 @@ export function Home() {
       </div>
 
       {user && active.length === 0 && <ImportLocalDataBanner userId={user.id} />}
+
+      <NutritionQuickCard compact />
 
       <div className="lg:grid lg:grid-cols-[1.5fr_1fr] lg:gap-4 lg:items-start">
         <div>
