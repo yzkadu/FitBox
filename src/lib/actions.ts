@@ -166,6 +166,67 @@ function syncWeeklySchedule() {
     });
 }
 
+/** Reenvio idempotente de fichas e sessões criadas localmente.
+ * Se o primeiro INSERT falhou, UPDATE de séries pode afetar zero linhas;
+ * por isso a recuperação grava o snapshot completo pelo mesmo ID.
+ */
+async function retryWorkoutCreation(workoutId: string, userId: string): Promise<void> {
+  if (store.getUserId() !== userId) return;
+  const w=store.getSnapshot().workouts.find(item=>item.id===workoutId);
+  if (!w) return;
+  const key='workout-create:'+userId+':'+workoutId;
+  beginSync(key);
+  try {
+    const {error}=await supabase.from('workouts').upsert({
+      id:w.id,user_id:userId,name:w.name,emoji:w.emoji,archived:w.archived??false,
+      exercises:w.exercises,created_at:w.createdAt,
+    },{onConflict:'id'});
+    if (error) syncFailed(key,'A nova ficha ainda não foi salva.',()=>retryWorkoutCreation(workoutId,userId));
+    else syncSucceeded(key);
+  } catch {
+    syncFailed(key,'Não foi possível enviar a ficha. Verifique a conexão.',()=>retryWorkoutCreation(workoutId,userId));
+  }
+}
+
+async function retrySessionCreation(sessionId: string, userId: string): Promise<void> {
+  if (store.getUserId() !== userId) return;
+  const current=store.getSnapshot().sessions.find(item=>item.id===sessionId);
+  if (!current) return;
+  const key='session-create:'+userId+':'+sessionId;
+  beginSync(key);
+  try {
+    const {error}=await supabase.from('sessions').upsert({
+      id:current.id,user_id:userId,workout_id:current.workoutId,
+      workout_name:current.workoutName,started_at:current.startedAt,
+      finished_at:current.finishedAt,exercises:current.exercises,
+      duration_seconds:current.durationSeconds??null,
+      rpe:current.rpe??null,proof_photo_data_url:current.proofPhotoDataUrl??null,
+    },{onConflict:'id'});
+    if (error) syncFailed(key,'A sessão ainda não foi sincronizada.',()=>retrySessionCreation(sessionId,userId));
+    else syncSucceeded(key);
+  } catch {
+    syncFailed(key,'Não foi possível enviar a sessão. Verifique a conexão.',()=>retrySessionCreation(sessionId,userId));
+  }
+}
+
+function trackCreation(
+  key: string,
+  message: string,
+  task: PromiseLike<{error: {message: string} | null}>,
+  retry: ()=>Promise<void>,
+): PromiseLike<void> {
+  beginSync(key);
+  return task.then(({error})=>{
+    if (error) {
+      console.error('Falha ao criar registro:',error);
+      syncFailed(key,message,retry);
+    } else syncSucceeded(key);
+  },(error:unknown)=>{
+    console.error('Falha de rede ao criar registro:',error);
+    syncFailed(key,message,retry);
+  });
+}
+
 // ---------- Exercises ----------
 
 export function addCustomExercise(name: string, muscleGroup: MuscleGroup): Exercise {
@@ -198,18 +259,15 @@ export function createWorkout(name: string, emoji?: string): Workout {
   });
   const userId = requireUserId();
   if (userId) {
-    const insertPromise = supabase
-      .from('workouts')
-      .insert({
-        id: workout.id,
-        user_id: userId,
-        name,
-        emoji,
-        exercises: [],
-        archived: false,
-        created_at: workout.createdAt,
-      })
-      .then(logIfError('workouts.insert'));
+    const insertPromise = trackCreation(
+      'workout-create:'+userId+':'+workout.id,
+      'A ficha foi criada na tela, mas não foi confirmada pelo servidor.',
+      supabase.from('workouts').insert({
+        id: workout.id,user_id: userId,name,emoji,exercises: [],
+        archived: false,created_at: workout.createdAt,
+      }),
+      () => retryWorkoutCreation(workout.id,userId),
+    );
     pendingWorkoutInserts.set(workout.id, insertPromise);
   }
   return workout;
@@ -357,18 +415,16 @@ export function startSession(workout: Workout): Session {
     // criado agora mesmo) antes de gravar a sessão, que referencia esse treino.
     const insertPromise = (async () => {
       await pendingWorkoutInserts.get(workout.id);
-      return supabase
-        .from('sessions')
-        .insert({
-          id: session.id,
-          user_id: userId,
-          workout_id: session.workoutId,
-          workout_name: session.workoutName,
-          started_at: session.startedAt,
-          finished_at: null,
-          exercises: session.exercises,
-        })
-        .then(logIfError('sessions.insert'));
+      return trackCreation(
+        'session-create:'+userId+':'+session.id,
+        'A sessão foi iniciada, mas ainda não foi confirmada pelo servidor.',
+        supabase.from('sessions').insert({
+          id:session.id,user_id:userId,workout_id:session.workoutId,
+          workout_name:session.workoutName,started_at:session.startedAt,
+          finished_at:null,exercises:session.exercises,
+        }),
+        ()=>retrySessionCreation(session.id,userId),
+      );
     })();
     pendingSessionInserts.set(session.id, insertPromise);
   }
@@ -390,18 +446,16 @@ export function startAdhocSession(name: string): Session {
   });
   const userId = requireUserId();
   if (userId) {
-    const insertPromise = supabase
-      .from('sessions')
-      .insert({
-        id: session.id,
-        user_id: userId,
-        workout_id: null,
-        workout_name: session.workoutName,
-        started_at: session.startedAt,
-        finished_at: null,
-        exercises: [],
-      })
-      .then(logIfError('sessions.insert'));
+    const insertPromise = trackCreation(
+      'session-create:'+userId+':'+session.id,
+      'A sessão livre foi iniciada, mas ainda não foi confirmada pelo servidor.',
+      supabase.from('sessions').insert({
+        id:session.id,user_id:userId,workout_id:null,
+        workout_name:session.workoutName,started_at:session.startedAt,
+        finished_at:null,exercises:[],
+      }),
+      ()=>retrySessionCreation(session.id,userId),
+    );
     pendingSessionInserts.set(session.id, insertPromise);
   }
   return session;
