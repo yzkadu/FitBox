@@ -2,7 +2,7 @@
 
 O usuário enviou **8 páginas com 5 exercícios cada** em 09/11/2026. Foram recortadas **40 ilustrações** com nomes exatos do catálogo; nenhum exercício novo é necessário e os IDs não devem mudar.
 
-O pacote desta conversa é **`fitbox_peito_40_exercicios.zip`**. Contém:
+O pacote desta conversa é **`fitbox_peito_40_exercicios_v3.zip`**. Contém:
 - `ilustracoes/`: imagens quadradas/retangulares normalizadas em 680 × 500 px, sem título impresso (para o app).
 - `cards/`: recortes completos com as faixas azuis de título (para conferência).
 - `manifest.json` e `mapeamento.csv`: nome, ID, página e número do quadro de cada exercício.
