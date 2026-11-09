@@ -5,6 +5,7 @@ import { Layout } from './components/Layout';
 import { Home } from './pages/Home';
 import { Workouts } from './pages/Workouts';
 import { GuidedBuilder } from './pages/GuidedBuilder';
+import { Nutrition } from './pages/Nutrition';
 import { WorkoutEditor } from './pages/WorkoutEditor';
 import { SessionExecution } from './pages/SessionExecution';
 import { SessionEditor } from './pages/SessionEditor';
@@ -126,6 +127,7 @@ export default function App() {
           <Route path="/historico" element={<History />} />
           <Route path="/exercicio/:exerciseId" element={<ExerciseDetail />} />
           <Route path="/evolucao" element={<Progress />} />
+          <Route path="/nutricao" element={<Nutrition />} />
           <Route path="/medidas" element={<BodyStats />} />
           <Route path="/musculos" element={<MuscleMap />} />
           <Route path="/cardio" element={<Cardio />} />
