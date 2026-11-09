@@ -10,8 +10,26 @@ import { MUSCLE_GROUP_LABELS } from '../lib/exercises';
 import { exerciseMedia, exerciseGuidance } from '../lib/exerciseMedia';
 import { ExerciseAnatomy, getExerciseAnatomicalFocus, preferredAnatomicalView } from './ExerciseAnatomy';
 
-function ExercisePhoto({ src, alt }: { src: string; alt: string }) {
+function ExercisePhoto({ src, alt, spriteIndex }: { src: string; alt: string; spriteIndex?: number }) {
   const [broken, setBroken] = useState(false);
+  if (spriteIndex !== undefined) {
+    // Quadro n de um atlas WebP fixo (5 colunas × 8 linhas).
+    // Evita fotos antigas e URLs inexistentes: o binário está no próprio deploy.
+    const column = spriteIndex % 5;
+    const row = Math.floor(spriteIndex / 5);
+    return (
+      <div className="w-full h-full flex items-center justify-center overflow-hidden"
+        style={{ background: 'white' }}>
+        <div role="img" aria-label={alt} style={{
+          width: '100%', aspectRatio: '280 / 205',
+          backgroundImage: `url("${src}")`,
+          backgroundSize: '500% 800%',
+          backgroundPosition: `${column * 25}% ${row * 100 / 7}%`,
+          backgroundRepeat: 'no-repeat',
+        }}/>
+      </div>
+    );
+  }
   return (
     <div className="w-full h-full" style={{ background: 'var(--surface)' }}>
       {broken ? (
@@ -126,7 +144,7 @@ export function ExerciseGuide({ exercise, compact = false }: { exercise?: Exerci
                   <div key={src} className="rounded-lg overflow-hidden min-w-0"
                     style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
                     <div className={compact ? 'h-[130px] sm:h-[162px]' : 'h-[172px] sm:h-[205px]'}>
-                      <ExercisePhoto src={src}
+                      <ExercisePhoto src={src} spriteIndex={index === 0 ? images.spriteIndex : undefined}
                         alt={exercise.name + (images.kind === 'ilustracao' ? ' — ilustração do movimento' : ' — fotografia real ' + (index + 1))}/>
                     </div>
                     <p className="text-[10px] py-1.5 text-center"
