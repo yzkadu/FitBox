@@ -1,5 +1,6 @@
 import { store, uid } from './storage';
 import { supabase } from './supabaseClient';
+import { beginSync, syncSucceeded, syncFailed } from './syncStatus';
 import { getSuggestedStartingPoint } from './coach';
 import type {
   Workout,
@@ -51,7 +52,10 @@ const pendingWorkoutUpdates = new Map<string, Promise<void>>();
 const dirtyWorkouts = new Set<string>();
 
 function syncWorkoutExercises(workoutId: string) {
-  if (!requireUserId()) return;
+  const userId = requireUserId();
+  if (!userId) return;
+  const syncKey = 'workout:' + userId + ':' + workoutId;
+  beginSync(syncKey);
   if (pendingWorkoutUpdates.has(workoutId)) {
     dirtyWorkouts.add(workoutId);
     return;
@@ -65,9 +69,23 @@ function syncWorkoutExercises(workoutId: string) {
         if (!workout) return;
         const exercises = JSON.parse(JSON.stringify(workout.exercises));
         const { error } = await supabase.from('workouts')
-          .update({ exercises }).eq('id',workoutId);
-        if (error) console.error('Falha ao sincronizar (workouts.exercises):',error);
+          .update({ exercises }).eq('id',workoutId).eq('user_id',userId);
+        if (error) {
+          syncFailed(syncKey, 'Falha ao salvar alterações da ficha. Tente sincronizar novamente.', async () => {
+            syncWorkoutExercises(workoutId);
+            await pendingWorkoutUpdates.get(workoutId);
+          });
+          console.error('Falha ao sincronizar (workouts.exercises):',error);
+        } else {
+          syncSucceeded(syncKey);
+        }
       } while (dirtyWorkouts.has(workoutId));
+    } catch (error) {
+      console.error('Erro de rede ao salvar ficha:', error);
+      syncFailed(syncKey, 'Não foi possível sincronizar a ficha.', async () => {
+        syncWorkoutExercises(workoutId);
+        await pendingWorkoutUpdates.get(workoutId);
+      });
     } finally {
       pendingWorkoutUpdates.delete(workoutId);
       dirtyWorkouts.delete(workoutId);
@@ -84,7 +102,10 @@ const pendingSessionUpdates = new Map<string, Promise<void>>();
 const dirtySessions = new Set<string>();
 
 function syncSessionExercises(sessionId: string) {
-  if (!requireUserId()) return;
+  const userId = requireUserId();
+  if (!userId) return;
+  const syncKey = 'session:' + userId + ':' + sessionId;
+  beginSync(syncKey);
   if (pendingSessionUpdates.has(sessionId)) {
     dirtySessions.add(sessionId);
     return;
@@ -101,9 +122,23 @@ function syncSessionExercises(sessionId: string) {
         // enquanto a requisição anterior ainda está em trânsito.
         const exercises = JSON.parse(JSON.stringify(current.exercises));
         const { error } = await supabase.from('sessions')
-          .update({ exercises }).eq('id', sessionId);
-        if (error) console.error('Falha ao sincronizar (sessions.exercises):', error);
+          .update({ exercises }).eq('id', sessionId).eq('user_id',userId);
+        if (error) {
+          syncFailed(syncKey, 'Falha ao salvar séries ou repetições. Tente sincronizar novamente.', async () => {
+            syncSessionExercises(sessionId);
+            await pendingSessionUpdates.get(sessionId);
+          });
+          console.error('Falha ao sincronizar (sessions.exercises):', error);
+        } else {
+          syncSucceeded(syncKey);
+        }
       } while (dirtySessions.has(sessionId));
+    } catch (error) {
+      console.error('Erro de rede ao salvar séries:', error);
+      syncFailed(syncKey, 'Não foi possível sincronizar as séries.', async () => {
+        syncSessionExercises(sessionId);
+        await pendingSessionUpdates.get(sessionId);
+      });
     } finally {
       pendingSessionUpdates.delete(sessionId);
       dirtySessions.delete(sessionId);
@@ -116,8 +151,19 @@ function syncSessionExercises(sessionId: string) {
 function syncWeeklySchedule() {
   const userId = requireUserId();
   if (!userId) return;
+  const syncKey = 'schedule:' + userId;
+  beginSync(syncKey);
   const schedule = store.getSnapshot().weeklySchedule;
-  supabase.from('weekly_schedule').upsert({ user_id: userId, schedule }).then(logIfError('weekly_schedule'));
+  supabase.from('weekly_schedule').upsert({ user_id: userId, schedule })
+    .then(({error}) => {
+      if (error) {
+        console.error('Falha ao sincronizar (weekly_schedule):', error);
+        syncFailed(syncKey, 'A programação semanal não foi confirmada pelo servidor.', async () => syncWeeklySchedule());
+      } else syncSucceeded(syncKey);
+    }).catch((error: unknown) => {
+      console.error('Falha de rede na programação semanal:', error);
+      syncFailed(syncKey, 'A programação semanal não foi sincronizada.', async () => syncWeeklySchedule());
+    });
 }
 
 // ---------- Exercises ----------
