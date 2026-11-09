@@ -66,6 +66,8 @@ export function SessionExecution() {
   const { sessions, exercises } = useAppData();
   const [pickerOpen, setPickerOpen] = useState(false);
   const [confirmDiscard, setConfirmDiscard] = useState(false);
+  const [discarding, setDiscarding] = useState(false);
+  const [discardError, setDiscardError] = useState<string | null>(null);
   const [rpeSheetOpen, setRpeSheetOpen] = useState(false);
   const [selectedRpe, setSelectedRpe] = useState<number | null>(null);
   const [proofPhoto, setProofPhoto] = useState<string | undefined>(undefined);
@@ -262,14 +264,21 @@ export function SessionExecution() {
               <Button
                 full
                 variant="danger"
-                onClick={() => {
-                  discardSession(session.id);
-                  navigate('/');
+                disabled={discarding}
+                onClick={async () => {
+                  if (discarding) return;
+                  setDiscarding(true);
+                  setDiscardError(null);
+                  const result = await discardSession(session.id);
+                  setDiscarding(false);
+                  if (result.ok) navigate('/');
+                  else setDiscardError(result.error);
                 }}
               >
-                Descartar sessão
+                {discarding ? 'Descartando...' : 'Descartar sessão'}
               </Button>
-              <Button full variant="secondary" onClick={() => setConfirmDiscard(false)}>
+              {discardError && <p role="alert" className="text-xs" style={{color:'var(--danger)'}}>{discardError}</p>}
+              <Button full variant="secondary" disabled={discarding} onClick={() => setConfirmDiscard(false)}>
                 Voltar ao treino
               </Button>
             </div>
