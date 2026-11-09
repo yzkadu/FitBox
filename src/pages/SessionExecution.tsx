@@ -79,6 +79,8 @@ export function SessionExecution() {
   const [restRemaining, setRestRemaining] = useState<number | null>(null);
   const [restDone, setRestDone] = useState(false);
   const restBeepedRef = useRef(false);
+  // Prazo absoluto: evita atrasos quando o navegador limita timers em segundo plano.
+  const restDeadlineRef = useRef<number | null>(null);
 
   const [plateSheetExerciseId, setPlateSheetExerciseId] = useState<string | null>(null);
   const [exerciseGuideId, setExerciseGuideId] = useState<string | null>(null);
@@ -108,22 +110,38 @@ export function SessionExecution() {
       }
       return;
     }
-    const t = setTimeout(() => setRestRemaining((r) => (r !== null ? r - 1 : r)), 1000);
-    return () => clearTimeout(t);
+    const tick = () => {
+      const deadline = restDeadlineRef.current;
+      if (deadline === null) return;
+      const remaining = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
+      setRestRemaining((previous) => previous === remaining ? previous : remaining);
+    };
+    const timer = setInterval(tick, 250);
+    document.addEventListener('visibilitychange', tick);
+    return () => {
+      clearInterval(timer);
+      document.removeEventListener('visibilitychange', tick);
+    };
   }, [restRemaining]);
 
   function startRestTimer(seconds: number) {
     restBeepedRef.current = false;
+    restDeadlineRef.current = Date.now() + seconds * 1000;
     setRestDone(false);
     setRestTotal(seconds);
     setRestRemaining(seconds);
   }
 
   function adjustRest(deltaSeconds: number) {
-    setRestRemaining((r) => (r !== null ? Math.max(0, r + deltaSeconds) : r));
+    if (restDeadlineRef.current === null) return;
+    const remaining = Math.max(0, Math.ceil((restDeadlineRef.current - Date.now()) / 1000));
+    const adjusted = Math.max(0, remaining + deltaSeconds);
+    restDeadlineRef.current = Date.now() + adjusted * 1000;
+    setRestRemaining(adjusted);
   }
 
   function skipRest() {
+    restDeadlineRef.current = null;
     setRestRemaining(null);
     setRestTotal(null);
     setRestDone(false);
