@@ -113,16 +113,22 @@ export function AiCoach() {
 
   function applyProposal(index: number) {
     const entry = messages[index];
-    if (!entry.proposal) return;
-    let appliedWorkoutId: string | undefined;
-    if (entry.proposal.kind === 'schedule') {
-      applyScheduleProposal(entry.proposal.data, workouts);
-    } else if (entry.proposal.kind === 'newWorkout') {
-      appliedWorkoutId = applyNewWorkoutProposal(entry.proposal.data, exercises);
-    } else if (entry.proposal.kind === 'workoutEdit') {
-      applyWorkoutEditProposal(entry.proposal.data, exercises);
+    if (!entry?.proposal || entry.proposalStatus !== 'pending') return;
+    setError(null);
+    try {
+      let appliedWorkoutId: string | undefined;
+      if (entry.proposal.kind === 'schedule') {
+        applyScheduleProposal(entry.proposal.data, workouts);
+      } else if (entry.proposal.kind === 'newWorkout') {
+        appliedWorkoutId = applyNewWorkoutProposal(entry.proposal.data, exercises);
+      } else if (entry.proposal.kind === 'workoutEdit') {
+        applyWorkoutEditProposal(entry.proposal.data, exercises);
+      }
+      setMessages((prev) => prev.map((m, i) =>
+        i === index ? { ...m, proposalStatus: 'applied', appliedWorkoutId } : m));
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : 'Não consegui aplicar a proposta. Nenhuma confirmação foi registrada.');
     }
-    setMessages((prev) => prev.map((m, i) => (i === index ? { ...m, proposalStatus: 'applied', appliedWorkoutId } : m)));
   }
 
   function discardProposal(index: number) {
@@ -149,6 +155,12 @@ export function AiCoach() {
       <div className="flex-1 flex flex-col gap-3 pb-3">
         {messages.length === 0 && (
           <div className="flex flex-col gap-2 mt-2">
+            <div className="rounded-xl p-3 text-xs leading-relaxed"
+              style={{background:'var(--brand-dim)',color:'var(--text-dim)'}}>
+              <strong style={{color:'var(--brand)'}}>Como a IA usa seus dados:</strong> considera fichas, sessões e metas
+              disponíveis no aplicativo. Quando faltam registros, a resposta é uma sugestão geral.
+              Propostas que alteram treinos ou agenda precisam da sua confirmação.
+            </div>
             <p className="text-sm" style={{ color: 'var(--text-dim)' }}>
               Pergunte qualquer coisa sobre seu treino, sua evolução, sua meta — ou peça pra criar ou mudar um treino.
               Algumas ideias:
