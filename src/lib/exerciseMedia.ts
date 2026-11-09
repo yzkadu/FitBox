@@ -127,6 +127,7 @@ export interface ExerciseMediaResult {
   second?: string;
   sourceId: string;
   kind: 'foto' | 'ilustracao';
+  spriteIndex?: number;
   credit: string;
   sourceUrl?: string;
 }
@@ -136,7 +137,8 @@ export function exerciseMedia(exercise?: Exercise | null): ExerciseMediaResult |
   const chestIllustration = getChestIllustration(exerciseId);
   if (chestIllustration) {
     return {
-      first: chestIllustration,
+      first: chestIllustration.src,
+      spriteIndex: chestIllustration.index,
       sourceId: exerciseId,
       kind: 'ilustracao',
       credit: 'Ilustração do guia visual de execução fornecido pelo projeto FitBox.',
