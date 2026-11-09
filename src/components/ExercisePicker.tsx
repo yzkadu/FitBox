@@ -6,35 +6,8 @@ import { useAppData } from '../hooks/useAppData';
 import { addCustomExercise } from '../lib/actions';
 import { MUSCLE_GROUP_LABELS, MUSCLE_GROUP_ORDER } from '../lib/exercises';
 import { exerciseMedia } from '../lib/exerciseMedia';
+import { EQUIPMENT_LABELS, EQUIPMENT_ORDER, equipmentMatches, type EquipmentCategory } from '../lib/equipmentCategories';
 import type { Exercise, MuscleGroup } from '../types';
-type Specialty = 'todos' | 'hyrox' | 'calistenia' | 'mobilidade' | 'antebracos' | 'panturrilhas' | 'posteriores' | 'quadriceps';
-const SPECIALTIES: {key: Specialty; label: string}[] = [
-  {key:'todos',label:'Todas as modalidades'},
-  {key:'hyrox',label:'Funcional / HYROX'},
-  {key:'calistenia',label:'Calistenia / Casa'},
-  {key:'mobilidade',label:'Mobilidade / Alongamento'},
-  {key:'antebracos',label:'Antebraços'},
-  {key:'panturrilhas',label:'Panturrilhas'},
-  {key:'posteriores',label:'Posterior de coxa'},
-  {key:'quadriceps',label:'Quadríceps'},
-];
-
-function belongsToSpecialty(ex: Exercise, specialty: Specialty): boolean {
-  if (specialty === 'todos') return true;
-  const name = ex.name.toLowerCase();
-  const equipment = ex.equipment?.toLowerCase() ?? '';
-  if (specialty === 'hyrox') return ex.id.startsWith('ex-hyrox-') ||
-    /hyrox|sled|trenó|ski|thruster|burpee|wall ball|farmers|caminhada do fazendeiro|batalha naval|battle rope|kettlebell|shuttle run|corda naval|step-up na caixa/.test(name);
-  if (specialty === 'calistenia') return /peso corporal|barra fixa|argolas|trx/.test(equipment) ||
-    /flexão de braço|flexão arqueiro|flexão diamante|prancha|agachamento livre|afundo reverso|pike push-up|barra fixa|mergulho nas paralelas|burpee|abdominal/.test(name);
-  if (specialty === 'mobilidade') return /mobilidade|alongamento|rotação torácica|90\/90|world.s greatest|agachamento profundo sustentado/.test(name);
-  if (specialty === 'antebracos') return /punho|antebraço|pronação|supinação|wrist|hand gripper|farmer|pegada/.test(name);
-  if (specialty === 'panturrilhas') return /panturrilha|tibial/.test(name);
-  if (specialty === 'posteriores') return /stiff|flexora|posterior|romeno|nordic|nórdico|good morning/.test(name);
-  return /agachamento|extensora|leg press|passada|afundo|step-up|sissy|wall sit/.test(name);
-}
-
-
 export function ExercisePicker({
   open,
   onClose,
@@ -59,7 +32,7 @@ export function ExercisePicker({
   const [newName, setNewName] = useState('');
   const [newGroup, setNewGroup] = useState<MuscleGroup>('outro');
   const [previewId, setPreviewId] = useState<string | null>(null);
-  const [specialty, setSpecialty] = useState<Specialty>('todos');
+  const [equipmentFilter, setEquipmentFilter] = useState<EquipmentCategory[]>([]);
   const [photoFilter, setPhotoFilter] = useState<'todos' | 'com' | 'sem'>('todos');
 
   useEffect(() => {
@@ -68,7 +41,7 @@ export function ExercisePicker({
       setQuery('');
       setCreating(false);
       setPreviewId(null);
-      setSpecialty('todos');
+      setEquipmentFilter([]);
       setPhotoFilter('todos');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -81,7 +54,7 @@ export function ExercisePicker({
         (e.name.toLowerCase().includes(q) || (e.equipment?.toLowerCase().includes(q) ?? false)) &&
         e.id !== excludeExerciseId &&
         (groupFilter === 'todos' || e.muscleGroup === groupFilter) &&
-        belongsToSpecialty(e, specialty) &&
+        equipmentMatches(e, equipmentFilter) &&
         (photoFilter === 'todos' || (photoFilter === 'com' ? !!exerciseMedia(e) : !exerciseMedia(e))),
     );
     const map = new Map<string, Exercise[]>();
@@ -92,7 +65,7 @@ export function ExercisePicker({
     }
     for (const list of map.values()) list.sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
     return Array.from(map.entries()).filter(([, list]) => list.length > 0);
-  }, [exercises, query, groupFilter, specialty, photoFilter, excludeExerciseId]);
+  }, [exercises, query, groupFilter, equipmentFilter, photoFilter, excludeExerciseId]);
 
   function handleCreate() {
     if (!newName.trim()) return;
@@ -143,14 +116,23 @@ export function ExercisePicker({
         ))}
       </div>
 
-      <p className="text-[11px] font-semibold mb-1.5" style={{color:'var(--text-faint)'}}>Especialidades</p>
-      <div className="flex gap-1.5 mb-3 overflow-x-auto pb-1" style={{scrollbarWidth:'none'}}>
-        {SPECIALTIES.map(item=>(
-          <button key={item.key} type="button" onClick={() => setSpecialty(item.key)}
-            className="shrink-0 px-2.5 py-1.5 text-xs rounded-full font-medium"
-            style={{background:specialty===item.key ? 'var(--brand)' : 'var(--surface-2)',
-              color:specialty===item.key ? '#fff' : 'var(--text-faint)'}}>
-            {item.label}
+      <p className="text-[11px] font-semibold mb-1.5" style={{color:'var(--text-faint)'}}>
+        Equipamentos disponíveis
+      </p>
+      <div className="flex flex-wrap gap-1.5 mb-3" aria-label="Filtrar por equipamento">
+        <button type="button" onClick={()=>setEquipmentFilter([])}
+          aria-pressed={equipmentFilter.length===0}
+          className="px-2.5 py-1.5 text-xs rounded-full font-medium"
+          style={{background:equipmentFilter.length===0?'var(--brand)':'var(--surface-2)',
+            color:equipmentFilter.length===0?'white':'var(--text-faint)'}}>Todos</button>
+        {EQUIPMENT_ORDER.map(item=>(
+          <button key={item} type="button"
+            aria-pressed={equipmentFilter.includes(item)}
+            onClick={()=>setEquipmentFilter(prev=>prev.includes(item)?prev.filter(x=>x!==item):[...prev,item])}
+            className="px-2.5 py-1.5 text-xs rounded-full font-medium"
+            style={{background:equipmentFilter.includes(item)?'var(--brand)':'var(--surface-2)',
+              color:equipmentFilter.includes(item)?'white':'var(--text-faint)'}}>
+            {EQUIPMENT_LABELS[item]}
           </button>
         ))}
       </div>
