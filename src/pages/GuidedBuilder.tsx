@@ -6,6 +6,7 @@ import { useAppData } from '../hooks/useAppData';
 import { useAuth } from '../hooks/useAuth';
 import { useProfile } from '../hooks/useProfile';
 import { BUILTIN_EXERCISES } from '../lib/exercises';
+import { EQUIPMENT_LABELS,EQUIPMENT_ORDER,equipmentMatches,type EquipmentCategory } from '../lib/equipmentCategories';
 import { WEEKDAY_ORDER, WEEKDAY_LABELS } from '../types';
 import type { Weekday } from '../types';
 import { PLACE_LABELS, LEVEL_LABELS, GOAL_LABELS } from '../lib/readyPrograms';
@@ -66,7 +67,7 @@ export function GuidedBuilder() {
   const [saving,setSaving] = useState(false);
   const candidates = useMemo(()=>findBuilderPrograms(prefs),[prefs]);
   const selected = candidates.find(p=>p.id===(chosen??candidates[0]?.id));
-  const eligible = BUILTIN_EXERCISES.filter(e=>exerciseMatchesPlace(e,prefs.place) && e.muscleGroup!=='cardio');
+  const eligible = BUILTIN_EXERCISES.filter(e=>exerciseMatchesPlace(e,prefs.place) && equipmentMatches(e,prefs.equipmentCategories) && e.muscleGroup!=='cardio');
   const filteredCandidates = candidates.filter(p=>
     !search.trim() || (p.title+' '+p.description+' '+GOAL_LABELS[p.goal])
       .toLocaleLowerCase('pt-BR').includes(search.toLocaleLowerCase('pt-BR').trim()));
@@ -108,6 +109,11 @@ export function GuidedBuilder() {
     patchPrefs({weekdays:prefs.weekdays.includes(day)
       ? prefs.weekdays.filter(x=>x!==day)
       : WEEKDAY_ORDER.filter(x=>x===day||prefs.weekdays.includes(x))});
+  }
+  function toggleEquipment(cat:EquipmentCategory) {
+    patchPrefs({equipmentCategories:prefs.equipmentCategories.includes(cat)
+      ? prefs.equipmentCategories.filter(x=>x!==cat)
+      : [...prefs.equipmentCategories,cat]});
   }
   function changeMode(mode:BuilderMode) {
     patchPrefs({modes:prefs.modes.includes(mode)
@@ -250,6 +256,16 @@ export function GuidedBuilder() {
             <div className="grid grid-cols-2 gap-2 mb-4">
               {PLACES.map(p=><Chip key={p} active={prefs.place===p}
                 onClick={()=>patchPrefs({place:p})}>{PLACE_LABELS[p]}</Chip>)}
+            </div>
+            <FieldTitle hint="Selecione os equipamentos que você realmente pode usar. Se nenhum for marcado, o app considera todos os compatíveis com o local.">
+              Equipamentos disponíveis
+            </FieldTitle>
+            <div className="flex flex-wrap gap-2 mb-4">
+              <Chip active={prefs.equipmentCategories.length===0}
+                onClick={()=>patchPrefs({equipmentCategories:[]})}>Todos do local</Chip>
+              {EQUIPMENT_ORDER.map(cat=><Chip key={cat}
+                active={prefs.equipmentCategories.includes(cat)}
+                onClick={()=>toggleEquipment(cat)}>{EQUIPMENT_LABELS[cat]}</Chip>)}
             </div>
             <FieldTitle>Experiência</FieldTitle>
             <div className="flex flex-wrap gap-2 mb-4">
