@@ -136,8 +136,6 @@ export function Home() {
 
       {user && active.length === 0 && <ImportLocalDataBanner userId={user.id} />}
 
-      <NutritionQuickCard compact />
-
       <div className="lg:grid lg:grid-cols-[1.5fr_1fr] lg:gap-4 lg:items-start">
         <div>
           {activeSessionId && (
@@ -359,6 +357,10 @@ export function Home() {
           )}
         </div>
       </div>
+
+      <section aria-label="Minha nutrição hoje" className="mb-4">
+        <NutritionQuickCard compact />
+      </section>
 
       <div
         className="grid grid-cols-2 gap-y-3 gap-x-2 lg:flex lg:items-center lg:justify-between lg:gap-2 py-4 mb-5"
