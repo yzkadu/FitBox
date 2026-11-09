@@ -34,6 +34,7 @@ export const EXTRA_EXERCISES: Exercise[] = [
   { id: 'ex-new-elevacaolateralnapoliaempe', name: 'Elevação lateral na polia em pé', muscleGroup: 'ombro', equipment: 'cabo' },
   { id: 'ex-new-pikepushup', name: 'Pike push-up', muscleGroup: 'ombro', equipment: 'peso corporal' },
   { id: 'ex-new-desenvolvimentopushpress', name: 'Desenvolvimento push press', muscleGroup: 'ombro', equipment: 'barra' },
+  { id: 'ex-new-roscadiretacomhalteres', name: 'Rosca direta com halteres', muscleGroup: 'biceps', equipment: 'halteres' },
   { id: 'ex-new-rosca21', name: 'Rosca 21', muscleGroup: 'biceps', equipment: 'barra' },
   { id: 'ex-new-roscabayesiannocabo', name: 'Rosca Bayesian no cabo', muscleGroup: 'biceps', equipment: 'cabo' },
   { id: 'ex-new-roscacomtoalha', name: 'Rosca com toalha', muscleGroup: 'biceps', equipment: 'toalha' },
