@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Dumbbell, ChevronRight, Trash2, CalendarDays, Bot, Check, X as XIcon, Sparkles, LayoutGrid, Wand2, PersonStanding, Search, ArrowRight, ChevronDown, ChevronUp } from 'lucide-react';
+import { Plus, Dumbbell, ChevronRight, Trash2, CalendarDays, Bot, Check, X as XIcon, Sparkles, LayoutGrid, Wand2, PersonStanding, Search, ArrowRight, ChevronDown, ChevronUp, Copy } from 'lucide-react';
 import { useAppData } from '../hooks/useAppData';
 import { useAuth } from '../hooks/useAuth';
 import { useProfile } from '../hooks/useProfile';
-import { createWorkout, deleteWorkout, setDaySchedule } from '../lib/actions';
+import { createWorkout, duplicateWorkout, deleteWorkout, setDaySchedule } from '../lib/actions';
 import { applyNewWorkoutProposal } from '../lib/aiProposalApply';
 import { buildCoachContext } from '../lib/aiCoachContext';
 import { askAiCoach, AiCoachError, type NewWorkoutProposal } from '../lib/aiCoach';
@@ -151,6 +151,7 @@ function WorkoutRow({
   confirming,
   onOpen,
   onAskDelete,
+  onDuplicate,
   onCancelDelete,
   onConfirmDelete,
 }: {
@@ -160,6 +161,7 @@ function WorkoutRow({
   confirming: boolean;
   onOpen: () => void;
   onAskDelete: () => void;
+  onDuplicate: () => void;
   onCancelDelete: () => void;
   onConfirmDelete: () => void;
 }) {
@@ -207,7 +209,12 @@ function WorkoutRow({
             </div>
             <ChevronRight size={20} style={{ color: 'var(--text-faint)' }} />
           </button>
-          <button onClick={onAskDelete} className="px-4 self-stretch flex items-center" style={{ color: 'var(--text-faint)' }}>
+          <button type="button" onClick={onDuplicate} aria-label={'Duplicar '+w.name}
+            title="Duplicar ficha" className="px-3 self-stretch flex items-center" style={{ color: 'var(--brand)' }}>
+            <Copy size={16} />
+          </button>
+          <button type="button" onClick={onAskDelete} aria-label={'Excluir '+w.name}
+            className="px-4 self-stretch flex items-center" style={{ color: 'var(--text-faint)' }}>
             <Trash2 size={16} />
           </button>
         </div>
@@ -234,7 +241,12 @@ function WorkoutRow({
           </div>
           <ChevronRight size={16} style={{ color: 'var(--text-faint)' }} />
         </button>
-        <button onClick={onAskDelete} className="px-3 self-stretch flex items-center" style={{ color: 'var(--text-faint)' }}>
+        <button type="button" onClick={onDuplicate} aria-label={'Duplicar '+w.name}
+          title="Duplicar ficha" className="px-3 self-stretch flex items-center" style={{ color: 'var(--brand)' }}>
+          <Copy size={14} />
+        </button>
+        <button type="button" onClick={onAskDelete} aria-label={'Excluir '+w.name}
+          className="px-3 self-stretch flex items-center" style={{ color: 'var(--text-faint)' }}>
           <Trash2 size={14} />
         </button>
       </div>
@@ -278,6 +290,11 @@ export function Workouts() {
   const matches = active.filter(w => w.name.toLocaleLowerCase('pt-BR').includes(workoutQuery.trim().toLocaleLowerCase('pt-BR')));
   const featuredWorkout = matches.find(w => w.id === featuredId) ?? matches[0] ?? null;
   const secondaryWorkouts = matches.filter(w => w.id !== featuredWorkout?.id);
+
+  function handleDuplicateWorkout(source: Workout) {
+    const copy=duplicateWorkout(source);
+    navigate('/treinos/'+copy.id);
+  }
 
   async function confirmWorkoutDelete(id:string) {
     if (deletingId) return;
@@ -665,6 +682,7 @@ export function Workouts() {
               lastUsed={lastUsedByWorkout.has(featuredWorkout.id) ? formatLastUsed(lastUsedByWorkout.get(featuredWorkout.id)!) : null}
               confirming={confirmDeleteId === featuredWorkout.id}
               onOpen={() => navigate(`/treinos/${featuredWorkout.id}`)}
+              onDuplicate={() => handleDuplicateWorkout(featuredWorkout)}
               onAskDelete={() => setConfirmDeleteId(featuredWorkout.id)}
               onCancelDelete={() => setConfirmDeleteId(null)}
               onConfirmDelete={() => {void confirmWorkoutDelete(featuredWorkout.id);}}
@@ -685,6 +703,7 @@ export function Workouts() {
               lastUsed={lastUsedByWorkout.has(w.id) ? formatLastUsed(lastUsedByWorkout.get(w.id)!) : null}
               confirming={confirmDeleteId === w.id}
               onOpen={() => navigate(`/treinos/${w.id}`)}
+              onDuplicate={() => handleDuplicateWorkout(w)}
               onAskDelete={() => setConfirmDeleteId(w.id)}
               onCancelDelete={() => setConfirmDeleteId(null)}
               onConfirmDelete={() => {void confirmWorkoutDelete(w.id);}}
