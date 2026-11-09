@@ -287,15 +287,23 @@ export async function updateWorkout(workoutId: string, patch: Partial<Pick<Worko
   }
 }
 
-export async function deleteWorkout(workoutId: string) {
-  store.update((d) => {
-    d.workouts = d.workouts.filter((w) => w.id !== workoutId);
-  });
-  const userId = requireUserId();
-  if (userId) {
+export async function deleteWorkout(workoutId: string): Promise<{ok:true}|{ok:false;error:string}> {
+  const userId=requireUserId();
+  if (!userId) return {ok:false,error:'Entre novamente para excluir a ficha.'};
+  try {
     await pendingWorkoutInserts.get(workoutId);
-    supabase.from('workouts').delete().eq('id', workoutId).then(logIfError('workouts.delete'));
+    await pendingWorkoutUpdates.get(workoutId);
+    if (store.getUserId()!==userId) return {ok:false,error:'A conta conectada mudou.'};
+    const {error}=await supabase.from('workouts').delete()
+      .eq('id',workoutId).eq('user_id',userId);
+    if (error) return {ok:false,error:'Não foi possível excluir a ficha no servidor: '+error.message};
+  } catch {
+    return {ok:false,error:'Falha de conexão. A ficha foi mantida.'};
   }
+  store.update((d) => {
+    d.workouts=d.workouts.filter(w=>w.id!==workoutId);
+  });
+  return {ok:true};
 }
 
 export function addExerciseToWorkout(
@@ -654,16 +662,25 @@ export async function discardSession(sessionId: string): Promise<{ok:true}|{ok:f
   return {ok:true};
 }
 
-export async function deleteSession(sessionId: string) {
-  store.update((d) => {
-    d.sessions = d.sessions.filter((s) => s.id !== sessionId);
-    if (d.activeSessionId === sessionId) d.activeSessionId = null;
-  });
-  const userId = requireUserId();
-  if (userId) {
+/** Exclusão do histórico só afeta o estado local quando a exclusão foi aceita. */
+export async function deleteSession(sessionId: string): Promise<{ok:true}|{ok:false;error:string}> {
+  const userId=requireUserId();
+  if (!userId) return {ok:false,error:'Entre novamente para excluir este registro.'};
+  try {
     await pendingSessionInserts.get(sessionId);
-    supabase.from('sessions').delete().eq('id', sessionId).then(logIfError('sessions.delete'));
+    await pendingSessionUpdates.get(sessionId);
+    if (store.getUserId()!==userId) return {ok:false,error:'A conta conectada mudou.'};
+    const {error}=await supabase.from('sessions').delete()
+      .eq('id',sessionId).eq('user_id',userId);
+    if (error) return {ok:false,error:'Não foi possível excluir no servidor: '+error.message};
+  } catch {
+    return {ok:false,error:'Falha de conexão. O registro foi mantido.'};
   }
+  store.update((d)=>{
+    d.sessions=d.sessions.filter(s=>s.id!==sessionId);
+    if (d.activeSessionId===sessionId) d.activeSessionId=null;
+  });
+  return {ok:true};
 }
 
 // ---------- Body measurements & photos ----------
