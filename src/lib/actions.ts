@@ -68,9 +68,10 @@ function syncWorkoutExercises(workoutId: string) {
         const workout = store.getSnapshot().workouts.find(w => w.id === workoutId);
         if (!workout) return;
         const exercises = JSON.parse(JSON.stringify(workout.exercises));
-        const { error } = await supabase.from('workouts')
-          .update({ exercises }).eq('id',workoutId).eq('user_id',userId);
-        if (error) {
+        const { data: saved, error } = await supabase.from('workouts')
+          .update({ exercises }).eq('id',workoutId).eq('user_id',userId)
+          .select('id').maybeSingle();
+        if (error || !saved) {
           syncFailed(syncKey, 'Falha ao salvar alterações da ficha. Tente sincronizar novamente.', async () => {
             syncWorkoutExercises(workoutId);
             await pendingWorkoutUpdates.get(workoutId);
@@ -121,9 +122,10 @@ function syncSessionExercises(sessionId: string) {
         // Congela os dados enviados para uma edição posterior não alterá-los
         // enquanto a requisição anterior ainda está em trânsito.
         const exercises = JSON.parse(JSON.stringify(current.exercises));
-        const { error } = await supabase.from('sessions')
-          .update({ exercises }).eq('id', sessionId).eq('user_id',userId);
-        if (error) {
+        const { data: saved, error } = await supabase.from('sessions')
+          .update({ exercises }).eq('id', sessionId).eq('user_id',userId)
+          .select('id').maybeSingle();
+        if (error || !saved) {
           syncFailed(syncKey, 'Falha ao salvar séries ou repetições. Tente sincronizar novamente.', async () => {
             syncSessionExercises(sessionId);
             await pendingSessionUpdates.get(sessionId);
@@ -556,12 +558,19 @@ export async function finishSession(
     .filter((se) => se.sets.length > 0);
 
   const userId = requireUserId();
-  if (userId) {
+  if (!userId) {
+    return { ok: false, error: 'Sua sessão de login expirou. Entre novamente antes de concluir.' };
+  }
+  try {
     await pendingSessionInserts.get(sessionId);
-    // A finalização precisa acontecer DEPOIS de todas as mudanças de série,
-    // não competir com atualizações assíncronas iniciadas a cada tecla.
+    // Aguarda todas as edições pendentes antes de gravar a finalização.
     await pendingSessionUpdates.get(sessionId);
-    const { error } = await supabase
+    if (store.getUserId() !== userId) {
+      return { ok: false, error: 'A conta conectada mudou. Reabra sua sessão de treino.' };
+    }
+    // UPDATE sem linha afetada não gera erro no PostgREST. Conferimos que a
+    // sessão existe de fato antes de registrar sucesso na interface.
+    const { data: saved, error } = await supabase
       .from('sessions')
       .update({
         finished_at: finishedAt,
@@ -570,11 +579,17 @@ export async function finishSession(
         rpe: rpe ?? null,
         proof_photo_data_url: proofPhotoDataUrl ?? null,
       })
-      .eq('id', sessionId);
-    if (error) {
-      console.error('Falha ao sincronizar (sessions.finish):', error);
-      return { ok: false, error: error.message };
+      .eq('id', sessionId)
+      .eq('user_id', userId)
+      .select('id')
+      .maybeSingle();
+    if (error || !saved) {
+      console.error('Falha ao sincronizar (sessions.finish):', error ?? 'Nenhuma sessão encontrada para atualização.');
+      return { ok: false, error: error?.message ?? 'A sessão ainda não existe no servidor. Reenvie os dados pendentes e tente novamente.' };
     }
+  } catch (error) {
+    console.error('Falha de conexão ao concluir sessão:', error);
+    return { ok: false, error: 'Falha de conexão ao concluir. O treino continua aberto para tentar novamente.' };
   }
 
   store.update((d) => {
