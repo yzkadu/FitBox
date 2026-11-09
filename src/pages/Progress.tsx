@@ -1,5 +1,4 @@
 import { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import type { ReactNode } from 'react';
 import {
   BarChart,
@@ -13,8 +12,9 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts';
-import { Target, Pencil, X, Flame, CalendarCheck, Scale, Activity, Apple, ChevronRight } from 'lucide-react';
+import { Target, Pencil, X, Flame, CalendarCheck, Scale, Activity } from 'lucide-react';
 import { useAppData } from '../hooks/useAppData';
+import { NutritionQuickCard } from '../components/NutritionQuickCard';
 import { useAuth } from '../hooks/useAuth';
 import { useProfile } from '../hooks/useProfile';
 import { getWeeklyFrequency, getCurrentStreakDays, getTotalSessionsThisMonth } from '../lib/stats';
@@ -291,7 +291,6 @@ function WeightGoalCard({
 }
 
 export function Progress() {
-  const navigate=useNavigate();
   const { sessions, measurements, cardioLogs, weeklySchedule, weightGoal } = useAppData();
   const { user } = useAuth();
   const [profile] = useProfile(user?.id);
@@ -366,6 +365,7 @@ export function Progress() {
           cardioLogs={cardioLogs}
           weeklySchedule={weeklySchedule}
         />
+        <NutritionQuickCard />
         <EmptyState title="Ainda sem dados" subtitle="Complete treinos e registre medidas para ver seus gráficos aqui." />
       </div>
     );
@@ -408,6 +408,8 @@ export function Progress() {
         cardioLogs={cardioLogs}
         weeklySchedule={weeklySchedule}
       />
+
+      <NutritionQuickCard />
 
       <Card className="mb-4">
         <p className="text-sm font-medium mb-3">Frequência de treino (10 semanas)</p>
