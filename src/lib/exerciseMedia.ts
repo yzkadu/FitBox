@@ -2,6 +2,7 @@ import type { Exercise } from '../types';
 import { HYROX_MEDIA, HYROX_EXPECTED_EXERCISES } from './hyroxMedia';
 import { EXPANDED_EXECUTION_MEDIA_IDS } from './exerciseMediaExpansion';
 import { NOVEMBER_EXERCISE_MEDIA_IDS } from './exerciseMediaNovember';
+import { ROUND_TWO_EXERCISE_MEDIA_IDS } from './exerciseMediaRoundTwo';
 
 /** Correspondências selecionadas e verificadas por ID de exercício com duas poses no
  * projeto livre yuhonas/free-exercise-db. Não inferir URLs apenas pelo nome:
@@ -133,7 +134,7 @@ export function exerciseMedia(exercise?: Exercise | null): ExerciseMediaResult |
   if (!exerciseId) return null;
   const curated = HYROX_MEDIA[exerciseId];
   if (curated) return curated;
-  const id = VERIFIED_MEDIA_IDS[exerciseId] ?? EXPANDED_EXECUTION_MEDIA_IDS[exerciseId] ?? NOVEMBER_EXERCISE_MEDIA_IDS[exerciseId];
+  const id = VERIFIED_MEDIA_IDS[exerciseId] ?? EXPANDED_EXECUTION_MEDIA_IDS[exerciseId] ?? NOVEMBER_EXERCISE_MEDIA_IDS[exerciseId] ?? ROUND_TWO_EXERCISE_MEDIA_IDS[exerciseId];
   if (!id) return null;
   const base = 'https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/';
   return {
