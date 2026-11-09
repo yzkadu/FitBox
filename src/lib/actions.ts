@@ -68,9 +68,10 @@ function syncWorkoutExercises(workoutId: string) {
         const workout = store.getSnapshot().workouts.find(w => w.id === workoutId);
         if (!workout) return;
         const exercises = JSON.parse(JSON.stringify(workout.exercises));
-        const { error } = await supabase.from('workouts')
-          .update({ exercises }).eq('id',workoutId).eq('user_id',userId);
-        if (error) {
+        const { data: saved, error } = await supabase.from('workouts')
+          .update({ exercises }).eq('id',workoutId).eq('user_id',userId)
+          .select('id').maybeSingle();
+        if (error || !saved) {
           syncFailed(syncKey, 'Falha ao salvar alterações da ficha. Tente sincronizar novamente.', async () => {
             syncWorkoutExercises(workoutId);
             await pendingWorkoutUpdates.get(workoutId);
@@ -121,9 +122,10 @@ function syncSessionExercises(sessionId: string) {
         // Congela os dados enviados para uma edição posterior não alterá-los
         // enquanto a requisição anterior ainda está em trânsito.
         const exercises = JSON.parse(JSON.stringify(current.exercises));
-        const { error } = await supabase.from('sessions')
-          .update({ exercises }).eq('id', sessionId).eq('user_id',userId);
-        if (error) {
+        const { data: saved, error } = await supabase.from('sessions')
+          .update({ exercises }).eq('id', sessionId).eq('user_id',userId)
+          .select('id').maybeSingle();
+        if (error || !saved) {
           syncFailed(syncKey, 'Falha ao salvar séries ou repetições. Tente sincronizar novamente.', async () => {
             syncSessionExercises(sessionId);
             await pendingSessionUpdates.get(sessionId);
@@ -285,15 +287,23 @@ export async function updateWorkout(workoutId: string, patch: Partial<Pick<Worko
   }
 }
 
-export async function deleteWorkout(workoutId: string) {
-  store.update((d) => {
-    d.workouts = d.workouts.filter((w) => w.id !== workoutId);
-  });
-  const userId = requireUserId();
-  if (userId) {
+export async function deleteWorkout(workoutId: string): Promise<{ok:true}|{ok:false;error:string}> {
+  const userId=requireUserId();
+  if (!userId) return {ok:false,error:'Entre novamente para excluir a ficha.'};
+  try {
     await pendingWorkoutInserts.get(workoutId);
-    supabase.from('workouts').delete().eq('id', workoutId).then(logIfError('workouts.delete'));
+    await pendingWorkoutUpdates.get(workoutId);
+    if (store.getUserId()!==userId) return {ok:false,error:'A conta conectada mudou.'};
+    const {error}=await supabase.from('workouts').delete()
+      .eq('id',workoutId).eq('user_id',userId);
+    if (error) return {ok:false,error:'Não foi possível excluir a ficha no servidor: '+error.message};
+  } catch {
+    return {ok:false,error:'Falha de conexão. A ficha foi mantida.'};
   }
+  store.update((d) => {
+    d.workouts=d.workouts.filter(w=>w.id!==workoutId);
+  });
+  return {ok:true};
 }
 
 export function addExerciseToWorkout(
@@ -556,12 +566,19 @@ export async function finishSession(
     .filter((se) => se.sets.length > 0);
 
   const userId = requireUserId();
-  if (userId) {
+  if (!userId) {
+    return { ok: false, error: 'Sua sessão de login expirou. Entre novamente antes de concluir.' };
+  }
+  try {
     await pendingSessionInserts.get(sessionId);
-    // A finalização precisa acontecer DEPOIS de todas as mudanças de série,
-    // não competir com atualizações assíncronas iniciadas a cada tecla.
+    // Aguarda todas as edições pendentes antes de gravar a finalização.
     await pendingSessionUpdates.get(sessionId);
-    const { error } = await supabase
+    if (store.getUserId() !== userId) {
+      return { ok: false, error: 'A conta conectada mudou. Reabra sua sessão de treino.' };
+    }
+    // UPDATE sem linha afetada não gera erro no PostgREST. Conferimos que a
+    // sessão existe de fato antes de registrar sucesso na interface.
+    const { data: saved, error } = await supabase
       .from('sessions')
       .update({
         finished_at: finishedAt,
@@ -570,11 +587,17 @@ export async function finishSession(
         rpe: rpe ?? null,
         proof_photo_data_url: proofPhotoDataUrl ?? null,
       })
-      .eq('id', sessionId);
-    if (error) {
-      console.error('Falha ao sincronizar (sessions.finish):', error);
-      return { ok: false, error: error.message };
+      .eq('id', sessionId)
+      .eq('user_id', userId)
+      .select('id')
+      .maybeSingle();
+    if (error || !saved) {
+      console.error('Falha ao sincronizar (sessions.finish):', error ?? 'Nenhuma sessão encontrada para atualização.');
+      return { ok: false, error: error?.message ?? 'A sessão ainda não existe no servidor. Reenvie os dados pendentes e tente novamente.' };
     }
+  } catch (error) {
+    console.error('Falha de conexão ao concluir sessão:', error);
+    return { ok: false, error: 'Falha de conexão ao concluir. O treino continua aberto para tentar novamente.' };
   }
 
   store.update((d) => {
@@ -614,28 +637,50 @@ export function updateSessionMeta(sessionId: string, patch: { durationSeconds?: 
   })();
 }
 
-export async function discardSession(sessionId: string) {
+/** Só remove a sessão da interface após a confirmação da exclusão online.
+ * Em caso de erro, a sessão continua disponível para tentar novamente.
+ */
+export async function discardSession(sessionId: string): Promise<{ok:true}|{ok:false;error:string}> {
+  const userId = requireUserId();
+  if (!userId) return {ok:false,error:'Entre novamente para descartar o treino.'};
+  try {
+    await pendingSessionInserts.get(sessionId);
+    await pendingSessionUpdates.get(sessionId);
+    if (store.getUserId() !== userId) {
+      return {ok:false,error:'A conta conectada mudou. Reabra o treino.'};
+    }
+    const {error} = await supabase.from('sessions')
+      .delete().eq('id',sessionId).eq('user_id',userId);
+    if (error) return {ok:false,error:'Não foi possível descartar no servidor: '+error.message};
+  } catch {
+    return {ok:false,error:'Falha de conexão. O treino foi mantido para você tentar novamente.'};
+  }
   store.update((d) => {
     d.sessions = d.sessions.filter((s) => s.id !== sessionId);
     if (d.activeSessionId === sessionId) d.activeSessionId = null;
   });
-  const userId = requireUserId();
-  if (userId) {
-    await pendingSessionInserts.get(sessionId);
-    supabase.from('sessions').delete().eq('id', sessionId).then(logIfError('sessions.delete'));
-  }
+  return {ok:true};
 }
 
-export async function deleteSession(sessionId: string) {
-  store.update((d) => {
-    d.sessions = d.sessions.filter((s) => s.id !== sessionId);
-    if (d.activeSessionId === sessionId) d.activeSessionId = null;
-  });
-  const userId = requireUserId();
-  if (userId) {
+/** Exclusão do histórico só afeta o estado local quando a exclusão foi aceita. */
+export async function deleteSession(sessionId: string): Promise<{ok:true}|{ok:false;error:string}> {
+  const userId=requireUserId();
+  if (!userId) return {ok:false,error:'Entre novamente para excluir este registro.'};
+  try {
     await pendingSessionInserts.get(sessionId);
-    supabase.from('sessions').delete().eq('id', sessionId).then(logIfError('sessions.delete'));
+    await pendingSessionUpdates.get(sessionId);
+    if (store.getUserId()!==userId) return {ok:false,error:'A conta conectada mudou.'};
+    const {error}=await supabase.from('sessions').delete()
+      .eq('id',sessionId).eq('user_id',userId);
+    if (error) return {ok:false,error:'Não foi possível excluir no servidor: '+error.message};
+  } catch {
+    return {ok:false,error:'Falha de conexão. O registro foi mantido.'};
   }
+  store.update((d)=>{
+    d.sessions=d.sessions.filter(s=>s.id!==sessionId);
+    if (d.activeSessionId===sessionId) d.activeSessionId=null;
+  });
+  return {ok:true};
 }
 
 // ---------- Body measurements & photos ----------
