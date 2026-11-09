@@ -22,3 +22,8 @@ jobs:
         run: npm ci
       - name: Typecheck and production build
         run: npm run build
+
+      - name: Catalog regression tests
+        run: npm test
+      - name: Lint
+        run: npm run lint

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { BottomNav } from './BottomNav';
+import { SyncNotice } from './SyncNotice';
 import { Sidebar } from './Sidebar';
 import { AccountSheet } from './AccountSheet';
 import { useAuth } from '../hooks/useAuth';
@@ -28,6 +29,7 @@ export function Layout() {
           <Outlet />
         </main>
         <BottomNav />
+        <SyncNotice />
       </div>
 
       <AccountSheet

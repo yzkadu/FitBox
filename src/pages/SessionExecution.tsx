@@ -203,6 +203,10 @@ export function SessionExecution() {
   }
 
   const anySetLogged = session.exercises.some((se) => se.sets.some((st) => st.completed || st.reps > 0));
+  const completedSets = session.exercises.reduce((sum,se)=>
+    sum + se.sets.filter(st=>st.completed).length,0);
+  const plannedSets = session.exercises.reduce((sum,se)=>sum + se.sets.length,0);
+  const progressPercent = plannedSets > 0 ? Math.round(completedSets/plannedSets*100) : 0;
 
   return (
     <div className="min-h-screen flex flex-col" style={{ background: 'var(--bg)' }}>
@@ -222,6 +226,17 @@ export function SessionExecution() {
         <Button onClick={handleFinish} className="!px-3 !py-1.5 !text-xs">
           Concluir
         </Button>
+      </div>
+
+      <div className="px-4 py-2 flex items-center gap-3" role="status"
+        aria-label={completedSets+' séries concluídas de '+plannedSets}>
+        <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{background:'var(--surface-3)'}}>
+          <div className="h-full rounded-full transition-all" style={{
+            background:'var(--brand)',width:progressPercent+'%'}}/>
+        </div>
+        <span className="text-xs font-medium tabular-nums shrink-0" style={{color:'var(--text-dim)'}}>
+          {completedSets}/{plannedSets} séries
+        </span>
       </div>
 
       {confirmDiscard && (

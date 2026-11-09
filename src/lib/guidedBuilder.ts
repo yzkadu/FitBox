@@ -168,8 +168,25 @@ export function createBuilderDraft(prefs: BuilderPrefs, mainId: string, inspirat
       title:day.name, emoji:day.emoji, exercises:safeExercises(day,prefs),
     })).find(d=>d.exercises.length>=3);
     if (candidate) {
-      workouts[workouts.length-1] = {...candidate,title:candidate.title+' · combinação'};
-      warnings.push('A combinação substituiu uma ficha por outra do segundo programa, sem somar os volumes dos dois planos.');
+      // Nunca substituir uma ficha existente sem a escolha explícita da pessoa.
+      // Acrescentar uma sessão separada somente quando há dia e recuperação
+      // disponíveis; reservar um dia livre para cardio caso esteja habilitado.
+      const strengthCap = Math.min(
+        prefs.level==='iniciante'?3:5,
+        Math.max(0, days.length - (prefs.modes.includes('cardio') ? 1 : 0)),
+      );
+      if (workouts.length < strengthCap) {
+        const ids=new Set(workouts.map(w=>w.exercises.map(e=>e.id).join('|')));
+        const signature=candidate.exercises.map(e=>e.id).join('|');
+        if (!ids.has(signature)) {
+          workouts.push({...candidate,title:candidate.title+' · segundo programa'});
+          warnings.push('O segundo programa foi acrescentado como ficha independente. Confira dias de recuperação e volume semanal antes de salvar.');
+        } else {
+          warnings.push('O segundo programa repetiria uma ficha já incluída; não adicionamos uma duplicata.');
+        }
+      } else {
+        warnings.push('Não há um dia de força disponível para combinar os dois programas sem sobrecarga. Mantivemos todas as fichas do programa-base; libere um dia de treino ou ajuste as modalidades.');
+      }
     } else {
       warnings.push('O segundo programa não tinha uma ficha compatível com este equipamento; mantivemos o programa-base.');
     }

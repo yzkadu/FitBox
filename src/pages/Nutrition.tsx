@@ -100,6 +100,28 @@ export function Nutrition() {
     fatG:acc.fatG+e.fatG,
   }),{caloriesKcal:0,proteinG:0,carbsG:0,fatG:0}),[entries]);
 
+  // Dias sem registro não devem entrar como consumo zero na média.
+  const weekSummary=useMemo(()=>{
+    const days=new Set<string>();
+    for (let offset=0;offset<7;offset++) days.add(dateShift(date,-offset));
+    const tracked=new Set<string>();
+    const sums={caloriesKcal:0,proteinG:0,carbsG:0,fatG:0};
+    nutritionEntries.forEach(item=>{
+      if (!days.has(item.date)) return;
+      tracked.add(item.date);
+      sums.caloriesKcal+=item.caloriesKcal;
+      sums.proteinG+=item.proteinG;
+      sums.carbsG+=item.carbsG;
+      sums.fatG+=item.fatG;
+    });
+    return {days:tracked.size,average:tracked.size?{
+      caloriesKcal:sums.caloriesKcal/tracked.size,
+      proteinG:sums.proteinG/tracked.size,
+      carbsG:sums.carbsG/tracked.size,
+      fatG:sums.fatG/tracked.size,
+    }:null};
+  },[nutritionEntries,date]);
+
   const estimate=4*(toNumber(protein)||0)+4*(toNumber(carbs)||0)+9*(toNumber(fat)||0);
   const caloriesUsed=explicitCalories?toNumber(calories):Math.round(estimate);
   const validEntry=label.trim().length>=1 && label.trim().length<=120 &&
@@ -250,6 +272,30 @@ export function Nutrition() {
           {MACROS.map(m=><MetricProgress key={m.key} label={m.label}
             consumed={totals[m.key]} target={nutritionGoal?.[m.key]??null} unit={m.unit}/>)}
         </div>
+      </Card>
+
+      <Card className="mb-4">
+        <div className="flex items-center justify-between gap-2 mb-2">
+          <p className="font-semibold">Tendência dos últimos 7 dias</p>
+          <span className="text-xs" style={{color:'var(--text-dim)'}}>{weekSummary.days}/7 dias registrados</span>
+        </div>
+        {weekSummary.average ? (
+          <>
+            <div className="grid grid-cols-2 gap-2">
+              {MACROS.map(m=>(
+                <div key={m.key} className="rounded-xl p-3" style={{background:'var(--surface-2)'}}>
+                  <p className="text-xs" style={{color:'var(--text-dim)'}}>{m.label}</p>
+                  <p className="text-sm font-semibold mt-1">{fmt(weekSummary.average![m.key])} {m.unit}/dia</p>
+                </div>
+              ))}
+            </div>
+            <p className="text-xs mt-2" style={{color:'var(--text-faint)'}}>
+              Média dos dias com registros, sem estimar o consumo dos dias não preenchidos.
+            </p>
+          </>
+        ) : <p className="text-sm" style={{color:'var(--text-dim)'}}>
+          Registre refeições para visualizar sua tendência semanal.
+        </p>}
       </Card>
 
       <Card className="mb-4">
