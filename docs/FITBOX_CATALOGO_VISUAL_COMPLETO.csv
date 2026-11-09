@@ -13,24 +13,24 @@ numero,id,nome,status,imagem
 12,ex-pullover-halter,"Pullover com halter",foto_acervo,
 13,ex-puxada-frente,"Puxada frente (pulley)",foto_acervo,
 14,ex-puxada-supinada,"Puxada supinada (pegada inversa)",foto_acervo,
-15,ex-puxada-maquina,"Puxada máquina (articulada)",foto_acervo,
+15,ex-puxada-maquina,"Puxada máquina (articulada)",guia_fornecido,/exercise-guide/01.webp
 16,ex-remada-curvada,"Remada curvada com barra",foto_acervo,
 17,ex-remada-cavalinho,"Remada cavalinho (T-bar)",foto_acervo,
 18,ex-remada-baixa,"Remada baixa (cabo)",foto_acervo,
 19,ex-remada-unilateral,"Remada unilateral com halter",foto_acervo,
 20,ex-remada-maquina,"Remada máquina (hammer)",foto_acervo,
 21,ex-barra-fixa,"Barra fixa",foto_acervo,
-22,ex-barra-fixa-assistida,"Barra fixa assistida (máquina)",foto_acervo,
+22,ex-barra-fixa-assistida,"Barra fixa assistida (máquina)",guia_fornecido,/exercise-guide/02.webp
 23,ex-levantamento-terra,"Levantamento terra",foto_acervo,
 24,ex-levantamento-terra-romeno,"Levantamento terra romeno",foto_acervo,
-25,ex-pull-over-maquina,"Pull-over máquina",foto_acervo,
+25,ex-pull-over-maquina,"Pull-over máquina",guia_fornecido,/exercise-guide/03.webp
 26,ex-desenvolvimento-militar,"Desenvolvimento militar (barra)",foto_acervo,
 27,ex-desenvolvimento-halter,"Desenvolvimento com halteres",foto_acervo,
 28,ex-desenvolvimento-arnold,"Desenvolvimento Arnold",foto_acervo,
 29,ex-desenvolvimento-maquina,"Desenvolvimento máquina",foto_acervo,
 30,ex-elevacao-lateral,"Elevação lateral com halteres",foto_acervo,
-31,ex-elevacao-lateral-cabo,"Elevação lateral no cabo",foto_acervo,
-32,ex-elevacao-lateral-maquina,"Elevação lateral máquina",foto_acervo,
+31,ex-elevacao-lateral-cabo,"Elevação lateral no cabo",guia_fornecido,/exercise-guide/04.webp
+32,ex-elevacao-lateral-maquina,"Elevação lateral máquina",guia_fornecido,/exercise-guide/05.webp
 33,ex-elevacao-frontal,"Elevação frontal com halteres",foto_acervo,
 34,ex-elevacao-frontal-barra,"Elevação frontal com barra",foto_acervo,
 35,ex-remada-alta,"Remada alta com barra",foto_acervo,
@@ -58,28 +58,28 @@ numero,id,nome,status,imagem
 57,ex-agachamento-smith,"Agachamento no Smith",foto_acervo,
 58,ex-agachamento-frontal,"Agachamento frontal",foto_acervo,
 59,ex-agachamento-hack,"Agachamento hack (hack squat)",foto_acervo,
-60,ex-agachamento-bulgaro,"Agachamento búlgaro",foto_acervo,
+60,ex-agachamento-bulgaro,"Agachamento búlgaro",guia_fornecido,/exercise-guide/06.webp
 61,ex-leg-press,"Leg press 45°",foto_acervo,
-62,ex-leg-press-horizontal,"Leg press horizontal",foto_acervo,
+62,ex-leg-press-horizontal,"Leg press horizontal",guia_fornecido,/exercise-guide/07.webp
 63,ex-cadeira-extensora,"Cadeira extensora",foto_acervo,
 64,ex-mesa-flexora,"Mesa flexora",foto_acervo,
 65,ex-cadeira-flexora,"Cadeira flexora (sentada)",foto_acervo,
 66,ex-stiff-barra,"Stiff com barra",foto_acervo,
 67,ex-stiff-halter,"Stiff com halteres",foto_acervo,
-68,ex-afundo,"Afundo (passada)",foto_acervo,
+68,ex-afundo,"Afundo (passada)",guia_fornecido,/exercise-guide/08.webp
 69,ex-passada-halteres,"Passada com halteres (caminhando)",foto_acervo,
 70,ex-cadeira-adutora,"Cadeira adutora",foto_acervo,
 71,ex-panturrilha-em-pe,"Panturrilha em pé",foto_acervo,
 72,ex-panturrilha-sentado,"Panturrilha sentado",foto_acervo,
 73,ex-panturrilha-leg-press,"Panturrilha no leg press",foto_acervo,
 74,ex-elevacao-pelvica,"Elevação pélvica (hip thrust) com barra",foto_acervo,
-75,ex-hip-thrust-maquina,"Hip thrust máquina",foto_acervo,
+75,ex-hip-thrust-maquina,"Hip thrust máquina",guia_fornecido,/exercise-guide/09.webp
 76,ex-gluteo-cabo,"Glúteo no cabo (coice)",foto_acervo,
 77,ex-abducao-quadril,"Abdução de quadril (máquina)",foto_acervo,
-78,ex-agachamento-sumo,"Agachamento sumô",foto_acervo,
-79,ex-stiff-unilateral,"Stiff unilateral com halter",foto_acervo,
+78,ex-agachamento-sumo,"Agachamento sumô",guia_fornecido,/exercise-guide/10.webp
+79,ex-stiff-unilateral,"Stiff unilateral com halter",guia_fornecido,/exercise-guide/11.webp
 80,ex-abdominal-supra,"Abdominal supra",foto_acervo,
-81,ex-elevacao-pernas,"Elevação de pernas (infra)",foto_acervo,
+81,ex-elevacao-pernas,"Elevação de pernas (infra)",guia_fornecido,/exercise-guide/12.webp
 82,ex-prancha,"Prancha",foto_acervo,
 83,ex-prancha-lateral,"Prancha lateral",foto_acervo,
 84,ex-abdominal-cabo,"Abdominal na polia alta",foto_acervo,
@@ -87,7 +87,7 @@ numero,id,nome,status,imagem
 86,ex-abdominal-bicicleta,"Abdominal bicicleta",foto_acervo,
 87,ex-rotacao-tronco-cabo,"Rotação de tronco no cabo",foto_acervo,
 88,ex-esteira,"Esteira",foto_acervo,
-89,ex-bike,"Bicicleta ergométrica",foto_acervo,
+89,ex-bike,"Bicicleta ergométrica",guia_fornecido,/exercise-guide/13.webp
 90,ex-eliptico,"Elíptico",foto_acervo,
 91,ex-corda,"Pular corda",foto_acervo,
 92,ex-remo-ergometrico,"Remo ergométrico",foto_acervo,
@@ -199,7 +199,7 @@ numero,id,nome,status,imagem
 198,ex-fedb-side-jackknife,"Abdominal jackknife lateral",foto_acervo,
 199,ex-hyrox-ski,"HYROX · SkiErg",foto_acervo,
 200,ex-hyrox-sled-push,"HYROX · Empurrar trenó",foto_acervo,
-201,ex-hyrox-sled-pull,"HYROX · Puxar trenó",foto_acervo,
+201,ex-hyrox-sled-pull,"HYROX · Puxar trenó",guia_fornecido,/exercise-guide/14.webp
 202,ex-hyrox-burpee,"Burpee com salto à frente",foto_acervo,
 203,ex-hyrox-farmers,"HYROX · Caminhada do fazendeiro",foto_acervo,
 204,ex-hyrox-sandbag,"HYROX · Afundo com sandbag",foto_acervo,
@@ -211,118 +211,118 @@ numero,id,nome,status,imagem
 210,ex-fedb-seated-palms-down-barbell-wrist-curl,"Rosca de punho sentado (pegada pronada) com barra",foto_acervo,
 211,ex-new-supinocompegadafechada,"Supino com pegada fechada",foto_acervo,
 212,ex-new-flexaocommaoselevadas,"Flexão com mãos elevadas",foto_acervo,
-213,ex-new-flexaoarqueiro,"Flexão arqueiro",foto_acervo,
+213,ex-new-flexaoarqueiro,"Flexão arqueiro",guia_fornecido,/exercise-guide/15.webp
 214,ex-new-crucifixounilateralnocabo,"Crucifixo unilateral no cabo",foto_acervo,
-215,ex-new-crossoveraltoparabaixo,"Crossover alto para baixo",foto_acervo,
+215,ex-new-crossoveraltoparabaixo,"Crossover alto para baixo",guia_fornecido,/exercise-guide/16.webp
 216,ex-new-pressdepeitonapoliaempe,"Press de peito na polia em pé",foto_acervo,
-217,ex-new-flexaocomtoquenoombro,"Flexão com toque no ombro",foto_acervo,
-218,ex-new-supinocomkettlebell,"Supino com kettlebell",foto_acervo,
+217,ex-new-flexaocomtoquenoombro,"Flexão com toque no ombro",guia_fornecido,/exercise-guide/17.webp
+218,ex-new-supinocomkettlebell,"Supino com kettlebell",guia_fornecido,/exercise-guide/18.webp
 219,ex-new-flexaonotrx,"Flexão no TRX",foto_acervo,
-220,ex-new-flexaocomresistenciaelastica,"Flexão com resistência elástica",foto_acervo,
+220,ex-new-flexaocomresistenciaelastica,"Flexão com resistência elástica",guia_fornecido,/exercise-guide/19.webp
 221,ex-new-remadacompeitoapoiadonobanco,"Remada com peito apoiado no banco",foto_acervo,
 222,ex-new-remadaunilateralnapoliabaixa,"Remada unilateral na polia baixa",foto_acervo,
-223,ex-new-barrafixaneutra,"Barra fixa neutra",foto_acervo,
+223,ex-new-barrafixaneutra,"Barra fixa neutra",guia_fornecido,/exercise-guide/20.webp
 224,ex-new-pulldownnapoliacomcorda,"Pulldown na polia com corda",foto_acervo,
 225,ex-new-remadaaustraliananotrx,"Remada australiana no TRX",foto_acervo,
 226,ex-new-remadaaltaparacostascomcorda,"Remada alta para costas com corda",foto_acervo,
-227,ex-new-remadapendlay,"Remada Pendlay",foto_acervo,
+227,ex-new-remadapendlay,"Remada Pendlay",guia_fornecido,/exercise-guide/21.webp
 228,ex-new-extensaolombar45graus,"Extensão lombar 45 graus",foto_acervo,
 229,ex-new-remadatbarcomapoiodepeito,"Remada T-Bar com apoio de peito",foto_acervo,
-230,ex-new-remadarenegade,"Remada renegade",foto_acervo,
-231,ex-new-elevacaoynobancoinclinado,"Elevação Y no banco inclinado",foto_acervo,
+230,ex-new-remadarenegade,"Remada renegade",guia_fornecido,/exercise-guide/22.webp
+231,ex-new-elevacaoynobancoinclinado,"Elevação Y no banco inclinado",guia_fornecido,/exercise-guide/23.webp
 232,ex-new-scaptioncomhalteres,"Scaption com halteres",foto_acervo,
-233,ex-new-desenvolvimentomeioajoelhado,"Desenvolvimento meio ajoelhado",foto_acervo,
-234,ex-new-desenvolvimentolandmineunilatera,"Desenvolvimento landmine unilateral",foto_acervo,
-235,ex-new-facepullcomrotacaoexterna,"Face pull com rotação externa",foto_acervo,
+233,ex-new-desenvolvimentomeioajoelhado,"Desenvolvimento meio ajoelhado",guia_fornecido,/exercise-guide/24.webp
+234,ex-new-desenvolvimentolandmineunilatera,"Desenvolvimento landmine unilateral",guia_fornecido,/exercise-guide/25.webp
+235,ex-new-facepullcomrotacaoexterna,"Face pull com rotação externa",guia_fornecido,/exercise-guide/26.webp
 236,ex-new-elevacaofrontalunilateralnocabo,"Elevação frontal unilateral no cabo",foto_acervo,
 237,ex-new-elevacaolateralinclinado,"Elevação lateral inclinado",foto_acervo,
-238,ex-new-elevacaolateralnapoliaempe,"Elevação lateral na polia em pé",foto_acervo,
-239,ex-new-pikepushup,"Pike push-up",foto_acervo,
+238,ex-new-elevacaolateralnapoliaempe,"Elevação lateral na polia em pé",guia_fornecido,/exercise-guide/27.webp
+239,ex-new-pikepushup,"Pike push-up",guia_fornecido,/exercise-guide/28.webp
 240,ex-new-desenvolvimentopushpress,"Desenvolvimento push press",foto_acervo,
-241,ex-new-rosca21,"Rosca 21",foto_acervo,
-242,ex-new-roscabayesiannocabo,"Rosca Bayesian no cabo",foto_acervo,
-243,ex-new-roscacomtoalha,"Rosca com toalha",foto_acervo,
-244,ex-new-roscaconcentradaembancoinclinado,"Rosca concentrada em banco inclinado",foto_acervo,
+241,ex-new-rosca21,"Rosca 21",guia_fornecido,/exercise-guide/29.webp
+242,ex-new-roscabayesiannocabo,"Rosca Bayesian no cabo",guia_fornecido,/exercise-guide/30.webp
+243,ex-new-roscacomtoalha,"Rosca com toalha",guia_fornecido,/exercise-guide/31.webp
+244,ex-new-roscaconcentradaembancoinclinado,"Rosca concentrada em banco inclinado",guia_fornecido,/exercise-guide/32.webp
 245,ex-new-roscanobancoinclinado,"Rosca no banco inclinado",foto_acervo,
 246,ex-new-roscainversanocabo,"Rosca inversa no cabo",foto_acervo,
 247,ex-new-roscamarteloalternada,"Rosca martelo alternada",foto_acervo,
-248,ex-new-roscapronadacombarraw,"Rosca pronada com barra W",foto_acervo,
-249,ex-new-roscacomelasticoempe,"Rosca com elástico em pé",foto_acervo,
-250,ex-new-roscaspiderunilateral,"Rosca spider unilateral",foto_acervo,
-251,ex-new-tricepscoicenocabo,"Tríceps coice no cabo",foto_acervo,
+248,ex-new-roscapronadacombarraw,"Rosca pronada com barra W",guia_fornecido,/exercise-guide/33.webp
+249,ex-new-roscacomelasticoempe,"Rosca com elástico em pé",guia_fornecido,/exercise-guide/34.webp
+250,ex-new-roscaspiderunilateral,"Rosca spider unilateral",guia_fornecido,/exercise-guide/35.webp
+251,ex-new-tricepscoicenocabo,"Tríceps coice no cabo",guia_fornecido,/exercise-guide/36.webp
 252,ex-new-tricepstestacomhalteres,"Tríceps testa com halteres",foto_acervo,
 253,ex-new-tricepsnapoliapegadainvertida,"Tríceps na polia pegada invertida",foto_acervo,
-254,ex-new-tricepsbancocompeselevados,"Tríceps banco com pés elevados",foto_acervo,
+254,ex-new-tricepsbancocompeselevados,"Tríceps banco com pés elevados",guia_fornecido,/exercise-guide/37.webp
 255,ex-new-extensaoacimadacabecaunilateral,"Extensão acima da cabeça unilateral",foto_acervo,
 256,ex-new-tricepsnacordaacimadacabeca,"Tríceps na corda acima da cabeça",foto_acervo,
 257,ex-new-tricepsbarravnopulley,"Tríceps barra V no pulley",foto_acervo,
-258,ex-new-extensaodetricepscomelastico,"Extensão de tríceps com elástico",foto_acervo,
-259,ex-new-supinofechadocomhalteres,"Supino fechado com halteres",foto_acervo,
+258,ex-new-extensaodetricepscomelastico,"Extensão de tríceps com elástico",guia_fornecido,/exercise-guide/38.webp
+259,ex-new-supinofechadocomhalteres,"Supino fechado com halteres",guia_fornecido,/exercise-guide/39.webp
 260,ex-new-tricepsemargolas,"Tríceps em argolas",foto_acervo,
-261,ex-new-agachamentopausa,"Agachamento pausa",foto_acervo,
-262,ex-new-agachamentocaixa,"Agachamento caixa",foto_acervo,
-263,ex-new-agachamentolandmine,"Agachamento landmine",foto_acervo,
-264,ex-new-stepuplateral,"Step-up lateral",foto_acervo,
-265,ex-new-cossacksquat,"Cossack squat",foto_acervo,
-266,ex-new-legpressunilateral,"Leg press unilateral",foto_acervo,
-267,ex-new-extensoracompausa,"Extensora com pausa",foto_acervo,
-268,ex-new-wallsitisometrico,"Wall sit isométrico",foto_acervo,
+261,ex-new-agachamentopausa,"Agachamento pausa",guia_fornecido,/exercise-guide/40.webp
+262,ex-new-agachamentocaixa,"Agachamento caixa",guia_fornecido,/exercise-guide/41.webp
+263,ex-new-agachamentolandmine,"Agachamento landmine",guia_fornecido,/exercise-guide/42.webp
+264,ex-new-stepuplateral,"Step-up lateral",guia_fornecido,/exercise-guide/43.webp
+265,ex-new-cossacksquat,"Cossack squat",guia_fornecido,/exercise-guide/44.webp
+266,ex-new-legpressunilateral,"Leg press unilateral",guia_fornecido,/exercise-guide/45.webp
+267,ex-new-extensoracompausa,"Extensora com pausa",guia_fornecido,/exercise-guide/46.webp
+268,ex-new-wallsitisometrico,"Wall sit isométrico",guia_fornecido,/exercise-guide/47.webp
 269,ex-new-agachamentocomsalto,"Agachamento com salto",foto_acervo,
-270,ex-new-afundoreverso,"Afundo reverso",foto_acervo,
-271,ex-new-nordiccurlassistido,"Nordic curl assistido",foto_acervo,
-272,ex-new-passadalateral,"Passada lateral",foto_acervo,
-273,ex-new-glutebridgenosolo,"Glute bridge no solo",foto_acervo,
-274,ex-new-hipthrustunilateral,"Hip thrust unilateral",foto_acervo,
-275,ex-new-abducaolateraldeitada,"Abdução lateral deitada",foto_acervo,
+270,ex-new-afundoreverso,"Afundo reverso",guia_fornecido,/exercise-guide/48.webp
+271,ex-new-nordiccurlassistido,"Nordic curl assistido",guia_fornecido,/exercise-guide/49.webp
+272,ex-new-passadalateral,"Passada lateral",guia_fornecido,/exercise-guide/50.webp
+273,ex-new-glutebridgenosolo,"Glute bridge no solo",guia_fornecido,/exercise-guide/51.webp
+274,ex-new-hipthrustunilateral,"Hip thrust unilateral",guia_fornecido,/exercise-guide/52.webp
+275,ex-new-abducaolateraldeitada,"Abdução lateral deitada",guia_fornecido,/exercise-guide/53.webp
 276,ex-new-extensaodequadrilemquatroapoios,"Extensão de quadril em quatro apoios",foto_acervo,
 277,ex-new-pullthroughnocabo,"Pull through no cabo",foto_acervo,
-278,ex-new-pontecomminiband,"Ponte com miniband",foto_acervo,
-279,ex-new-frogpump,"Frog pump",foto_acervo,
+278,ex-new-pontecomminiband,"Ponte com miniband",guia_fornecido,/exercise-guide/54.webp
+279,ex-new-frogpump,"Frog pump",guia_fornecido,/exercise-guide/55.webp
 280,ex-new-passadaparatrascomhalteres,"Passada para trás com halteres",foto_acervo,
-281,ex-new-elevacaopelvicanotrx,"Elevação pélvica no TRX",foto_acervo,
+281,ex-new-elevacaopelvicanotrx,"Elevação pélvica no TRX",guia_fornecido,/exercise-guide/56.webp
 282,ex-new-caminhadalateralcomminiband,"Caminhada lateral com miniband",foto_acervo,
-283,ex-new-abdominalcanivete,"Abdominal canivete",foto_acervo,
-284,ex-new-hollowhold,"Hollow hold",foto_acervo,
-285,ex-new-pranchacomtoquenoombro,"Prancha com toque no ombro",foto_acervo,
-286,ex-new-pranchacomelevacaodeperna,"Prancha com elevação de perna",foto_acervo,
+283,ex-new-abdominalcanivete,"Abdominal canivete",guia_fornecido,/exercise-guide/57.webp
+284,ex-new-hollowhold,"Hollow hold",guia_fornecido,/exercise-guide/58.webp
+285,ex-new-pranchacomtoquenoombro,"Prancha com toque no ombro",guia_fornecido,/exercise-guide/59.webp
+286,ex-new-pranchacomelevacaodeperna,"Prancha com elevação de perna",guia_fornecido,/exercise-guide/60.webp
 287,ex-new-deadbugalternado,"Dead bug alternado",foto_acervo,
-288,ex-new-birddog,"Bird dog",foto_acervo,
+288,ex-new-birddog,"Bird dog",guia_fornecido,/exercise-guide/61.webp
 289,ex-new-pallofpress,"Pallof press",foto_acervo,
 290,ex-new-abwheelajoelhado,"Ab wheel ajoelhado",foto_acervo,
 291,ex-new-russiantwistcomanilha,"Russian twist com anilha",foto_acervo,
-292,ex-new-suitcasecarryunilateral,"Suitcase carry unilateral",foto_acervo,
-293,ex-new-pranchacomdeslocamento,"Prancha com deslocamento",foto_acervo,
-294,ex-new-elevacaodejoelhosnabarra,"Elevação de joelhos na barra",foto_acervo,
+292,ex-new-suitcasecarryunilateral,"Suitcase carry unilateral",guia_fornecido,/exercise-guide/62.webp
+293,ex-new-pranchacomdeslocamento,"Prancha com deslocamento",guia_fornecido,/exercise-guide/63.webp
+294,ex-new-elevacaodejoelhosnabarra,"Elevação de joelhos na barra",guia_fornecido,/exercise-guide/64.webp
 295,ex-new-skiergintervalado,"SkiErg intervalado",foto_acervo,
 296,ex-new-corridaintervaladanaesteira,"Corrida intervalada na esteira",foto_acervo,
-297,ex-new-corridaleveaoarlivre,"Corrida leve ao ar livre",foto_acervo,
-298,ex-new-caminhadaeminclinacao,"Caminhada em inclinação",foto_acervo,
-299,ex-new-airbikeintervalada,"Air bike intervalada",foto_acervo,
-300,ex-new-assaultbikemoderada,"Assault bike moderada",foto_acervo,
+297,ex-new-corridaleveaoarlivre,"Corrida leve ao ar livre",guia_fornecido,/exercise-guide/65.webp
+298,ex-new-caminhadaeminclinacao,"Caminhada em inclinação",guia_fornecido,/exercise-guide/66.webp
+299,ex-new-airbikeintervalada,"Air bike intervalada",guia_fornecido,/exercise-guide/67.webp
+300,ex-new-assaultbikemoderada,"Assault bike moderada",guia_fornecido,/exercise-guide/68.webp
 301,ex-new-cordanavalemondas,"Corda naval em ondas",foto_acervo,
 302,ex-new-remoergometricointervalado,"Remo ergométrico intervalado",foto_acervo,
 303,ex-new-sledpushtecnico,"Sled push técnico",foto_acervo,
 304,ex-new-burpeebroadjump,"Burpee broad jump",foto_acervo,
-305,ex-new-shuttlerun,"Shuttle run",foto_acervo,
+305,ex-new-shuttlerun,"Shuttle run",guia_fornecido,/exercise-guide/69.webp
 306,ex-new-subidadeescadas,"Subida de escadas",foto_acervo,
-307,ex-new-mobilidadedequadril9090,"Mobilidade de quadril 90/90",foto_acervo,
-308,ex-new-alongamentodeflexordequadril,"Alongamento de flexor de quadril",foto_acervo,
-309,ex-new-alongamentodeposteriorcomfaixa,"Alongamento de posterior com faixa",foto_acervo,
-310,ex-new-rotacaotoracicaemquatroapoios,"Rotação torácica em quatro apoios",foto_acervo,
-311,ex-new-mobilidadedetornozelonaparede,"Mobilidade de tornozelo na parede",foto_acervo,
-312,ex-new-alongamentodepeitoralnaporta,"Alongamento de peitoral na porta",foto_acervo,
-313,ex-new-worldsgreateststretch,"World's greatest stretch",foto_acervo,
-314,ex-new-agachamentoprofundosustentado,"Agachamento profundo sustentado",foto_acervo,
-315,ex-new-panturrilhaempeunilateral,"Panturrilha em pé unilateral",foto_acervo,
-316,ex-new-panturrilhanostep,"Panturrilha no step",foto_acervo,
-317,ex-new-extensaodepunhos,"Extensão de punhos",foto_acervo,
-318,ex-new-flexaodepunhos,"Flexão de punhos",foto_acervo,
-319,ex-new-pronacaoesupinacaodeantebraco,"Pronação e supinação de antebraço",foto_acervo,
-320,ex-new-farmercarryunilateral,"Farmer carry unilateral",foto_acervo,
-321,ex-new-roscapunhoreversa,"Rosca punho reversa",foto_acervo,
-322,ex-new-deadhangnabarra,"Dead hang na barra",foto_acervo,
-323,ex-new-facepullnoelastico,"Face pull no elástico",foto_acervo,
-324,ex-new-pushpresscomhalteres,"Push press com halteres",foto_acervo,
-325,ex-new-flexaodiamante,"Flexão diamante",foto_acervo,
-326,ex-new-agachamentocomminiband,"Agachamento com miniband",foto_acervo,
+307,ex-new-mobilidadedequadril9090,"Mobilidade de quadril 90/90",guia_fornecido,/exercise-guide/70.webp
+308,ex-new-alongamentodeflexordequadril,"Alongamento de flexor de quadril",guia_fornecido,/exercise-guide/71.webp
+309,ex-new-alongamentodeposteriorcomfaixa,"Alongamento de posterior com faixa",guia_fornecido,/exercise-guide/72.webp
+310,ex-new-rotacaotoracicaemquatroapoios,"Rotação torácica em quatro apoios",guia_fornecido,/exercise-guide/73.webp
+311,ex-new-mobilidadedetornozelonaparede,"Mobilidade de tornozelo na parede",guia_fornecido,/exercise-guide/74.webp
+312,ex-new-alongamentodepeitoralnaporta,"Alongamento de peitoral na porta",guia_fornecido,/exercise-guide/75.webp
+313,ex-new-worldsgreateststretch,"World's greatest stretch",guia_fornecido,/exercise-guide/76.webp
+314,ex-new-agachamentoprofundosustentado,"Agachamento profundo sustentado",guia_fornecido,/exercise-guide/77.webp
+315,ex-new-panturrilhaempeunilateral,"Panturrilha em pé unilateral",guia_fornecido,/exercise-guide/78.webp
+316,ex-new-panturrilhanostep,"Panturrilha no step",guia_fornecido,/exercise-guide/79.webp
+317,ex-new-extensaodepunhos,"Extensão de punhos",guia_fornecido,/exercise-guide/80.webp
+318,ex-new-flexaodepunhos,"Flexão de punhos",guia_fornecido,/exercise-guide/81.webp
+319,ex-new-pronacaoesupinacaodeantebraco,"Pronação e supinação de antebraço",guia_fornecido,/exercise-guide/82.webp
+320,ex-new-farmercarryunilateral,"Farmer carry unilateral",guia_fornecido,/exercise-guide/83.webp
+321,ex-new-roscapunhoreversa,"Rosca punho reversa",guia_fornecido,/exercise-guide/84.webp
+322,ex-new-deadhangnabarra,"Dead hang na barra",guia_fornecido,/exercise-guide/85.webp
+323,ex-new-facepullnoelastico,"Face pull no elástico",guia_fornecido,/exercise-guide/86.webp
+324,ex-new-pushpresscomhalteres,"Push press com halteres",guia_fornecido,/exercise-guide/87.webp
+325,ex-new-flexaodiamante,"Flexão diamante",guia_fornecido,/exercise-guide/88.webp
+326,ex-new-agachamentocomminiband,"Agachamento com miniband",guia_fornecido,/exercise-guide/89.webp
 327,ex-new-pranchafrontalcomapoiodecotovelo,"Prancha frontal com apoio de cotovelos",foto_acervo,
