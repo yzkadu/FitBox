@@ -629,16 +629,29 @@ export function updateSessionMeta(sessionId: string, patch: { durationSeconds?: 
   })();
 }
 
-export async function discardSession(sessionId: string) {
+/** Só remove a sessão da interface após a confirmação da exclusão online.
+ * Em caso de erro, a sessão continua disponível para tentar novamente.
+ */
+export async function discardSession(sessionId: string): Promise<{ok:true}|{ok:false;error:string}> {
+  const userId = requireUserId();
+  if (!userId) return {ok:false,error:'Entre novamente para descartar o treino.'};
+  try {
+    await pendingSessionInserts.get(sessionId);
+    await pendingSessionUpdates.get(sessionId);
+    if (store.getUserId() !== userId) {
+      return {ok:false,error:'A conta conectada mudou. Reabra o treino.'};
+    }
+    const {error} = await supabase.from('sessions')
+      .delete().eq('id',sessionId).eq('user_id',userId);
+    if (error) return {ok:false,error:'Não foi possível descartar no servidor: '+error.message};
+  } catch {
+    return {ok:false,error:'Falha de conexão. O treino foi mantido para você tentar novamente.'};
+  }
   store.update((d) => {
     d.sessions = d.sessions.filter((s) => s.id !== sessionId);
     if (d.activeSessionId === sessionId) d.activeSessionId = null;
   });
-  const userId = requireUserId();
-  if (userId) {
-    await pendingSessionInserts.get(sessionId);
-    supabase.from('sessions').delete().eq('id', sessionId).then(logIfError('sessions.delete'));
-  }
+  return {ok:true};
 }
 
 export async function deleteSession(sessionId: string) {
