@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { clearSyncStatus } from './lib/syncStatus';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Dumbbell } from 'lucide-react';
 import { Layout } from './components/Layout';
@@ -45,6 +46,7 @@ export default function App() {
 
   useEffect(() => {
     if (!session) {
+      clearSyncStatus();
       store.clear();
       setDataReady(false);
       setDataError('');
