@@ -85,7 +85,7 @@ export function ExerciseGuide({ exercise, compact = false }: { exercise?: Exerci
         </div>
         <span className="text-[10px] rounded-full px-2 py-1 shrink-0 font-semibold"
           style={{ background: 'var(--brand-dim)', color: 'var(--brand)' }}>
-          {images ? (images.second ? '2 fotos reais' : 'Foto real') : 'Sem foto validada'}
+          {images ? (images.kind === 'ilustracao' ? 'Ilustração do exercício' : images.second ? '2 fotos reais' : 'Foto real') : 'Sem foto validada'}
         </span>
       </div>
 
@@ -127,19 +127,21 @@ export function ExerciseGuide({ exercise, compact = false }: { exercise?: Exerci
                     style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
                     <div className={compact ? 'h-[130px] sm:h-[162px]' : 'h-[172px] sm:h-[205px]'}>
                       <ExercisePhoto src={src}
-                        alt={exercise.name + ' — fotografia real ' + (index + 1)}/>
+                        alt={exercise.name + (images.kind === 'ilustracao' ? ' — ilustração do movimento' : ' — fotografia real ' + (index + 1))}/>
                     </div>
                     <p className="text-[10px] py-1.5 text-center"
                       style={{ color: 'var(--text-faint)' }}>
-                      {images.second ? 'Posição ' + (index + 1) : 'Foto real do exercício'}
+                      {images.kind === 'ilustracao' ? 'Ilustração de execução' : images.second ? 'Posição ' + (index + 1) : 'Foto real do exercício'}
                     </p>
                   </div>
                 ))}
               </div>
               <p className="text-[10px] leading-relaxed" style={{ color: 'var(--text-faint)' }}>
-                {images.second
-                  ? 'Duas fotografias do exercício; não são animação. Confira também o passo a passo.'
-                  : 'Fotografia real mostrando uma posição do exercício. Para executar o movimento completo, siga as instruções abaixo.'}
+                {images.kind === 'ilustracao'
+                  ? 'Representação ilustrada de uma posição do exercício. Consulte o passo a passo e ajuste a execução ao seu nível.'
+                  : images.second
+                    ? 'Duas fotografias do exercício; não são animação. Confira também o passo a passo.'
+                    : 'Fotografia real mostrando uma posição do exercício. Para executar o movimento completo, siga as instruções abaixo.'}
               </p>
             </>
           ) : (
@@ -248,7 +250,7 @@ export function ExerciseGuide({ exercise, compact = false }: { exercise?: Exerci
           <p className="text-[10px]" style={{ color: 'var(--text-faint)' }}>
             {images ? images.credit + ' ' : 'Ainda não há demonstração de execução revisada para esta variação. '}
             A técnica deve ser adaptada ao seu nível e às orientações profissionais.
-            {images && (
+            {images?.kind === 'foto' && (
               <a className="underline ml-1" href={images.sourceUrl ?? 'https://github.com/yuhonas/free-exercise-db'}
                 target="_blank" rel="noopener noreferrer">Ver fotografia original e licença</a>
             )}

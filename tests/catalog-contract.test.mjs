@@ -7,6 +7,7 @@ const exercises = file('src/lib/exercises.ts');
 const extra = file('src/lib/extraExercises.ts');
 const idPattern = /\bid:\s*'([^']+)',\s*name:\s*'(?:\\'|[^']+)+'/g;
 const ids = [...exercises.matchAll(idPattern), ...extra.matchAll(idPattern)].map(x=>x[1]);
+const idsAll=ids;
 
 test('catálogo: IDs de exercício devem ser únicos e estáveis',()=>{
   assert.ok(ids.length > 300, 'catálogo inesperadamente pequeno');
@@ -38,4 +39,17 @@ test('rotas essenciais continuam no aplicativo',()=>{
   for(const route of ['/treinos','/montador','/programas','/historico','/evolucao','/nutricao','/cardio']){
     assert.ok(app.includes('path="'+route+'"') || app.includes("path='"+route+"'"),'rota ausente: '+route);
   }
+});
+
+test('guia de peito: 40 imagens referenciam exercícios existentes sem duplicatas',()=>{
+  const guide=file('src/lib/chestIllustrationMedia.ts');
+  const array=guide.match(/export const CHEST_GUIDE_IDS = (\[[\s\S]*?\]) as const;/);
+  assert.ok(array,'manifest de peito não encontrado');
+  const ids=JSON.parse(array[1]);
+  assert.equal(ids.length,40,'devem existir exatamente 40 painéis de peito');
+  assert.equal(new Set(ids).size,40,'imagem de peito duplicada');
+  for(const id of ids) assert.ok(new Set(idsAll).has(id),'ID de peito não cadastrado: '+id);
+  assert.ok(guide.includes('import.meta.glob'),'o carregamento condicional dos assets foi removido');
+  assert.ok(file('src/lib/exerciseMedia.ts').includes('getChestIllustration(exerciseId)'),
+    'o novo guia não está vinculado ao resolver de mídias');
 });
