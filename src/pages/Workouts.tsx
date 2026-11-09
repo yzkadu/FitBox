@@ -256,6 +256,8 @@ export function Workouts() {
   const [name, setName] = useState('');
   const [emoji, setEmoji] = useState<string>(ICON_KEYS[0]);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [deleteError,setDeleteError] = useState('');
+  const [deletingId,setDeletingId] = useState<string | null>(null);
 
   const [iaPrompt, setIaPrompt] = useState('');
   const [iaLoading, setIaLoading] = useState(false);
@@ -276,6 +278,16 @@ export function Workouts() {
   const matches = active.filter(w => w.name.toLocaleLowerCase('pt-BR').includes(workoutQuery.trim().toLocaleLowerCase('pt-BR')));
   const featuredWorkout = matches.find(w => w.id === featuredId) ?? matches[0] ?? null;
   const secondaryWorkouts = matches.filter(w => w.id !== featuredWorkout?.id);
+
+  async function confirmWorkoutDelete(id:string) {
+    if (deletingId) return;
+    setDeletingId(id);
+    setDeleteError('');
+    const result=await deleteWorkout(id);
+    setDeletingId(null);
+    if (result.ok) setConfirmDeleteId(null);
+    else setDeleteError(result.error);
+  }
 
   function resetIaState() {
     setIaPrompt('');
@@ -373,6 +385,11 @@ export function Workouts() {
         </div>
       </div>
 
+      {deleteError && <p role="alert" className="text-xs rounded-xl p-3 mb-3"
+        style={{color:'var(--danger)',background:'var(--surface-2)'}}>{deleteError}</p>}
+      {deletingId && <p role="status" className="text-xs mb-3" style={{color:'var(--text-dim)'}}>
+        Confirmando exclusão no servidor...
+      </p>}
       <section className="mb-5" aria-label="Como começar a treinar">
         <div className="mb-3">
           <p className="text-xs font-semibold uppercase tracking-widest" style={{color:'var(--brand)'}}>Comece por aqui</p>
@@ -650,10 +667,7 @@ export function Workouts() {
               onOpen={() => navigate(`/treinos/${featuredWorkout.id}`)}
               onAskDelete={() => setConfirmDeleteId(featuredWorkout.id)}
               onCancelDelete={() => setConfirmDeleteId(null)}
-              onConfirmDelete={() => {
-                deleteWorkout(featuredWorkout.id);
-                setConfirmDeleteId(null);
-              }}
+              onConfirmDelete={() => {void confirmWorkoutDelete(featuredWorkout.id);}}
             />
           )}
 
@@ -673,10 +687,7 @@ export function Workouts() {
               onOpen={() => navigate(`/treinos/${w.id}`)}
               onAskDelete={() => setConfirmDeleteId(w.id)}
               onCancelDelete={() => setConfirmDeleteId(null)}
-              onConfirmDelete={() => {
-                deleteWorkout(w.id);
-                setConfirmDeleteId(null);
-              }}
+              onConfirmDelete={() => {void confirmWorkoutDelete(w.id);}}
             />
           ))}
         </div>
