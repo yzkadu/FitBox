@@ -1,4 +1,5 @@
 import type { Exercise } from '../types';
+import { getChestIllustration } from './chestIllustrationMedia';
 import { HYROX_MEDIA, HYROX_EXPECTED_EXERCISES } from './hyroxMedia';
 import { EXPANDED_EXECUTION_MEDIA_IDS } from './exerciseMediaExpansion';
 import { NOVEMBER_EXERCISE_MEDIA_IDS } from './exerciseMediaNovember';
@@ -125,13 +126,22 @@ export interface ExerciseMediaResult {
   first: string;
   second?: string;
   sourceId: string;
-  kind: 'foto';
+  kind: 'foto' | 'ilustracao';
   credit: string;
   sourceUrl?: string;
 }
 export function exerciseMedia(exercise?: Exercise | null): ExerciseMediaResult | null {
   const exerciseId = exercise?.id;
   if (!exerciseId) return null;
+  const chestIllustration = getChestIllustration(exerciseId);
+  if (chestIllustration) {
+    return {
+      first: chestIllustration,
+      sourceId: exerciseId,
+      kind: 'ilustracao',
+      credit: 'Ilustração do guia visual de execução fornecido pelo projeto FitBox.',
+    };
+  }
   const curated = HYROX_MEDIA[exerciseId];
   if (curated) return curated;
   const id = VERIFIED_MEDIA_IDS[exerciseId] ?? EXPANDED_EXECUTION_MEDIA_IDS[exerciseId] ?? NOVEMBER_EXERCISE_MEDIA_IDS[exerciseId] ?? ROUND_TWO_EXERCISE_MEDIA_IDS[exerciseId];
