@@ -49,7 +49,8 @@ test('guia de peito: 40 imagens referenciam exercícios existentes sem duplicata
   assert.equal(ids.length,40,'devem existir exatamente 40 painéis de peito');
   assert.equal(new Set(ids).size,40,'imagem de peito duplicada');
   for(const id of ids) assert.ok(new Set(idsAll).has(id),'ID de peito não cadastrado: '+id);
-  assert.ok(guide.includes('import.meta.glob'),'o carregamento condicional dos assets foi removido');
+  assert.ok(guide.includes('SPRITE_PATH') && guide.includes('positions.get(exerciseId)'),
+    'o atlas instalado não está ligado ao ID do exercício');
   assert.ok(file('src/lib/exerciseMedia.ts').includes('getChestIllustration(exerciseId)'),
     'o novo guia não está vinculado ao resolver de mídias');
 });

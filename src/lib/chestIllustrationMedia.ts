@@ -1,9 +1,6 @@
-/**
- * 40 painéis de peito fornecidos pelo usuário (8 páginas × 5 exercícios).
- * Uma imagem por exercício, já separada em `fitbox_peito_40_exercicios.zip`.
- * As imagens devem ser importadas em src/assets/exercise-guide/chest/.
- * O glob permite liberar automaticamente cada ilustração só quando o arquivo
- * existe no build — evita URLs 404 durante uma integração parcial.
+/** 40 quadros ilustrados de peito fornecidos pelo usuário; ordem fixa de 5 colunas × 8 linhas.
+ * A imagem real foi integrada como arquivo binário em public/exercise-guide/chest/sprite.webp.
+ * IDs existentes são preservados e nenhuma foto externa é alterada.
  */
 export const CHEST_GUIDE_IDS = [
   "ex-supino-reto-barra",
@@ -47,23 +44,17 @@ export const CHEST_GUIDE_IDS = [
   "ex-new-flexaonotrx",
   "ex-new-flexaocomresistenciaelastica"
 ] as const;
-const sourceAssets = import.meta.glob('../assets/exercise-guide/chest/*.webp', {
-  eager: true,
-  query: '?url',
-  import: 'default',
-}) as Record<string, string>;
+const SPRITE_PATH = '/exercise-guide/chest/sprite.webp';
+const positions = new Map<string, number>(
+  CHEST_GUIDE_IDS.map((id, index) => [id, index]),
+);
 
-const availableImages = new Map<string, string>();
-for (const [path, url] of Object.entries(sourceAssets)) {
-  const file = path.split('/').pop();
-  if (file?.endsWith('.webp')) availableImages.set(file.slice(0, -5), url);
+/** URL real do arquivo + índice do quadro na imagem compartilhada. */
+export function getChestIllustration(exerciseId: string): { src: string; index: number } | null {
+  const index = positions.get(exerciseId);
+  return index === undefined ? null : { src: SPRITE_PATH, index };
 }
-const chestIds = new Set<string>(CHEST_GUIDE_IDS);
-/** Retorna null para assets ainda não incluídos no deploy. */
-export function getChestIllustration(exerciseId: string): string | null {
-  if (!chestIds.has(exerciseId)) return null;
-  return availableImages.get(exerciseId) ?? null;
-}
+
 export function getChestIllustrationCoverage() {
-  return { mapped: CHEST_GUIDE_IDS.length, installed: CHEST_GUIDE_IDS.filter(id => availableImages.has(id)).length };
+  return { mapped: CHEST_GUIDE_IDS.length, installed: CHEST_GUIDE_IDS.length };
 }
