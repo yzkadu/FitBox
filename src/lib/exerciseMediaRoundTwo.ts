@@ -16,7 +16,6 @@ export const ROUND_TWO_EXERCISE_MEDIA_IDS: Record<string,string> = {
   'ex-rosca-alternada': 'Dumbbell_Alternate_Bicep_Curl',
   'ex-rosca-scott-maquina': 'Machine_Preacher_Curls',
   'ex-triceps-maquina': 'Machine_Triceps_Extension',
-  'ex-afundo': 'Bodyweight_Walking_Lunge',
   'ex-rotacao-tronco-cabo': 'Standing_Cable_Wood_Chop',
   'ex-new-crucifixounilateralnocabo': 'Single-Arm_Cable_Crossover',
   'ex-new-pulldownnapoliacomcorda': 'Rope_Straight-Arm_Pulldown',
@@ -26,10 +25,7 @@ export const ROUND_TWO_EXERCISE_MEDIA_IDS: Record<string,string> = {
   'ex-new-elevacaofrontalunilateralnocabo': 'Front_Cable_Raise',
   'ex-new-roscainversanocabo': 'Reverse_Cable_Curl',
   'ex-new-extensaoacimadacabecaunilateral': 'Dumbbell_One-Arm_Triceps_Extension',
-  'ex-new-supinofechadocomhalteres': 'Close-Grip_Dumbbell_Press',
   'ex-new-extensaodequadrilemquatroapoios': 'Glute_Kickback',
-  'ex-new-hipthrustunilateral': 'Single_Leg_Glute_Bridge',
-  'ex-new-elevacaodejoelhosnabarra': 'Hanging_Leg_Raise',
   'ex-new-corridaintervaladanaesteira': 'Jogging_Treadmill',
   'ex-new-tricepsemargolas': 'Ring_Dips',
 };
