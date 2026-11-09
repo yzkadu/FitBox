@@ -34,10 +34,13 @@ function ExercisePhoto({ src, alt }: { src: string; alt: string }) {
  */
 export function ExerciseThumbnail({ exercise, size = 60 }: { exercise?: Exercise | null; size?: number }) {
   const focus = getExerciseAnatomicalFocus(exercise);
+  const media = exerciseMedia(exercise);
   return (
     <div className="rounded-xl shrink-0 overflow-hidden flex items-center justify-center"
       style={{ width: size, height: size, background: 'var(--surface-0)', border: '1px solid var(--border)' }}>
-      {focus ? (
+      {media ? (
+        <ExercisePhoto src={media.first} alt={exercise?.name ?? 'Imagem de execução'}/>
+      ) : focus ? (
         <ExerciseAnatomy focus={focus} view={preferredAnatomicalView(focus)} compact
           title={'Região muscular de ' + (exercise?.name ?? 'exercício')}/>
       ) : (
@@ -85,7 +88,7 @@ export function ExerciseGuide({ exercise, compact = false }: { exercise?: Exerci
         </div>
         <span className="text-[10px] rounded-full px-2 py-1 shrink-0 font-semibold"
           style={{ background: 'var(--brand-dim)', color: 'var(--brand)' }}>
-          {images ? (images.second ? '2 fotos reais' : 'Foto real') : 'Sem foto validada'}
+          {images ? 'Imagem de execução' : 'Imagem em revisão'}
         </span>
       </div>
 
@@ -121,26 +124,19 @@ export function ExerciseGuide({ exercise, compact = false }: { exercise?: Exerci
         <div className="min-w-0 flex flex-col gap-2">
           {images ? (
             <>
-              <div className={images.second ? 'grid grid-cols-2 gap-1.5 min-w-0' : 'grid grid-cols-1 gap-1.5 min-w-0'}>
-                {[images.first, ...(images.second ? [images.second] : [])].map((src, index) => (
+              <div className="grid grid-cols-1 gap-1.5 min-w-0">
+                {[images.first].map((src) => (
                   <div key={src} className="rounded-lg overflow-hidden min-w-0"
                     style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
                     <div className={compact ? 'h-[130px] sm:h-[162px]' : 'h-[172px] sm:h-[205px]'}>
                       <ExercisePhoto src={src}
-                        alt={exercise.name + ' — fotografia real ' + (index + 1)}/>
+                        alt={exercise.name + ' — execução do exercício'}/>
                     </div>
-                    <p className="text-[10px] py-1.5 text-center"
-                      style={{ color: 'var(--text-faint)' }}>
-                      {images.second ? 'Posição ' + (index + 1) : 'Foto real do exercício'}
-                    </p>
+                    
                   </div>
                 ))}
               </div>
-              <p className="text-[10px] leading-relaxed" style={{ color: 'var(--text-faint)' }}>
-                {images.second
-                  ? 'Duas fotografias do exercício; não são animação. Confira também o passo a passo.'
-                  : 'Fotografia real mostrando uma posição do exercício. Para executar o movimento completo, siga as instruções abaixo.'}
-              </p>
+
             </>
           ) : (
             <div className="flex-1 rounded-lg p-3 flex flex-col justify-center gap-1.5"
