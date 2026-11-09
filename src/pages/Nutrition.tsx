@@ -92,7 +92,9 @@ export function Nutrition() {
   const caloriesUsed=explicitCalories?toNumber(calories):Math.round(estimate);
   const validEntry=label.trim().length>=1 && label.trim().length<=120 &&
     validAmount(toNumber(protein||'0'))&&validAmount(toNumber(carbs||'0'))&&
-    validAmount(toNumber(fat||'0'))&&validAmount(caloriesUsed,15000);
+    validAmount(toNumber(fat||'0'))&&validAmount(caloriesUsed,15000) &&
+    (!explicitCalories || calories.trim().length>0) &&
+    (caloriesUsed>0 || toNumber(protein||'0')>0 || toNumber(carbs||'0')>0 || toNumber(fat||'0')>0);
 
   async function submitGoal() {
     const p=toNumber(goalForm.proteinG||'0'),c=toNumber(goalForm.carbsG||'0'),
