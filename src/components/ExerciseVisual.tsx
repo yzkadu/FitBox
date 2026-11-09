@@ -20,7 +20,7 @@ function ExercisePhoto({ src, alt, spriteIndex, spriteRows = 8, spriteAspectRati
     const column = spriteIndex % 5;
     const row = Math.floor(spriteIndex / 5);
     return (
-      <div className="w-full h-full flex items-center justify-center overflow-hidden"
+      <div className="w-full flex items-center justify-center"
         style={{ background: 'white' }}>
         <div role="img" aria-label={alt} style={{
           width: '100%', aspectRatio: spriteAspectRatio,
@@ -145,7 +145,9 @@ export function ExerciseGuide({ exercise, compact = false }: { exercise?: Exerci
                 {[images.first, ...(images.second ? [images.second] : [])].map((src, index) => (
                   <div key={src} className="rounded-lg overflow-hidden min-w-0"
                     style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
-                    <div className={compact ? 'h-[130px] sm:h-[162px]' : 'h-[172px] sm:h-[205px]'}>
+                    <div className={images.spriteIndex !== undefined && index === 0
+                      ? 'w-full'
+                      : compact ? 'h-[130px] sm:h-[162px]' : 'h-[172px] sm:h-[205px]'}>
                       <ExercisePhoto src={src} spriteIndex={index === 0 ? images.spriteIndex : undefined}
                         spriteRows={images.spriteRows} spriteAspectRatio={images.spriteAspectRatio}
                         alt={exercise.name + (images.kind === 'ilustracao' ? ' — ilustração do movimento' : ' — fotografia real ' + (index + 1))}/>
