@@ -1,14 +1,9 @@
 # Guia ilustrado — Peito
 
-Pasta de destino dos **40 arquivos WebP individuais** enviados pelo usuário nas 8 páginas do guia de execução.
+As **40 ilustrações fornecidas pelo usuário** estão instaladas no FitBox através do atlas WebP `public/exercise-guide/chest/sprite.webp` (5 colunas × 8 linhas). Cada exercício tem seu quadro localizado pelo índice fixo em `src/lib/chestIllustrationMedia.ts`.
 
-**Ainda não estão commitados nesta branch os 40 arquivos binários.** O ZIP gerado nesta conversa contém os recortes:
+A tela `ExerciseGuide` usa `spriteIndex` para recortar a ilustração adequada; quando esse mapeamento existir, a imagem do atlas **substitui** as fotografias externas que apareciam anteriormente. Não é necessário reenviar individualmente os 40 arquivos para ativar esta versão.
 
-- Use somente os arquivos da pasta `ilustracoes/` (sem títulos).
-- Faça upload dos 40 `.webp` diretamente nesta pasta.
-- Preserve os nomes originais baseados nos IDs, por exemplo, `ex-supino-reto-barra.webp`.
-- Ao incluir cada arquivo, o Vite passa a carregá-lo automaticamente pelo `chestIllustrationMedia.ts`. Sem arquivo, permanece a mídia anterior.
+O material original em alta resolução, incluindo recortes individuais `680 × 500`, permanece no pacote `fitbox_peito_40_exercicios_v3.zip` disponibilizado na conversa. A versão embarcada do atlas é compacta para evitar atrasos no carregamento.
 
-Para importar via clone local: `node scripts/import-chest-illustrations.mjs /caminho/para/ilustracoes`.
-
-Revisar as ilustrações antes da publicação, sobretudo variações de mesmo equipamento e posição do movimento.
+**Revisão técnica:** as imagens são ilustrações demonstrativas geradas para o guia; não substituem avaliação da execução por profissional. Algumas exibem apenas uma posição do movimento.
