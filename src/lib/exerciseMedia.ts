@@ -1,5 +1,6 @@
 import type { Exercise } from '../types';
 import { getChestIllustration } from './chestIllustrationMedia';
+import { getBackShoulderIllustration } from './backShoulderIllustrationMedia';
 import { HYROX_MEDIA, HYROX_EXPECTED_EXERCISES } from './hyroxMedia';
 import { EXPANDED_EXECUTION_MEDIA_IDS } from './exerciseMediaExpansion';
 import { NOVEMBER_EXERCISE_MEDIA_IDS } from './exerciseMediaNovember';
@@ -128,6 +129,8 @@ export interface ExerciseMediaResult {
   sourceId: string;
   kind: 'foto' | 'ilustracao';
   spriteIndex?: number;
+  spriteRows?: number;
+  spriteAspectRatio?: string;
   credit: string;
   sourceUrl?: string;
 }
@@ -142,6 +145,18 @@ export function exerciseMedia(exercise?: Exercise | null): ExerciseMediaResult |
       sourceId: exerciseId,
       kind: 'ilustracao',
       credit: 'Ilustração do guia visual de execução fornecido pelo projeto FitBox.',
+    };
+  }
+  const backShoulderIllustration = getBackShoulderIllustration(exerciseId);
+  if (backShoulderIllustration) {
+    return {
+      first: backShoulderIllustration.src,
+      spriteIndex: backShoulderIllustration.index,
+      spriteRows: backShoulderIllustration.rows,
+      spriteAspectRatio: backShoulderIllustration.aspectRatio,
+      sourceId: exerciseId,
+      kind: 'ilustracao',
+      credit: 'Ilustração enviada para o guia de costas e ombros do FitBox.',
     };
   }
   const curated = HYROX_MEDIA[exerciseId];

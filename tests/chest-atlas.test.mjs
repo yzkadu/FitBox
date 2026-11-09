@@ -24,5 +24,8 @@ test('atlas binário WebP instalado no deploy e usado pela UI', () => {
   assert.equal(bytes.toString('ascii',8,12),'WEBP');
   assert.ok(media.includes("const SPRITE_PATH = '/exercise-guide/chest/sprite.webp'"));
   assert.ok(exerciseMedia.includes('spriteIndex: chestIllustration.index'));
-  assert.ok(view.includes("backgroundSize: '500% 800%'"));
+  // O componente agora aceita atlas de 7 ou 8 linhas sem alterar o de peito.
+  assert.ok(view.includes('backgroundSize: `500% ${spriteRows * 100}%`'));
+  assert.ok(view.includes('spriteRows = 8'));
+
 });
