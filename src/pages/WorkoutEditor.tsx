@@ -152,6 +152,10 @@ export function WorkoutEditor() {
     : null;
 
   function handleStart() {
+    if (circuit && !sorted.some(we=>(we.blockType ?? 'circuit')==='circuit')) {
+      setBulkError('Marque ao menos uma estação no bloco Circuito antes de iniciar.');
+      return;
+    }
     const session = startSession(workout!);
     navigate(`/sessao/${session.id}`);
   }
@@ -203,6 +207,7 @@ export function WorkoutEditor() {
           {circuitFormat !== 'emom' && <label className="text-xs">Pausa entre voltas (seg) <input type="number" min={0} max={900} step={15} value={circuitRest} onChange={e => changeCircuitRest(Number(e.target.value))} className="block w-28 rounded-lg p-2 mt-1" style={{background:'var(--surface-3)'}} /></label>}
           <p className="w-full text-xs" style={{color:'var(--text-faint)'}}>{circuitFormat === 'emom' ? 'Cada minuto é uma estação, repetindo a lista até terminar a duração. Registre a conclusão ao executar.' : circuitFormat === 'amrap' ? 'Complete o máximo de voltas no tempo definido; durante a sessão, conclua as estações e adicione a próxima volta quando precisar.' : circuitFormat === 'for_time' ? 'Complete as voltas na ordem; o tempo limite é uma referência, não encerra seu registro automaticamente.' : 'Adicione as estações na ordem do professor. Em cada uma registre a meta: 500 m, 20 reps, 1 min etc.'}</p>
         </div>}
+        {circuit && <p className="text-xs mt-2" style={{color:'var(--text-faint)'}}>Aquecimento, força e técnica uma vez antes das voltas; desaquecimento uma vez depois. Só as estações do Circuito se repetem.</p>}
         {circuit && <div className="mt-3 border-t pt-3" style={{borderColor:'var(--border)'}}>
           <label className="text-xs font-semibold" htmlFor="circuit-stations">Colar sequência da aula (opcional)</label>
           <p className="text-xs mt-1 mb-2" style={{color:'var(--text-faint)'}}>Uma estação por linha: nome exato do catálogo | meta. Exemplo: SkiErg | 500 m</p>
@@ -328,6 +333,16 @@ export function WorkoutEditor() {
                   />
                 </div>
                 <div className="pl-7 flex flex-col gap-2">
+                  {circuit && <label className="text-xs" style={{color:'var(--text-dim)'}}>Bloco da aula
+                    <select value={we.blockType ?? 'circuit'} onChange={e=>updateWorkoutExercise(workout.id,we.id,{blockType:e.target.value as NonNullable<typeof we.blockType>})}
+                      className="block rounded-lg p-2 mt-1 w-full" style={{background:'var(--surface-2)'}}>
+                      <option value="warmup">1 · Aquecimento</option>
+                      <option value="strength">2 · Força</option>
+                      <option value="technique">3 · Técnica</option>
+                      <option value="circuit">4 · Circuito (repete)</option>
+                      <option value="cooldown">5 · Desaquecimento</option>
+                    </select>
+                  </label>}
                   {!circuit && <label className="flex items-center gap-2 text-xs" style={{ color: 'var(--text-faint)' }}>
                     Descanso entre séries (seg)
                     <input type="number" min={0} max={600} step={15} value={we.restSeconds ?? 90}

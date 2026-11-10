@@ -315,6 +315,8 @@ export function duplicateWorkout(source: Workout): Workout {
   for (const item of [...source.exercises].sort((a,b)=>a.order-b.order)) {
     addExerciseToWorkout(copy.id,item.exerciseId,item.targetSets,
       item.targetReps,item.notes,item.restSeconds);
+    const cloned = store.getSnapshot().workouts.find(w => w.id === copy.id)?.exercises.at(-1);
+    if (cloned && item.blockType) updateWorkoutExercise(copy.id,cloned.id,{blockType:item.blockType});
   }
   if (source.exercises[0]?.circuitMode) setWorkoutCircuit(copy.id,true,source.exercises[0].circuitRounds ?? 3,source.exercises[0].circuitRestSeconds ?? 60,source.exercises[0].circuitFormat ?? 'rounds',source.exercises[0].circuitDurationMinutes ?? 20);
   return copy;
@@ -344,6 +346,7 @@ export function addExerciseToWorkout(
       circuitRestSeconds: w.exercises[0]?.circuitRestSeconds,
       circuitFormat: w.exercises[0]?.circuitFormat,
       circuitDurationMinutes: w.exercises[0]?.circuitDurationMinutes,
+      blockType: w.exercises[0]?.circuitMode ? 'circuit' : undefined,
     };
     w.exercises.push(entry);
   });
@@ -353,7 +356,7 @@ export function addExerciseToWorkout(
 export function updateWorkoutExercise(
   workoutId: string,
   entryId: string,
-  patch: Partial<Pick<WorkoutExercise, 'targetSets' | 'targetReps' | 'restSeconds' | 'notes'>>,
+  patch: Partial<Pick<WorkoutExercise, 'targetSets' | 'targetReps' | 'restSeconds' | 'notes' | 'blockType'>>,
 ) {
   store.update((d) => {
     const w = d.workouts.find((w) => w.id === workoutId);
@@ -425,31 +428,43 @@ export function startSession(workout: Workout): Session {
     startedAt: new Date().toISOString(),
     finishedAt: null,
     exercises: (() => {
-      const stations = workout.exercises.slice().sort((a, b) => a.order - b.order);
-      const circuit = Boolean(stations[0]?.circuitMode);
-      const format = circuit ? stations[0].circuitFormat ?? 'rounds' : 'rounds';
-      const durationMinutes = circuit ? Math.max(1,Math.min(180,stations[0].circuitDurationMinutes ?? 20)) : undefined;
-      const rounds = circuit ? (format === 'emom' ? Math.min(180,Math.ceil((durationMinutes ?? 20) / Math.max(1,stations.length))) : format === 'amrap' ? 1 : Math.max(1,Math.min(20,stations[0].circuitRounds ?? 3))) : 1;
+      const ordered = workout.exercises.slice().sort((a,b)=>a.order-b.order);
+      const circuit = Boolean(ordered[0]?.circuitMode);
+      const format = circuit ? ordered[0].circuitFormat ?? 'rounds' : 'rounds';
+      const durationMinutes = circuit ? Math.max(1,Math.min(180,ordered[0].circuitDurationMinutes ?? 20)) : undefined;
+      const kind = (we: WorkoutExercise): NonNullable<WorkoutExercise['blockType']> => we.blockType ?? (circuit ? 'circuit' : 'strength');
+      const stations = circuit ? ordered.filter(we=>kind(we)==='circuit') : ordered;
+      const preparation = circuit ? ordered.filter(we=>['warmup','strength','technique'].includes(kind(we))) : [];
+      const cooldown = circuit ? ordered.filter(we=>kind(we)==='cooldown') : [];
+      const rounds = circuit && stations.length ? (format === 'emom' ? Math.min(180,Math.ceil((durationMinutes ?? 20)/stations.length)) : format === 'amrap' ? 1 : Math.max(1,Math.min(20,ordered[0].circuitRounds ?? 3))) : 1;
       const result: SessionExercise[] = [];
-      for (let round = 1; round <= rounds; round++) {
-        stations.forEach((we, index) => {
-          if (format === 'emom' && (round - 1) * stations.length + index >= (durationMinutes ?? 20)) return;
-          const suggestion = getSuggestedStartingPoint(pastSessions, we.exerciseId);
-          result.push({
-            id: uid(), exerciseId: we.exerciseId, notes: we.notes, targetReps: we.targetReps,
-            restSeconds: circuit ? (index === stations.length - 1 ? we.circuitRestSeconds ?? 60 : 0) : we.restSeconds,
-            circuitRound: circuit ? round : undefined,
-            circuitStation: circuit ? index + 1 : undefined,
-            circuitRounds: circuit ? rounds : undefined,
-            circuitFormat: circuit ? format : undefined,
-            circuitDurationMinutes: circuit ? durationMinutes : undefined,
-            sets: Array.from({length: circuit ? 1 : we.targetSets}).map((_,i) => ({
-              id: uid(), setNumber: circuit ? round : i+1,
-              weight: suggestion?.weight ?? 0, reps: 0, completed: false,
-            })),
-          });
+      const pushEntry = (we:WorkoutExercise,round?:number,index?:number) => {
+        const suggestion = getSuggestedStartingPoint(pastSessions,we.exerciseId);
+        const inCircuit = circuit && round != null && index != null;
+        result.push({
+          id:uid(),exerciseId:we.exerciseId,notes:we.notes,targetReps:we.targetReps,
+          blockType:kind(we),
+          restSeconds:inCircuit ? (index === stations.length-1 ? we.circuitRestSeconds ?? 60 : 0) : we.restSeconds,
+          circuitRound:inCircuit ? round : undefined,
+          circuitStation:inCircuit ? index+1 : undefined,
+          circuitMinute:inCircuit && format==='emom' ? (round-1)*stations.length+index+1 : undefined,
+          circuitRounds:inCircuit ? rounds : undefined,
+          circuitFormat:inCircuit ? format : undefined,
+          circuitDurationMinutes:inCircuit ? durationMinutes : undefined,
+          sets:Array.from({length:inCircuit ? 1 : we.targetSets}).map((_,i)=>({
+            id:uid(),setNumber:inCircuit ? round : i+1,
+            weight:suggestion?.weight ?? 0,reps:0,completed:false,
+          })),
+        });
+      };
+      preparation.forEach(we=>pushEntry(we));
+      for(let round=1;round<=rounds;round++) {
+        stations.forEach((we,index)=>{
+          if(format==='emom' && (round-1)*stations.length+index >= (durationMinutes ?? 20)) return;
+          pushEntry(we,round,index);
         });
       }
+      cooldown.forEach(we=>pushEntry(we));
       return result;
     })(),
   };
@@ -552,14 +567,13 @@ export function appendAmrapRound(sessionId: string): boolean {
   store.update(d => {
     const session = d.sessions.find(s => s.id === sessionId);
     if (!session || session.finishedAt) return;
-    session.exercises.push(...last.map(se => ({
-      ...se,
-      id: uid(),
-      circuitRound: round + 1,
-      circuitRounds: round + 1,
-      actualResult: undefined,
-      sets: se.sets.map(st => ({...st,id:uid(),setNumber:round+1,reps:0,completed:false})),
-    })));
+    const added = last.map(se => ({
+      ...se,id:uid(),circuitRound:round+1,circuitRounds:round+1,actualResult:undefined,
+      sets:se.sets.map(st=>({...st,id:uid(),setNumber:round+1,reps:0,completed:false})),
+    }));
+    const cooldownAt=session.exercises.findIndex(se=>se.blockType==='cooldown');
+    if(cooldownAt>=0) session.exercises.splice(cooldownAt,0,...added);
+    else session.exercises.push(...added);
   });
   syncSessionExercises(sessionId);
   return true;

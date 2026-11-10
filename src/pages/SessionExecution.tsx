@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { X, Plus, Check, Trash2, Clock, Bot, Calculator, TimerReset, Eye } from 'lucide-react';
+import { X, Plus, Check, Trash2, Clock, Bot, Calculator, TimerReset, Eye, Pause, Play, Volume2, MapPin } from 'lucide-react';
 import { useAppData } from '../hooks/useAppData';
 import {
   addExerciseToSession,
@@ -35,6 +35,26 @@ function rpeColor(v: number): string {
 
 const DEFAULT_REST_SECONDS = 90;
 const BAR_WEIGHT_KEY = 'fitbox-bar-weight';
+type CircuitClockState = { startedAt: number | null; pausedAt: number | null; pausedMs: number };
+function readCircuitClock(sessionId: string | undefined): CircuitClockState | null {
+  if (!sessionId) return null;
+  try {
+    const raw = localStorage.getItem('fitbox-circuit-clock:'+sessionId);
+    if (!raw) return null;
+    const parsed: unknown = JSON.parse(raw);
+    if (typeof parsed !== 'object' || parsed === null) return null;
+    const state = parsed as Partial<CircuitClockState>;
+    if ((state.startedAt != null && (typeof state.startedAt !== 'number' || !Number.isFinite(state.startedAt))) ||
+      (state.pausedAt != null && (typeof state.pausedAt !== 'number' || !Number.isFinite(state.pausedAt))) ||
+      typeof state.pausedMs !== 'number' || !Number.isFinite(state.pausedMs)) return null;
+    return { startedAt: state.startedAt ?? null, pausedAt: state.pausedAt ?? null, pausedMs: state.pausedMs ?? 0 };
+  } catch { return null; }
+}
+function writeCircuitClock(sessionId: string | undefined, value: CircuitClockState) {
+  if (!sessionId) return;
+  try { localStorage.setItem('fitbox-circuit-clock:'+sessionId,JSON.stringify(value)); }
+  catch { /* sem armazenamento: o relógio permanece disponível nesta sessão */ }
+}
 
 function loadBarWeight(): number {
   try {
@@ -92,13 +112,62 @@ export function SessionExecution() {
 
   const session = sessions.find((s) => s.id === sessionId);
   const elapsed = useElapsed(session?.startedAt ?? new Date().toISOString());
-  const elapsedParts = elapsed.split(':').map(Number);
-  const elapsedSeconds = (elapsedParts[0] || 0) * 60 + (elapsedParts[1] || 0);
+  const [clockTick,setClockTick] = useState(Date.now);
+  const [clockData,setClockData] = useState<{sessionId:string;state:CircuitClockState}|null>(()=>{
+    const saved = readCircuitClock(sessionId);
+    return sessionId && saved ? {sessionId,state:saved} : null;
+  });
+  const [emomSound,setEmomSound]=useState(false);
+  const emomLastMinute=useRef<number|null>(null);
   const circuitEntry = session?.exercises.find(se => se.circuitFormat);
   const circuitFormat = circuitEntry?.circuitFormat;
+  const hasPreparation = session?.exercises.some(se => se.blockType && se.blockType !== 'circuit') ?? false;
+  const storedClock = clockData && clockData.sessionId === sessionId ? clockData.state : null;
+  const clock: CircuitClockState = storedClock ?? {
+    startedAt: hasPreparation ? null : Date.parse(session?.startedAt ?? new Date().toISOString()),
+    pausedAt:null,pausedMs:0,
+  };
+  const circuitSeconds = clock.startedAt == null ? 0 : Math.max(0,Math.floor(((clock.pausedAt ?? clockTick)-clock.startedAt-clock.pausedMs)/1000));
   const durationSeconds = (circuitEntry?.circuitDurationMinutes ?? 20) * 60;
-  const remainingSeconds = Math.max(0, durationSeconds - elapsedSeconds);
-  const activeEmomMinute = Math.max(1, Math.min(circuitEntry?.circuitDurationMinutes ?? 20, Math.floor(elapsedSeconds / 60) + 1));
+  const remainingSeconds = Math.max(0, durationSeconds - circuitSeconds);
+  const activeEmomMinute = Math.max(1, Math.min(circuitEntry?.circuitDurationMinutes ?? 20, Math.floor(circuitSeconds / 60) + 1));
+  useEffect(() => {
+    const saved=readCircuitClock(sessionId);
+    setClockData(sessionId && saved ? {sessionId,state:saved} : null);
+  },[sessionId]);
+  useEffect(() => {
+    if (!circuitFormat || clock.pausedAt != null || clock.startedAt == null || session?.finishedAt) return;
+    const tick = () => setClockTick(Date.now());
+    tick();
+    const interval=setInterval(tick,250);
+    document.addEventListener('visibilitychange',tick);
+    return ()=>{clearInterval(interval);document.removeEventListener('visibilitychange',tick);};
+  },[circuitFormat,clock.startedAt,clock.pausedAt,session?.finishedAt]);
+  useEffect(() => {
+    if(circuitFormat!=='emom' || clock.startedAt == null) {
+      emomLastMinute.current=null;
+      return;
+    }
+    if (emomLastMinute.current !== null && activeEmomMinute > emomLastMinute.current && emomSound && clock.pausedAt == null) playRestBeep();
+    emomLastMinute.current=activeEmomMinute;
+  },[activeEmomMinute,circuitFormat,emomSound,clock.pausedAt,clock.startedAt]);
+  function setCircuitClock(next:CircuitClockState) {
+    setClockData(sessionId ? {sessionId,state:next} : null);
+    writeCircuitClock(sessionId,next);
+    setClockTick(Date.now());
+  }
+  function toggleCircuitPause() {
+    if (clock.startedAt == null) {
+      primeRestBeep();
+      setCircuitClock({startedAt:Date.now(),pausedAt:null,pausedMs:0});
+    } else if (clock.pausedAt != null) {
+      primeRestBeep();
+      setCircuitClock({...clock,pausedAt:null,pausedMs:clock.pausedMs+Date.now()-clock.pausedAt});
+    } else {
+      setCircuitClock({...clock,pausedAt:Date.now()});
+    }
+  }
+  const elapsedSeconds = circuitSeconds;
   const currentAmrapRound = Math.max(0,...(session?.exercises ?? []).map(se=>se.circuitRound ?? 0));
   const lastAmrapStations = (session?.exercises ?? []).filter(se=>se.circuitFormat === 'amrap' && se.circuitRound === currentAmrapRound);
   const canAddAmrapRound = circuitFormat === 'amrap' && remainingSeconds > 0 && currentAmrapRound < 99 && lastAmrapStations.length > 0 && lastAmrapStations.every(se=>se.sets.every(st=>st.completed));
@@ -261,21 +330,47 @@ export function SessionExecution() {
       </div>
 
       {circuitFormat && circuitFormat !== 'rounds' && (
-        <div className="mx-4 mt-3 p-3 rounded-xl flex items-center justify-between gap-3"
+        <div className="mx-4 mt-3 p-3 rounded-xl flex flex-col gap-2"
           style={{background:'var(--brand-dim)',color:'var(--brand)'}} role="timer" aria-label="Relógio do circuito">
-          <div>
-            <p className="text-xs font-semibold">{circuitFormat === 'amrap' ? 'AMRAP' : circuitFormat === 'emom' ? 'EMOM' : 'FOR TIME'}</p>
-            <p className="text-xs mt-1">
-              {circuitFormat === 'emom' ? `Minuto ${activeEmomMinute} de ${circuitEntry?.circuitDurationMinutes}` :
-               circuitFormat === 'amrap' ? (remainingSeconds === 0 ? 'Tempo-alvo atingido. Você pode finalizar o treino.' : 'Máximo de voltas até o fim do tempo') :
-               'Complete a sequência na ordem; o relógio continua se ultrapassar o limite.'}
+          <div className="flex justify-between items-center gap-3">
+            <div>
+              <p className="text-xs font-semibold">{circuitFormat === 'amrap' ? 'AMRAP' : circuitFormat === 'emom' ? 'EMOM' : 'FOR TIME'}</p>
+              <p className="text-xs mt-1">
+                {clock.startedAt == null ? 'Aquecimento livre; inicie o relógio ao começar o circuito.' :
+                 clock.pausedAt != null ? 'Cronômetro pausado' :
+                 circuitFormat === 'emom' ? `Minuto ${activeEmomMinute} de ${circuitEntry?.circuitDurationMinutes}` :
+                 circuitFormat === 'amrap' ? (remainingSeconds === 0 ? 'Tempo-alvo atingido. Você pode finalizar o treino.' : 'Máximo de voltas dentro do tempo') :
+                 'Conclua a sequência; o tempo continua após o limite.'}
+              </p>
+            </div>
+            <p className="text-xl font-bold tabular-nums" aria-live="off">
+              {formatMMSS(circuitFormat === 'for_time' ? elapsedSeconds : remainingSeconds)}
             </p>
           </div>
-          <p className="text-xl font-bold tabular-nums" aria-live="off">
-            {formatMMSS(circuitFormat === 'for_time' ? elapsedSeconds : remainingSeconds)}
+          <div className="flex gap-2 flex-wrap">
+            <button type="button" onClick={toggleCircuitPause} className="rounded-lg px-3 py-2 text-xs font-semibold flex items-center gap-1"
+              style={{background:'var(--brand)',color:'white'}}>
+              {clock.startedAt == null ? <Play size={13}/> : clock.pausedAt == null ? <Pause size={13}/> : <Play size={13}/>}
+              {clock.startedAt == null ? 'Iniciar circuito' : clock.pausedAt == null ? 'Pausar relógio' : 'Retomar relógio'}
+            </button>
+            {circuitFormat === 'emom' && <button type="button"
+              onClick={()=>{primeRestBeep();setEmomSound(v=>!v);}}
+              aria-pressed={emomSound}
+              className="rounded-lg px-3 py-2 text-xs font-semibold flex items-center gap-1"
+              style={{background:'var(--surface)',color:'var(--text)'}}>
+              <Volume2 size={13}/> Avisos {emomSound ? 'ligados' : 'desligados'}
+            </button>}
+          </div>
+          <p className="text-[10px]" style={{color:'var(--text-dim)'}}>
+            Pausa registrada neste aparelho; ao trocar de dispositivo, o relógio pode não acompanhar a pausa.
+            {circuitFormat === 'emom' ? ' A estação do minuto atual fica destacada abaixo. Ative os avisos após interagir com a tela.' : ''}
           </p>
         </div>
       )}
+      {circuitFormat === 'emom' && clock.startedAt != null && <button type="button"
+        className="mx-4 mt-2 rounded-lg py-2 text-xs font-semibold flex items-center justify-center gap-2"
+        onClick={()=>document.getElementById('emom-station-'+activeEmomMinute)?.scrollIntoView({behavior:'smooth',block:'center'})}
+        style={{background:'var(--surface-2)',color:'var(--brand)'}}><MapPin size={14}/> Ver estação do minuto {activeEmomMinute}</button>}
       <div className="px-4 py-2 flex items-center gap-3" role="status"
         aria-label={circuitFormat === 'amrap' ? completedSets+' estações registradas' : completedSets+' séries concluídas de '+plannedSets}>
         <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{background:'var(--surface-3)'}}>
@@ -373,11 +468,16 @@ export function SessionExecution() {
           const coachColor =
             coach.action === 'increase' ? 'var(--success)' : coach.action === 'deload' ? 'var(--warn)' : 'var(--text-faint)';
           return (
-            <div key={se.id} className="rounded-2xl border p-3.5" style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
+            <div key={se.id} id={se.circuitMinute ? 'emom-station-'+se.circuitMinute : undefined}
+              className="rounded-2xl border p-3.5"
+              style={{ background: 'var(--surface)', borderColor: se.circuitMinute === activeEmomMinute && circuitFormat === 'emom' && clock.startedAt != null ? 'var(--brand)' : 'var(--border)' }}>
               {se.circuitRound != null && <div className="flex items-center justify-between mb-3 rounded-lg px-3 py-2 text-xs font-semibold" style={{background:'var(--brand-dim)',color:'var(--brand)'}}>
-                <span>{se.circuitFormat === 'emom' ? `Minuto ${stationIndex + 1}` : se.circuitFormat === 'amrap' ? `Volta ${se.circuitRound}` : `Volta ${se.circuitRound} de ${se.circuitRounds}`}</span>
+                <span>{se.circuitFormat === 'emom' ? `Minuto ${se.circuitMinute ?? stationIndex + 1}` : se.circuitFormat === 'amrap' ? `Volta ${se.circuitRound}` : `Volta ${se.circuitRound} de ${se.circuitRounds}`}</span>
                 <span>Estação {se.circuitStation} · {stationIndex + 1}/{session.exercises.length}</span>
               </div>}
+              {se.blockType && se.blockType !== 'circuit' && <p className="text-xs font-semibold mb-2" style={{color:'var(--brand)'}}>
+                {se.blockType === 'warmup' ? 'Aquecimento' : se.blockType === 'strength' ? 'Força' : se.blockType === 'technique' ? 'Técnica' : 'Desaquecimento'}
+              </p>}
               <div className="flex items-center gap-2 mb-2">
                 <button type="button" aria-label="Ver demonstração do exercício"
                   onClick={() => setExerciseGuideId(exerciseGuideId === se.id ? null : se.id)}>
