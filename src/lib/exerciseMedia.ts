@@ -3,6 +3,7 @@ import { getChestIllustration } from './chestIllustrationMedia';
 import { getBicepsIllustration } from './bicepsIllustrationMedia';
 import { getTricepsIllustration } from './tricepsIllustrationMedia';
 import { getBackShoulderIllustration } from './backShoulderIllustrationMedia';
+import { getLowerBodyIllustration } from './lowerBodyIllustrationMedia';
 import { LOWER_BODY_PHOTO_IDS } from './lowerBodyPhotoMedia';
 import { HYROX_MEDIA, HYROX_EXPECTED_EXERCISES } from './hyroxMedia';
 import { EXPANDED_EXECUTION_MEDIA_IDS } from './exerciseMediaExpansion';
@@ -182,6 +183,18 @@ export function exerciseMedia(exercise?: Exercise | null): ExerciseMediaResult |
       sourceId: exerciseId,
       kind: 'ilustracao',
       credit: 'Ilustração enviada para o guia de costas e ombros do FitBox.',
+    };
+  }
+  const lowerBodyIllustration = getLowerBodyIllustration(exerciseId);
+  if (lowerBodyIllustration) {
+    return {
+      first: lowerBodyIllustration.src,
+      spriteIndex: lowerBodyIllustration.index,
+      spriteRows: lowerBodyIllustration.rows,
+      spriteAspectRatio: lowerBodyIllustration.aspectRatio,
+      sourceId: exerciseId,
+      kind: 'ilustracao',
+      credit: 'Ilustração recortada do guia de pernas, glúteos ou panturrilhas enviado pelo usuário.',
     };
   }
   const curated = HYROX_MEDIA[exerciseId];
