@@ -44,9 +44,9 @@ function readCircuitClock(sessionId: string | undefined): CircuitClockState | nu
     const parsed: unknown = JSON.parse(raw);
     if (typeof parsed !== 'object' || parsed === null) return null;
     const state = parsed as Partial<CircuitClockState>;
-    if ((state.startedAt !== null && !Number.isFinite(state.startedAt)) ||
-      (state.pausedAt !== null && state.pausedAt !== undefined && !Number.isFinite(state.pausedAt)) ||
-      !Number.isFinite(state.pausedMs)) return null;
+    if ((state.startedAt != null && (typeof state.startedAt !== 'number' || !Number.isFinite(state.startedAt))) ||
+      (state.pausedAt != null && (typeof state.pausedAt !== 'number' || !Number.isFinite(state.pausedAt))) ||
+      typeof state.pausedMs !== 'number' || !Number.isFinite(state.pausedMs)) return null;
     return { startedAt: state.startedAt ?? null, pausedAt: state.pausedAt ?? null, pausedMs: state.pausedMs ?? 0 };
   } catch { return null; }
 }
@@ -476,7 +476,7 @@ export function SessionExecution() {
                 <span>Estação {se.circuitStation} · {stationIndex + 1}/{session.exercises.length}</span>
               </div>}
               {se.blockType && se.blockType !== 'circuit' && <p className="text-xs font-semibold mb-2" style={{color:'var(--brand)'}}>
-                {{warmup:'Aquecimento',strength:'Força',technique:'Técnica',cooldown:'Desaquecimento'}[se.blockType]}
+                {se.blockType === 'warmup' ? 'Aquecimento' : se.blockType === 'strength' ? 'Força' : se.blockType === 'technique' ? 'Técnica' : 'Desaquecimento'}
               </p>}
               <div className="flex items-center gap-2 mb-2">
                 <button type="button" aria-label="Ver demonstração do exercício"
