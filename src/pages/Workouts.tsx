@@ -266,6 +266,7 @@ export function Workouts() {
   const [plannerOpen, setPlannerOpen] = useState(false);
   const [chooseIconOpen, setChooseIconOpen] = useState(false);
   const [name, setName] = useState('');
+  const [newCircuit, setNewCircuit] = useState(false);
   const [emoji, setEmoji] = useState<string>(ICON_KEYS[0]);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [deleteError,setDeleteError] = useState('');
@@ -324,14 +325,16 @@ export function Workouts() {
   function closeCreate() {
     setCreating(false);
     setName('');
+    setNewCircuit(false);
     resetIaState();
   }
 
   function handleCreate() {
     if (!name.trim()) return;
+    const circuit = newCircuit;
     const w = createWorkout(name.trim(), emoji);
     closeCreate();
-    navigate(`/treinos/${w.id}`);
+    navigate(`/treinos/${w.id}${circuit ? '?circuit=1' : ''}`);
   }
 
   async function handleAiSubmit() {
@@ -517,6 +520,12 @@ export function Workouts() {
                   </button>
                 ))}
               </div>
+              <button type="button" aria-pressed={newCircuit} onClick={() => setNewCircuit(v => !v)}
+                className="w-full text-left rounded-xl px-3 py-3 mb-3 text-sm"
+                style={{background: newCircuit ? 'var(--brand-dim)' : 'var(--surface-2)', color: newCircuit ? 'var(--brand)' : 'var(--text)'}}>
+                <strong>{newCircuit ? '✓ ' : ''}Circuito HYROX / funcional</strong>
+                <span className="block text-xs mt-1">Estações em sequência e voltas, conforme a aula do professor.</span>
+              </button>
               <button type="button" onClick={()=>setChooseIconOpen(v=>!v)}
                 aria-expanded={chooseIconOpen}
                 className="text-xs mb-3 flex items-center gap-1.5"
