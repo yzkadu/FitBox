@@ -14,6 +14,7 @@ function ExercisePhoto({ src, alt, spriteIndex, spriteRows = 8, spriteAspectRati
   src: string; alt: string; spriteIndex?: number; spriteRows?: number; spriteAspectRatio?: string;
 }) {
   const [broken, setBroken] = useState(false);
+  useEffect(() => { setBroken(false); }, [src]);
   if (spriteIndex !== undefined) {
     // Quadro n de atlas com 5 colunas e quantidade variável de linhas.
     // Evita fotos antigas e URLs inexistentes: o binário está no próprio deploy.
@@ -43,7 +44,7 @@ function ExercisePhoto({ src, alt, spriteIndex, spriteRows = 8, spriteAspectRati
       ) : (
         <img src={src} alt={alt} loading="lazy" decoding="async"
           referrerPolicy="no-referrer" onError={() => setBroken(true)}
-          className="w-full h-full object-contain p-1"/>
+          className="w-full h-full object-contain p-1" style={{ objectPosition: 'center center' }}/>
       )}
     </div>
   );
@@ -54,10 +55,19 @@ function ExercisePhoto({ src, alt, spriteIndex, spriteRows = 8, spriteAspectRati
  */
 export function ExerciseThumbnail({ exercise, size = 60 }: { exercise?: Exercise | null; size?: number }) {
   const focus = getExerciseAnatomicalFocus(exercise);
+  const media = exerciseMedia(exercise);
   return (
     <div className="rounded-xl shrink-0 overflow-hidden flex items-center justify-center"
       style={{ width: size, height: size, background: 'var(--surface-0)', border: '1px solid var(--border)' }}>
-      {focus ? (
+      {media ? (
+        <ExercisePhoto
+          src={media.first}
+          spriteIndex={media.spriteIndex}
+          spriteRows={media.spriteRows}
+          spriteAspectRatio={media.spriteAspectRatio}
+          alt={exercise?.name ? 'Execução: ' + exercise.name : 'Ilustração de exercício'}
+        />
+      ) : focus ? (
         <ExerciseAnatomy focus={focus} view={preferredAnatomicalView(focus)} compact
           title={'Região muscular de ' + (exercise?.name ?? 'exercício')}/>
       ) : (

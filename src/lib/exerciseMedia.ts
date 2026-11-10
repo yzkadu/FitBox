@@ -3,6 +3,7 @@ import { getChestIllustration } from './chestIllustrationMedia';
 import { getBicepsIllustration } from './bicepsIllustrationMedia';
 import { getTricepsIllustration } from './tricepsIllustrationMedia';
 import { getBackShoulderIllustration } from './backShoulderIllustrationMedia';
+import { LOWER_BODY_PHOTO_IDS } from './lowerBodyPhotoMedia';
 import { HYROX_MEDIA, HYROX_EXPECTED_EXERCISES } from './hyroxMedia';
 import { EXPANDED_EXECUTION_MEDIA_IDS } from './exerciseMediaExpansion';
 import { NOVEMBER_EXERCISE_MEDIA_IDS } from './exerciseMediaNovember';
@@ -185,7 +186,7 @@ export function exerciseMedia(exercise?: Exercise | null): ExerciseMediaResult |
   }
   const curated = HYROX_MEDIA[exerciseId];
   if (curated) return curated;
-  const id = VERIFIED_MEDIA_IDS[exerciseId] ?? EXPANDED_EXECUTION_MEDIA_IDS[exerciseId] ?? NOVEMBER_EXERCISE_MEDIA_IDS[exerciseId] ?? ROUND_TWO_EXERCISE_MEDIA_IDS[exerciseId];
+  const id = VERIFIED_MEDIA_IDS[exerciseId] ?? EXPANDED_EXECUTION_MEDIA_IDS[exerciseId] ?? NOVEMBER_EXERCISE_MEDIA_IDS[exerciseId] ?? ROUND_TWO_EXERCISE_MEDIA_IDS[exerciseId] ?? LOWER_BODY_PHOTO_IDS[exerciseId];
   if (!id) return null;
   const base = 'https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/';
   return {
