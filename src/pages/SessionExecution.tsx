@@ -122,7 +122,7 @@ export function SessionExecution() {
   const circuitEntry = session?.exercises.find(se => se.circuitFormat);
   const circuitFormat = circuitEntry?.circuitFormat;
   const hasPreparation = session?.exercises.some(se => se.blockType && se.blockType !== 'circuit') ?? false;
-  const storedClock = clockData?.sessionId === sessionId ? clockData.state : null;
+  const storedClock = clockData && clockData.sessionId === sessionId ? clockData.state : null;
   const clock: CircuitClockState = storedClock ?? {
     startedAt: hasPreparation ? null : Date.parse(session?.startedAt ?? new Date().toISOString()),
     pausedAt:null,pausedMs:0,
