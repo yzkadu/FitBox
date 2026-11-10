@@ -218,7 +218,7 @@ function getCuratedPlan(input: RecommendationInput): RecommendedProgramPlan | nu
     ],
     workouts: program.days.map((d) => ({
       name: d.name, icon: d.emoji as IconKey,
-      exercises: d.exercises.map((e) => ({ id: e.id, sets: e.sets, reps: e.reps, notes: e.notes, restSeconds: e.restSeconds })),
+      exercises: d.exercises.filter(e=>canAutoSuggestExercise(e.id)).map((e) => ({ id: e.id, sets: e.sets, reps: e.reps, notes: e.notes, restSeconds: e.restSeconds })),
     })),
     schedule,
   };
