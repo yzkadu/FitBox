@@ -26,8 +26,8 @@ const groups = [
 ];
 
 const catalog = [
-  ...read('src/lib/exercises.ts').matchAll(/\\bid:\\s*['"](ex-[a-z0-9-]+)['"]/g),
-  ...read('src/lib/extraExercises.ts').matchAll(/\\bid:\\s*['"](ex-[a-z0-9-]+)['"]/g),
+  ...read('src/lib/exercises.ts').matchAll(/\bid:\s*['"](ex-[a-z0-9-]+)['"]/g),
+  ...read('src/lib/extraExercises.ts').matchAll(/\bid:\s*['"](ex-[a-z0-9-]+)['"]/g),
 ].map(m => m[1]);
 const catalogSet = new Set(catalog);
 
