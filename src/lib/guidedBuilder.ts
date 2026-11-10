@@ -4,6 +4,8 @@ import { createWorkout, addExerciseToWorkout, replaceWeeklySchedule } from './ac
 import { getActivitiesForDay } from './nextTraining';
 import { WEEKDAY_ORDER, type Exercise, type Weekday, type WeeklySchedule } from '../types';
 import { equipmentMatches, type EquipmentCategory } from './equipmentCategories';
+import { canAutoSuggestExercise } from './anatomicalProfiles';
+import { balanceAnatomicalExercises, directAnatomicalCoverage } from './anatomicalSelection';
 
 export type BuilderGoal = 'emagrecimento' | 'hipertrofia' | 'hibrido' | 'corrida' | 'condicionamento';
 export type BuilderMode = 'forca' | 'cardio' | 'hyrox';
@@ -23,6 +25,8 @@ export interface BuilderExercise {
   reps: string;
   notes?: string;
   restSeconds?: number;
+  /** Justificativa somente da prévia automática; não vira resultado fisiológico. */
+  anatomyReason?: string;
 }
 export interface BuilderWorkout {
   title: string;
@@ -120,22 +124,29 @@ export function exerciseMatchesPlace(exercise: Exercise, place: ProgramPlace): b
   return true;
 }
 
-function safeExercises(day: ReadyProgram['days'][number], prefs: BuilderPrefs): BuilderExercise[] {
-  // Do not assign movements whose equipment is unavailable.
-  const maxExercises = Math.max(3,Math.min(8,Math.floor(prefs.minutes / 8)));
-  const available = day.exercises
-    .filter(e => workoutIds.has(e.id))
-    .filter(e => {
-      const exercise = BUILTIN_EXERCISES.find(x => x.id === e.id);
-      return exercise && exerciseMatchesPlace(exercise,prefs.place) && equipmentMatches(exercise,prefs.equipmentCategories);
+function safeExercises(
+  day: ReadyProgram['days'][number], prefs: BuilderPrefs, priorWeekRegions:ReadonlySet<string>=new Set(),
+): BuilderExercise[] {
+  const maxExercises=Math.max(3,Math.min(8,Math.floor(prefs.minutes/8)));
+  const autoEligible=(ex:Exercise)=>exerciseMatchesPlace(ex,prefs.place)
+    && equipmentMatches(ex,prefs.equipmentCategories)
+    && canAutoSuggestExercise(ex)
+    && (prefs.level!=='iniciante' || !/pistol|sissy squat|nordic|olímpic|snatch|muscle.?up/i.test(ex.name));
+  const available=day.exercises
+    .filter(e=>workoutIds.has(e.id))
+    .filter(e=>{
+      const ex=BUILTIN_EXERCISES.find(x=>x.id===e.id);
+      return ex && autoEligible(ex);
     }).slice(0,maxExercises);
-  return available.map(e=>({
-    id:e.id,
-    sets:Math.min(e.sets,prefs.level==='iniciante'?2:3),
-    reps:e.reps,
-    notes:e.notes,
-    restSeconds:e.restSeconds,
+  const baseline=available.map(e=>({
+    id:e.id,sets:Math.min(e.sets,prefs.level==='iniciante'?2:3),
+    reps:e.reps,notes:e.notes,restSeconds:e.restSeconds,
   }));
+  // HYROX e circuitos preservam a sequência do professor/programa; nunca
+  // reorganizar estações automaticamente por critérios de hipertrofia.
+  if(!prefs.modes.includes('forca') || prefs.modes.includes('hyrox'))return baseline;
+  return balanceAnatomicalExercises(baseline,BUILTIN_EXERCISES,autoEligible,priorWeekRegions)
+    .map(({item,reason})=>({...item,anatomyReason:reason}));
 }
 
 export function createBuilderDraft(prefs: BuilderPrefs, mainId: string, inspirationId?: string): BuilderDraft {
@@ -153,20 +164,21 @@ export function createBuilderDraft(prefs: BuilderPrefs, mainId: string, inspirat
     ? Math.min(days.length,primary.days.length,prefs.level==='iniciante'?3:5)
     : 0;
   if (prefs.modes.includes('cardio') && desired === days.length && days.length>=3) desired--;
-  const workouts: BuilderWorkout[] = primary.days.map(day=>({
-    title:day.name,
-    emoji:day.emoji,
-    exercises:safeExercises(day,prefs),
-  })).filter(w=>w.exercises.length>0).slice(0,desired);
+  const weekRegions=new Set<string>();
+  const makeWorkout=(day:ReadyProgram['days'][number]):BuilderWorkout=>{
+    const exercises=safeExercises(day,prefs,weekRegions);
+    for(const region of directAnatomicalCoverage(exercises.map(e=>e.id)).regions)weekRegions.add(region);
+    return {title:day.name,emoji:day.emoji,exercises};
+  };
+  const workouts: BuilderWorkout[] = primary.days.map(makeWorkout)
+    .filter(w=>w.exercises.length>0).slice(0,desired);
 
   const warnings: string[] = [];
   if (wantsStrength && !workouts.length) {
     warnings.push('Este programa não contém exercícios compatíveis. Escolha outro ou altere os equipamentos.');
   }
   if (secondary?.days.length && workouts.length >= 2) {
-    const candidate = secondary.days.map(day=>({
-      title:day.name, emoji:day.emoji, exercises:safeExercises(day,prefs),
-    })).find(d=>d.exercises.length>=3);
+    const candidate = secondary.days.map(makeWorkout).find(d=>d.exercises.length>=3);
     if (candidate) {
       // Nunca substituir uma ficha existente sem a escolha explícita da pessoa.
       // Acrescentar uma sessão separada somente quando há dia e recuperação
@@ -213,6 +225,9 @@ export function createBuilderDraft(prefs: BuilderPrefs, mainId: string, inspirat
   }
   if (workouts.some(w=>w.exercises.length<3)) {
     warnings.push('Algumas fichas têm menos de 3 exercícios compatíveis; revise antes de salvar.');
+  }
+  if(prefs.modes.includes('forca')&&!prefs.modes.includes('hyrox')) {
+    warnings.push('Cobertura muscular estimada por regiões e padrões biomecânicos. Músculos secundários não contam como séries completas. Confira a prévia e ajuste livremente.');
   }
   return {sourceIds:[primary.id,...(secondary?[secondary.id]:[])],workouts,slots,warnings};
 }
