@@ -650,9 +650,14 @@ export function moveUpcomingCircuitStation(
       const b=target.exercises.findIndex(se=>se.circuitRound===r&&se.circuitStation===station+direction);
       if(a<0||b<0)continue;
       if(target.exercises[a].sets.some(st=>st.completed)||target.exercises[b].sets.some(st=>st.completed))continue;
+      // O intervalo pertence à posição na sequência, não ao aparelho.
+      const restA=target.exercises[a].restSeconds;
+      const restB=target.exercises[b].restSeconds;
       [target.exercises[a],target.exercises[b]]=[target.exercises[b],target.exercises[a]];
       target.exercises[a].circuitStation=station;
       target.exercises[b].circuitStation=station+direction;
+      target.exercises[a].restSeconds=restA;
+      target.exercises[b].restSeconds=restB;
     }
   });
   syncSessionExercises(sessionId);
