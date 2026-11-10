@@ -168,19 +168,6 @@ function getCuratedPlan(input: RecommendationInput): RecommendedProgramPlan | nu
 
   const program = READY_PROGRAMS.find((p) => p.id === programId);
   if (!program?.weekPlan || program.weekPlan.length !== 7) return null;
-  // Diversifica fichas AUTOMÁTICAS do cadastro sem trocar equipamento/tier,
-  // alterar a divisão de grupos ou reorganizar programas curados e HYROX.
-  const permittedIds=new Set(Object.values(pools).flat());
-  const candidates=BUILTIN_EXERCISES.filter(ex=>permittedIds.has(ex.id)&&canAutoSuggestExercise(ex));
-  const priorWeekRegions=new Set<string>();
-  workouts=workouts.map(workout=>{
-    const exercises=balanceAnatomicalExercises(workout.exercises,candidates,
-      ex=>permittedIds.has(ex.id)&&canAutoSuggestExercise(ex),priorWeekRegions)
-      .map(({item})=>item);
-    for(const region of directAnatomicalCoverage(exercises.map(e=>e.id)).regions)priorWeekRegions.add(region);
-    return {...workout,exercises};
-  });
-
   const schedule: Partial<Record<Weekday, ScheduleEntry>> = {};
   WEEKDAY_ORDER.forEach((day, index) => {
     const step = program.weekPlan![index];
@@ -310,6 +297,19 @@ export function recommendProgram(input: RecommendationInput): RecommendedProgram
     dayPattern = [0, 1, 2, 0, 1, 2];
     splitLabel = 'Push / Pull / Legs (2x na semana)';
   }
+
+  // Diversifica fichas AUTOMÁTICAS do cadastro sem trocar equipamento/tier,
+  // alterar a divisão de grupos ou reorganizar programas curados e HYROX.
+  const permittedIds=new Set(Object.values(pools).flat());
+  const candidates=BUILTIN_EXERCISES.filter(ex=>permittedIds.has(ex.id)&&canAutoSuggestExercise(ex));
+  const priorWeekRegions=new Set<string>();
+  workouts=workouts.map(workout=>{
+    const exercises=balanceAnatomicalExercises(workout.exercises,candidates,
+      ex=>permittedIds.has(ex.id)&&canAutoSuggestExercise(ex),priorWeekRegions)
+      .map(({item})=>item);
+    for(const region of directAnatomicalCoverage(exercises.map(e=>e.id)).regions)priorWeekRegions.add(region);
+    return {...workout,exercises};
+  });
 
   const schedule: Partial<Record<Weekday, ScheduleEntry>> = {};
   let dayIdx = 0;
