@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Plus, ArrowUp, ArrowDown, Sparkles, X, Play, Repeat } from 'lucide-react';
 import { useAppData } from '../hooks/useAppData';
@@ -52,6 +52,22 @@ export function WorkoutEditor() {
   const [draftDuration,setDraftDuration] = useState(20);
   const [bulkStations,setBulkStations] = useState('');
   const [bulkError,setBulkError] = useState('');
+  const [boardPhoto,setBoardPhoto] = useState<string|null>(null);
+  const boardPhotoRef=useRef<string|null>(null);
+  useEffect(()=>()=>{ if(boardPhotoRef.current) URL.revokeObjectURL(boardPhotoRef.current); },[]);
+  function attachBoardPhoto(file:File|undefined) {
+    if(!file) return;
+    if(!file.type.startsWith('image/') || file.size>10_000_000) {
+      setBulkError('Escolha uma imagem com até 10 MB.');
+      return;
+    }
+    const previous=boardPhotoRef.current;
+    const url=URL.createObjectURL(file);
+    boardPhotoRef.current=url;
+    setBoardPhoto(url);
+    setBulkError('');
+    if(previous) URL.revokeObjectURL(previous);
+  }
   const { workouts, exercises } = useAppData();
   const [pickerOpen, setPickerOpen] = useState(false);
   const [editingName, setEditingName] = useState(false);
@@ -209,7 +225,23 @@ export function WorkoutEditor() {
         </div>}
         {circuit && <p className="text-xs mt-2" style={{color:'var(--text-faint)'}}>Aquecimento, força e técnica uma vez antes das voltas; desaquecimento uma vez depois. Só as estações do Circuito se repetem.</p>}
         {circuit && <div className="mt-3 border-t pt-3" style={{borderColor:'var(--border)'}}>
-          <label className="text-xs font-semibold" htmlFor="circuit-stations">Colar sequência da aula (opcional)</label>
+          <label className="text-xs font-semibold" htmlFor="circuit-stations">Sequência do quadro da aula</label>
+          <label className="mt-2 block rounded-lg border p-3 text-xs cursor-pointer" style={{borderColor:'var(--border)',color:'var(--brand)'}}>
+            Fotografar ou selecionar foto do quadro
+            <input type="file" accept="image/*" capture="environment" className="block w-full mt-2 text-xs"
+              onChange={e=>{attachBoardPhoto(e.currentTarget.files?.[0]);e.currentTarget.value='';}}/>
+          </label>
+          {boardPhoto && <div className="mt-2">
+            <img src={boardPhoto} alt="Foto do quadro da aula; referência para transcrever as estações" className="w-full max-h-72 object-contain rounded-lg"
+              style={{background:'var(--surface)'}}/>
+            <button type="button" className="text-xs underline mt-1" onClick={()=>{
+              if(boardPhotoRef.current) URL.revokeObjectURL(boardPhotoRef.current);
+              boardPhotoRef.current=null;setBoardPhoto(null);
+            }}>Remover foto</button>
+          </div>}
+          <p className="text-xs mt-1" style={{color:'var(--text-dim)'}}>
+            A foto fica somente nesta tela, sem upload. Confira o quadro e transcreva cada estação; não há leitura automática da imagem.
+          </p>
           <p className="text-xs mt-1 mb-2" style={{color:'var(--text-faint)'}}>Uma estação por linha: nome exato do catálogo | meta. Exemplo: SkiErg | 500 m</p>
           <textarea id="circuit-stations" rows={3} value={bulkStations} onChange={e=>setBulkStations(e.target.value)}
             placeholder={'SkiErg | 500 m\nWall ball | 20 reps'} className="w-full rounded-lg p-3 text-sm" style={{background:'var(--surface-3)'}} />

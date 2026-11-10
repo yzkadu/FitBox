@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { X, Plus, Check, Trash2, Clock, Bot, Calculator, TimerReset, Eye, Pause, Play, Volume2, MapPin } from 'lucide-react';
+import { X, Plus, Check, Trash2, Clock, Bot, Calculator, TimerReset, Eye, Pause, Play, Volume2, MapPin, ArrowUp, ArrowDown } from 'lucide-react';
 import { useAppData } from '../hooks/useAppData';
 import {
   addExerciseToSession,
   addSetToSessionExercise,
   appendAmrapRound,
+  addUpcomingCircuitStation,
+  moveUpcomingCircuitStation,
   updateStationResult,
   removeSetFromSessionExercise,
   removeExerciseFromSession,
@@ -87,6 +89,10 @@ export function SessionExecution() {
   const navigate = useNavigate();
   const { sessions, exercises } = useAppData();
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [stationPickerOpen,setStationPickerOpen] = useState(false);
+  const [stationGoal,setStationGoal] = useState('10 reps');
+  const [stationNextRoundOnly,setStationNextRoundOnly] = useState(false);
+  const [stationError,setStationError] = useState<string|null>(null);
   const [confirmDiscard, setConfirmDiscard] = useState(false);
   const [discarding, setDiscarding] = useState(false);
   const [discardError, setDiscardError] = useState<string | null>(null);
@@ -302,6 +308,16 @@ export function SessionExecution() {
     addExerciseToSession(session!.id, ex.id);
     setPickerOpen(false);
   }
+  function handleAddUpcomingStation(ex:Exercise) {
+    const result=addUpcomingCircuitStation(session!.id,ex.id,stationGoal,stationNextRoundOnly);
+    if(!result.ok) {setStationError(result.error);return;}
+    setStationPickerOpen(false);
+    setStationError(null);
+  }
+  function handleMoveUpcoming(entryId:string,direction:-1|1) {
+    const result=moveUpcomingCircuitStation(session!.id,entryId,direction);
+    setStationError(result.ok ? null : result.error);
+  }
 
   const anySetLogged = session.exercises.some((se) => se.sets.some((st) => st.completed || st.reps > 0));
   const completedSets = session.exercises.reduce((sum,se)=>
@@ -478,6 +494,12 @@ export function SessionExecution() {
               {se.blockType && se.blockType !== 'circuit' && <p className="text-xs font-semibold mb-2" style={{color:'var(--brand)'}}>
                 {se.blockType === 'warmup' ? 'Aquecimento' : se.blockType === 'strength' ? 'Força' : se.blockType === 'technique' ? 'Técnica' : 'Desaquecimento'}
               </p>}
+              {se.circuitRound != null && se.circuitFormat !== 'emom' && <div className="flex justify-end gap-2 mb-2">
+                <button type="button" onClick={()=>handleMoveUpcoming(se.id,-1)} className="p-1.5 rounded-lg text-xs flex items-center gap-1"
+                  style={{background:'var(--surface-2)',color:'var(--text-dim)'}} aria-label="Mover estação para cima nas voltas pendentes"><ArrowUp size={14}/> Subir</button>
+                <button type="button" onClick={()=>handleMoveUpcoming(se.id,1)} className="p-1.5 rounded-lg text-xs flex items-center gap-1"
+                  style={{background:'var(--surface-2)',color:'var(--text-dim)'}} aria-label="Mover estação para baixo nas voltas pendentes"><ArrowDown size={14}/> Descer</button>
+              </div>}
               <div className="flex items-center gap-2 mb-2">
                 <button type="button" aria-label="Ver demonstração do exercício"
                   onClick={() => setExerciseGuideId(exerciseGuideId === se.id ? null : se.id)}>
@@ -581,6 +603,25 @@ export function SessionExecution() {
           );
         })}
 
+        {stationError && <p role="alert" className="text-xs p-3 rounded-lg" style={{color:'var(--danger)',background:'var(--surface-2)'}}>{stationError}</p>}
+        {session.exercises.some(se=>se.circuitRound!=null) && circuitFormat !== 'emom' && (
+          <div className="rounded-xl p-3 flex flex-col gap-2" style={{background:'var(--surface-2)'}}>
+            <p className="text-sm font-semibold">Professor alterou o circuito?</p>
+            <p className="text-xs" style={{color:'var(--text-dim)'}}>Inclua uma estação nova nas voltas ainda pendentes. As voltas concluídas e os resultados ficam preservados.</p>
+            <label className="text-xs" style={{color:'var(--text-dim)'}}>Meta para a nova estação
+              <input value={stationGoal} onChange={e=>setStationGoal(e.target.value)} maxLength={80}
+                className="block w-full rounded-lg p-2 mt-1 text-sm" style={{background:'var(--surface)'}} placeholder="Ex.: 500 m / 15 reps / 45 seg"/>
+            </label>
+            {circuitFormat !== 'amrap' && <label className="text-xs flex items-center gap-2" style={{color:'var(--text-dim)'}}>
+              <input type="checkbox" checked={stationNextRoundOnly} onChange={e=>setStationNextRoundOnly(e.target.checked)}/>
+              Adicionar apenas a partir da próxima volta
+            </label>}
+            <button type="button" onClick={()=>{setStationError(null);setStationPickerOpen(true);}}
+              className="rounded-lg p-2.5 text-xs font-semibold" style={{background:'var(--brand)',color:'white'}}>
+              + Escolher nova estação
+            </button>
+          </div>
+        )}
         {canAddAmrapRound && (
           <button type="button" onClick={() => appendAmrapRound(session.id)}
             className="w-full rounded-xl p-3 text-sm font-semibold"
@@ -598,6 +639,8 @@ export function SessionExecution() {
       </div>
 
       <ExercisePicker open={pickerOpen} onClose={() => setPickerOpen(false)} onSelect={handleAddExercise} />
+      <ExercisePicker open={stationPickerOpen} onClose={()=>setStationPickerOpen(false)}
+        onSelect={handleAddUpcomingStation} title="Nova estação do circuito" />
 
       {restRemaining !== null && restTotal !== null && (
         <div
