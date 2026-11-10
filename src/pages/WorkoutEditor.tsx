@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Plus, ArrowUp, ArrowDown, Sparkles, X, Play, Repeat } from 'lucide-react';
 import { useAppData } from '../hooks/useAppData';
 import {
@@ -9,6 +9,7 @@ import {
   updateWorkout,
   replaceWorkoutExercise,
   reorderWorkoutExercises,
+  setWorkoutCircuit,
 } from '../lib/actions';
 import { startSession } from '../lib/actions';
 import { Card, Button, EmptyState } from '../components/ui';
@@ -43,6 +44,10 @@ const QUICK_BLOCKS = [
 export function WorkoutEditor() {
   const { workoutId } = useParams();
   const navigate = useNavigate();
+  const [params] = useSearchParams();
+  const [circuitDraft,setCircuitDraft] = useState(() => params.get('circuit') === '1');
+  const [draftRounds,setDraftRounds] = useState(3);
+  const [draftRest,setDraftRest] = useState(60);
   const { workouts, exercises } = useAppData();
   const [pickerOpen, setPickerOpen] = useState(false);
   const [editingName, setEditingName] = useState(false);
@@ -62,6 +67,23 @@ export function WorkoutEditor() {
 
   const exerciseById = new Map(exercises.map((e) => [e.id, e]));
   const sorted = workout.exercises.slice().sort((a, b) => a.order - b.order);
+  const circuit = sorted.length ? Boolean(sorted[0].circuitMode) : circuitDraft;
+  const rounds = sorted.length ? (sorted[0].circuitRounds ?? 3) : draftRounds;
+  const circuitRest = sorted.length ? (sorted[0].circuitRestSeconds ?? 60) : draftRest;
+  function changeCircuit(enabled: boolean) {
+    setCircuitDraft(enabled);
+    if (sorted.length) setWorkoutCircuit(workout!.id,enabled,rounds,circuitRest);
+  }
+  function changeRounds(value: number) {
+    const next=Math.max(1,Math.min(20,value||1));
+    setDraftRounds(next);
+    if (sorted.length) setWorkoutCircuit(workout!.id,true,next,circuitRest);
+  }
+  function changeCircuitRest(value: number) {
+    const next=Math.max(0,Math.min(900,value||0));
+    setDraftRest(next);
+    if (sorted.length) setWorkoutCircuit(workout!.id,true,rounds,next);
+  }
   
   function moveEntry(id: string, direction: -1 | 1) {
     const ids = sorted.map((e) => e.id);
@@ -80,12 +102,14 @@ export function WorkoutEditor() {
         used.add(id);
       }
     });
+    if (circuit) setWorkoutCircuit(workout!.id,true,rounds,circuitRest);
     setShowQuickBlocks(false);
   }
 
 
   function handleSelectExercise(ex: Exercise) {
-    addExerciseToWorkout(workout!.id, ex.id);
+    addExerciseToWorkout(workout!.id, ex.id, circuit ? 1 : 3, circuit ? '10 reps' : '10-12');
+    if (circuit) setWorkoutCircuit(workout!.id,true,rounds,circuitRest);
     setPickerOpen(false);
   }
 
@@ -128,6 +152,18 @@ export function WorkoutEditor() {
         )}
       </div>
 
+      <div className="rounded-xl px-4 py-3 mb-3" style={{background:'var(--surface-2)'}}>
+        <div className="flex justify-between items-center gap-3">
+          <div><p className="text-sm font-semibold">Formato do treino</p><p className="text-xs mt-1" style={{color:'var(--text-faint)'}}>{circuit ? 'Circuito: todas as estações, repetidas por volta' : 'Tradicional: séries por exercício'}</p></div>
+          <button type="button" onClick={() => changeCircuit(!circuit)} aria-pressed={circuit}
+            className="rounded-lg px-3 py-2 text-xs font-semibold" style={{background:circuit?'var(--brand)':'var(--surface-3)',color:circuit?'white':'var(--text)'}}>{circuit?'Circuito ativo':'Usar circuito'}</button>
+        </div>
+        {circuit && <div className="flex flex-wrap gap-3 mt-3">
+          <label className="text-xs">Voltas <input type="number" min={1} max={20} value={rounds} onChange={e => changeRounds(Number(e.target.value))} className="block w-20 rounded-lg p-2 mt-1" style={{background:'var(--surface-3)'}} /></label>
+          <label className="text-xs">Pausa entre voltas (seg) <input type="number" min={0} max={900} step={15} value={circuitRest} onChange={e => changeCircuitRest(Number(e.target.value))} className="block w-28 rounded-lg p-2 mt-1" style={{background:'var(--surface-3)'}} /></label>
+          <p className="w-full text-xs" style={{color:'var(--text-faint)'}}>Adicione as estações na ordem do professor. Em cada uma registre a meta: 500 m, 20 reps, 1 min etc. Durante o treino, a lista será organizada por voltas.</p>
+        </div>}
+      </div>
       <div className="mb-3">
         <button type="button" onClick={() => setShowQuickBlocks((open) => !open)}
           className="w-full flex items-center justify-between rounded-xl py-3 px-4 text-sm font-semibold"
@@ -226,11 +262,12 @@ export function WorkoutEditor() {
                     min={1}
                     value={we.targetSets}
                     onChange={(e) => updateWorkoutExercise(workout.id, we.id, { targetSets: Number(e.target.value) || 1 })}
-                    className="w-11 text-center rounded-lg py-1.5 text-sm"
+                    disabled={circuit}
+                    className="w-11 text-center rounded-lg py-1.5 text-sm disabled:opacity-40"
                     style={{ background: 'var(--surface-2)' }}
                   />
                   <span className="text-xs" style={{ color: 'var(--text-faint)' }}>
-                    séries ×
+                    {circuit ? 'meta:' : 'séries ×'}
                   </span>
                   <input
                     value={we.targetReps}
@@ -241,12 +278,12 @@ export function WorkoutEditor() {
                   />
                 </div>
                 <div className="pl-7 flex flex-col gap-2">
-                  <label className="flex items-center gap-2 text-xs" style={{ color: 'var(--text-faint)' }}>
+                  {!circuit && <label className="flex items-center gap-2 text-xs" style={{ color: 'var(--text-faint)' }}>
                     Descanso entre séries (seg)
                     <input type="number" min={0} max={600} step={15} value={we.restSeconds ?? 90}
                       onChange={(e) => updateWorkoutExercise(workout.id, we.id, { restSeconds: Number(e.target.value) || 0 })}
                       className="w-20 rounded-lg px-2 py-1.5 text-xs" style={{ background: 'var(--surface-2)' }} />
-                  </label>
+                  </label>}
                   <textarea rows={2} value={we.notes ?? ''}
                     onChange={(e) => updateWorkoutExercise(workout.id, we.id, { notes: e.target.value })}
                     placeholder="Instruções, intensidade, adaptações ou equipamento..."
