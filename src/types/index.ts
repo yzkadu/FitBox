@@ -30,6 +30,9 @@ export interface WorkoutExercise {
   targetReps: string; // e.g. "8-12" or "10"
   restSeconds?: number;
   notes?: string;
+  circuitMode?: boolean;
+  circuitRounds?: number;
+  circuitRestSeconds?: number;
   order: number;
 }
 
@@ -62,6 +65,9 @@ export interface SessionExercise {
   /** Orientação de séries do montador, inclusive tempo e distância em estações HYROX. */
   targetReps?: string;
   restSeconds?: number;
+  circuitRound?: number;
+  circuitStation?: number;
+  circuitRounds?: number;
 }
 
 /** A completed (or in-progress) workout session, derived from a Workout template */
