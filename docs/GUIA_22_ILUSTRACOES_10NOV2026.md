@@ -6,11 +6,11 @@ Recebidas **5 páginas** de referência em conversa: 4 ombros, 9 pernas, 4 glút
 
 O pacote gerado nesta conversa é `FitBox_22_ilustracoes_prontas.zip`, contendo `sprite.webp` (atlas WebP de 5 colunas × 5 linhas, com 22 quadros), `mapping.json` e `README.txt`.
 
-Para ativar os vínculos implementados neste PR é **obrigatório incluir fisicamente** o arquivo:
+Os vínculos implementados neste PR utilizam o arquivo **incluído no repositório**:
 
 `src/assets/exercise-guide/supplement-22/sprite.webp`
 
-O mecanismo de `import.meta.glob` só ativa a substituição quando esse arquivo realmente estiver no código compilado. Sem o binário, permanece a mídia anterior, para não aparecer imagem quebrada. **Não afirmar integração visual concluída até o WebP estar commitado.**
+O WebP original em resolução 1400 × 1100 está versionado como blob Git. O `import.meta.glob` ativa as imagens somente quando o arquivo está realmente no bundle; a mídia anterior permanece como fallback quando o arquivo não existe. A presença do binário foi verificada; inspeção final no dispositivo real continua recomendada.
 
 ## Ordem dos 22 quadros
 
@@ -33,4 +33,4 @@ O mecanismo de `import.meta.glob` só ativa a substituição quando esse arquivo
 
 ## Estado desta branch
 
-Mapeamento feito. Binário local extraído dos uploads, porém **ainda não transferido ao GitHub por limitação de upload binário do conector disponível nesta conversa**. Não integrar esta branch sozinha se a intenção for publicar todas as 22 ilustrações.
+Mapeamento concluído e atlas binário original incluído no GitHub. As duas pipelines de validação e o status de preview Vercel terminaram com sucesso no commit `65c2074`. A verificação manual em dispositivos físicos, autenticação e diferentes larguras de tela permanece pendente.
