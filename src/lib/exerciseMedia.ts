@@ -1,4 +1,5 @@
 import type { Exercise } from '../types';
+import { getSupplementIllustration } from './supplementIllustrationMedia';
 import { getConditioningIllustration } from './conditioningIllustrationMedia';
 import { getChestIllustration } from './chestIllustrationMedia';
 import { getBicepsIllustration } from './bicepsIllustrationMedia';
@@ -143,6 +144,16 @@ export interface ExerciseMediaResult {
 export function exerciseMedia(exercise?: Exercise | null): ExerciseMediaResult | null {
   const exerciseId = exercise?.id;
   if (!exerciseId) return null;
+  const supplement = getSupplementIllustration(exerciseId);
+  if (supplement) return {
+    first:supplement.src,
+    spriteIndex:supplement.index,
+    spriteRows:supplement.rows,
+    spriteAspectRatio:supplement.aspectRatio,
+    sourceId:exerciseId,
+    kind:'ilustracao',
+    credit:'Ilustração do guia complementar de 22 exercícios fornecido pelo usuário.',
+  };
   const conditioningIllustration = getConditioningIllustration(exerciseId);
   if (conditioningIllustration) return {
     first:conditioningIllustration.src,
