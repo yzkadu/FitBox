@@ -4,6 +4,7 @@ import { getBicepsIllustration } from './bicepsIllustrationMedia';
 import { getTricepsIllustration } from './tricepsIllustrationMedia';
 import { getBackShoulderIllustration } from './backShoulderIllustrationMedia';
 import { getLowerBodyIllustration } from './lowerBodyIllustrationMedia';
+import { getAbdomenIllustration } from './abdomenIllustrationMedia';
 import { LOWER_BODY_PHOTO_IDS } from './lowerBodyPhotoMedia';
 import { HYROX_MEDIA, HYROX_EXPECTED_EXERCISES } from './hyroxMedia';
 import { EXPANDED_EXECUTION_MEDIA_IDS } from './exerciseMediaExpansion';
@@ -197,6 +198,16 @@ export function exerciseMedia(exercise?: Exercise | null): ExerciseMediaResult |
       credit: 'Ilustração recortada do guia de pernas, glúteos ou panturrilhas enviado pelo usuário.',
     };
   }
+  const abdomenIllustration = getAbdomenIllustration(exerciseId);
+  if (abdomenIllustration) return {
+    first: abdomenIllustration.src,
+    spriteIndex: abdomenIllustration.index,
+    spriteRows: abdomenIllustration.rows,
+    spriteAspectRatio: abdomenIllustration.aspectRatio,
+    sourceId: exerciseId,
+    kind: 'ilustracao',
+    credit: 'Ilustração do guia abdominal fornecido pelo usuário.',
+  };
   const curated = HYROX_MEDIA[exerciseId];
   if (curated) return curated;
   const id = VERIFIED_MEDIA_IDS[exerciseId] ?? EXPANDED_EXECUTION_MEDIA_IDS[exerciseId] ?? NOVEMBER_EXERCISE_MEDIA_IDS[exerciseId] ?? ROUND_TWO_EXERCISE_MEDIA_IDS[exerciseId] ?? LOWER_BODY_PHOTO_IDS[exerciseId];
