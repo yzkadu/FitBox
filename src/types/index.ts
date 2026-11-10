@@ -33,6 +33,9 @@ export interface WorkoutExercise {
   circuitMode?: boolean;
   circuitRounds?: number;
   circuitRestSeconds?: number;
+  /** Modalidade do circuito; fichas antigas assumem rounds. */
+  circuitFormat?: 'rounds' | 'amrap' | 'emom' | 'for_time';
+  circuitDurationMinutes?: number;
   order: number;
 }
 
@@ -68,6 +71,8 @@ export interface SessionExercise {
   circuitRound?: number;
   circuitStation?: number;
   circuitRounds?: number;
+  circuitFormat?: 'rounds' | 'amrap' | 'emom' | 'for_time';
+  circuitDurationMinutes?: number;
 }
 
 /** A completed (or in-progress) workout session, derived from a Workout template */
