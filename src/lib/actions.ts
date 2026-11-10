@@ -346,7 +346,7 @@ export function addExerciseToWorkout(
       circuitRestSeconds: w.exercises[0]?.circuitRestSeconds,
       circuitFormat: w.exercises[0]?.circuitFormat,
       circuitDurationMinutes: w.exercises[0]?.circuitDurationMinutes,
-      blockType: w.exercises[0]?.circuitMode ? 'circuit' : 'strength',
+      blockType: w.exercises[0]?.circuitMode ? 'circuit' : undefined,
     };
     w.exercises.push(entry);
   });
