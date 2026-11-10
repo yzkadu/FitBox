@@ -202,7 +202,7 @@ export function WorkoutEditor() {
             <input type="number" min={1} max={180} value={circuitDuration} onChange={e => changeCircuitDuration(Number(e.target.value))} className="block w-24 rounded-lg p-2 mt-1" style={{background:'var(--surface-3)'}} /></label>}
           {circuitFormat !== 'emom' && <label className="text-xs">Pausa entre voltas (seg) <input type="number" min={0} max={900} step={15} value={circuitRest} onChange={e => changeCircuitRest(Number(e.target.value))} className="block w-28 rounded-lg p-2 mt-1" style={{background:'var(--surface-3)'}} /></label>}
           <p className="w-full text-xs" style={{color:'var(--text-faint)'}}>{circuitFormat === 'emom' ? 'Cada minuto é uma estação, repetindo a lista até terminar a duração. Registre a conclusão ao executar.' : circuitFormat === 'amrap' ? 'Complete o máximo de voltas que conseguir no tempo definido; a ficha prepara até 20 voltas, mas você pode encerrar antes.' : circuitFormat === 'for_time' ? 'Complete as voltas na ordem; o tempo limite é uma referência, não encerra seu registro automaticamente.' : 'Adicione as estações na ordem do professor. Em cada uma registre a meta: 500 m, 20 reps, 1 min etc.'}</p>
-        </div>
+        </div>}
         {circuit && <div className="mt-3 border-t pt-3" style={{borderColor:'var(--border)'}}>
           <label className="text-xs font-semibold" htmlFor="circuit-stations">Colar sequência da aula (opcional)</label>
           <p className="text-xs mt-1 mb-2" style={{color:'var(--text-faint)'}}>Uma estação por linha: nome exato do catálogo | meta. Exemplo: SkiErg | 500 m</p>
