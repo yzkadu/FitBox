@@ -226,6 +226,14 @@ export function createBuilderDraft(prefs: BuilderPrefs, mainId: string, inspirat
   if (workouts.some(w=>w.exercises.length<3)) {
     warnings.push('Algumas fichas têm menos de 3 exercícios compatíveis; revise antes de salvar.');
   }
+  if(prefs.modes.includes('forca') && !prefs.modes.includes('hyrox')) {
+    for(let i=1;i<workouts.length;i++) {
+      const previous=new Set(directAnatomicalCoverage(workouts[i-1].exercises.map(e=>e.id)).regions);
+      const repeated=directAnatomicalCoverage(workouts[i].exercises.map(e=>e.id)).regions
+        .filter(region=>previous.has(region));
+      if(repeated.length>=2) warnings.push('Possível sobreposição de estímulos em dias consecutivos entre '+workouts[i-1].title+' e '+workouts[i].title+'. Revise recuperação, intensidade e agenda.');
+    }
+  }
   if(prefs.modes.includes('forca')&&!prefs.modes.includes('hyrox')) {
     warnings.push('Cobertura muscular estimada por regiões e padrões biomecânicos. Músculos secundários não contam como séries completas. Confira a prévia e ajuste livremente.');
   }
