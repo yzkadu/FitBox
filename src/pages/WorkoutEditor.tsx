@@ -48,6 +48,8 @@ export function WorkoutEditor() {
   const [circuitDraft,setCircuitDraft] = useState(() => params.get('circuit') === '1');
   const [draftRounds,setDraftRounds] = useState(3);
   const [draftRest,setDraftRest] = useState(60);
+  const [bulkStations,setBulkStations] = useState('');
+  const [bulkError,setBulkError] = useState('');
   const { workouts, exercises } = useAppData();
   const [pickerOpen, setPickerOpen] = useState(false);
   const [editingName, setEditingName] = useState(false);
@@ -85,6 +87,19 @@ export function WorkoutEditor() {
     if (sorted.length) setWorkoutCircuit(workout!.id,true,rounds,next);
   }
   
+  function addStationsFromText() {
+    const lines = bulkStations.split(/\r?\n/).map(line=>line.trim()).filter(Boolean);
+    if (!lines.length) return;
+    const normalize = (value:string) => value.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
+    const catalog = new Map(exercises.map(ex=>[normalize(ex.name),ex]));
+    const entries = lines.map(line=>{const [name,...goal]=line.split('|');return {name:name.trim(),goal:goal.join('|').trim()||'10 reps',ex:catalog.get(normalize(name))};});
+    const missing = entries.filter(item=>!item.ex).map(item=>item.name);
+    if (missing.length) {setBulkError('Exercícios não encontrados: '+missing.join(', '));return;}
+    entries.forEach(item=>addExerciseToWorkout(workout!.id,item.ex!.id,1,item.goal));
+    setWorkoutCircuit(workout!.id,true,rounds,circuitRest);
+    setBulkStations('');setBulkError('');
+  }
+
   function moveEntry(id: string, direction: -1 | 1) {
     const ids = sorted.map((e) => e.id);
     const index = ids.indexOf(id);
@@ -162,6 +177,16 @@ export function WorkoutEditor() {
           <label className="text-xs">Voltas <input type="number" min={1} max={20} value={rounds} onChange={e => changeRounds(Number(e.target.value))} className="block w-20 rounded-lg p-2 mt-1" style={{background:'var(--surface-3)'}} /></label>
           <label className="text-xs">Pausa entre voltas (seg) <input type="number" min={0} max={900} step={15} value={circuitRest} onChange={e => changeCircuitRest(Number(e.target.value))} className="block w-28 rounded-lg p-2 mt-1" style={{background:'var(--surface-3)'}} /></label>
           <p className="w-full text-xs" style={{color:'var(--text-faint)'}}>Adicione as estações na ordem do professor. Em cada uma registre a meta: 500 m, 20 reps, 1 min etc. Durante o treino, a lista será organizada por voltas.</p>
+        </div>}
+        {circuit && <div className="mt-3 border-t pt-3" style={{borderColor:'var(--border)'}}>
+          <label className="text-xs font-semibold" htmlFor="circuit-stations">Colar sequência da aula (opcional)</label>
+          <p className="text-xs mt-1 mb-2" style={{color:'var(--text-faint)'}}>Uma estação por linha: nome exato do catálogo | meta. Exemplo: SkiErg | 500 m</p>
+          <textarea id="circuit-stations" rows={3} value={bulkStations} onChange={e=>setBulkStations(e.target.value)}
+            placeholder={'SkiErg | 500 m\nWall ball | 20 reps'} className="w-full rounded-lg p-3 text-sm" style={{background:'var(--surface-3)'}} />
+          {bulkError && <p role="alert" className="text-xs mt-2" style={{color:'var(--danger)'}}>{bulkError}</p>}
+          <button type="button" onClick={addStationsFromText} disabled={!bulkStations.trim()}
+            className="mt-2 rounded-lg px-3 py-2 text-xs font-semibold disabled:opacity-40"
+            style={{background:'var(--brand)',color:'white'}}>Adicionar sequência</button>
         </div>}
       </div>
       <div className="mb-3">
