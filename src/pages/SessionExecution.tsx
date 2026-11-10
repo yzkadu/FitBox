@@ -5,6 +5,8 @@ import { useAppData } from '../hooks/useAppData';
 import {
   addExerciseToSession,
   addSetToSessionExercise,
+  appendAmrapRound,
+  updateStationResult,
   removeSetFromSessionExercise,
   removeExerciseFromSession,
   updateSet,
@@ -90,6 +92,16 @@ export function SessionExecution() {
 
   const session = sessions.find((s) => s.id === sessionId);
   const elapsed = useElapsed(session?.startedAt ?? new Date().toISOString());
+  const elapsedParts = elapsed.split(':').map(Number);
+  const elapsedSeconds = (elapsedParts[0] || 0) * 60 + (elapsedParts[1] || 0);
+  const circuitEntry = session?.exercises.find(se => se.circuitFormat);
+  const circuitFormat = circuitEntry?.circuitFormat;
+  const durationSeconds = (circuitEntry?.circuitDurationMinutes ?? 20) * 60;
+  const remainingSeconds = Math.max(0, durationSeconds - elapsedSeconds);
+  const activeEmomMinute = Math.max(1, Math.min(circuitEntry?.circuitDurationMinutes ?? 20, Math.floor(elapsedSeconds / 60) + 1));
+  const currentAmrapRound = Math.max(0,...(session?.exercises ?? []).map(se=>se.circuitRound ?? 0));
+  const lastAmrapStations = (session?.exercises ?? []).filter(se=>se.circuitFormat === 'amrap' && se.circuitRound === currentAmrapRound);
+  const canAddAmrapRound = circuitFormat === 'amrap' && remainingSeconds > 0 && currentAmrapRound < 99 && lastAmrapStations.length > 0 && lastAmrapStations.every(se=>se.sets.every(st=>st.completed));
 
   // Timer de descanso: começa sozinho quando uma série é marcada como
   // concluída, conta regressivamente, e avisa (som + vibração, quando
@@ -248,8 +260,24 @@ export function SessionExecution() {
         </Button>
       </div>
 
+      {circuitFormat && circuitFormat !== 'rounds' && (
+        <div className="mx-4 mt-3 p-3 rounded-xl flex items-center justify-between gap-3"
+          style={{background:'var(--brand-dim)',color:'var(--brand)'}} role="timer" aria-label="Relógio do circuito">
+          <div>
+            <p className="text-xs font-semibold">{circuitFormat === 'amrap' ? 'AMRAP' : circuitFormat === 'emom' ? 'EMOM' : 'FOR TIME'}</p>
+            <p className="text-xs mt-1">
+              {circuitFormat === 'emom' ? `Minuto ${activeEmomMinute} de ${circuitEntry?.circuitDurationMinutes}` :
+               circuitFormat === 'amrap' ? (remainingSeconds === 0 ? 'Tempo-alvo atingido. Você pode finalizar o treino.' : 'Máximo de voltas até o fim do tempo') :
+               'Complete a sequência na ordem; o relógio continua se ultrapassar o limite.'}
+            </p>
+          </div>
+          <p className="text-xl font-bold tabular-nums" aria-live="off">
+            {formatMMSS(circuitFormat === 'for_time' ? elapsedSeconds : remainingSeconds)}
+          </p>
+        </div>
+      )}
       <div className="px-4 py-2 flex items-center gap-3" role="status"
-        aria-label={completedSets+' séries concluídas de '+plannedSets}>
+        aria-label={circuitFormat === 'amrap' ? completedSets+' estações registradas' : completedSets+' séries concluídas de '+plannedSets}>
         <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{background:'var(--surface-3)'}}>
           <div className="h-full rounded-full transition-all" style={{
             background:'var(--brand)',width:progressPercent+'%'}}/>
@@ -346,7 +374,10 @@ export function SessionExecution() {
             coach.action === 'increase' ? 'var(--success)' : coach.action === 'deload' ? 'var(--warn)' : 'var(--text-faint)';
           return (
             <div key={se.id} className="rounded-2xl border p-3.5" style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
-              {se.circuitRound != null && <div className="flex items-center justify-between mb-3 rounded-lg px-3 py-2 text-xs font-semibold" style={{background:'var(--brand-dim)',color:'var(--brand)'}}><span>Volta {se.circuitRound} de {se.circuitRounds}</span><span>Estação {se.circuitStation} · {stationIndex + 1}/{session.exercises.length}</span></div>}
+              {se.circuitRound != null && <div className="flex items-center justify-between mb-3 rounded-lg px-3 py-2 text-xs font-semibold" style={{background:'var(--brand-dim)',color:'var(--brand)'}}>
+                <span>{se.circuitFormat === 'emom' ? `Minuto ${stationIndex + 1}` : se.circuitFormat === 'amrap' ? `Volta ${se.circuitRound}` : `Volta ${se.circuitRound} de ${se.circuitRounds}`}</span>
+                <span>Estação {se.circuitStation} · {stationIndex + 1}/{session.exercises.length}</span>
+              </div>}
               <div className="flex items-center gap-2 mb-2">
                 <button type="button" aria-label="Ver demonstração do exercício"
                   onClick={() => setExerciseGuideId(exerciseGuideId === se.id ? null : se.id)}>
@@ -396,6 +427,16 @@ export function SessionExecution() {
                 </p>
               )}
 
+              {se.circuitRound != null && (
+                <label className="block mb-3 text-xs" style={{color:'var(--text-dim)'}}>
+                  Resultado real (opcional): distância, tempo ou repetições
+                  <input key={se.id} type="text" defaultValue={se.actualResult ?? ''}
+                    onBlur={e => updateStationResult(session.id,se.id,e.target.value.trim())}
+                    placeholder="Ex.: 485 m, 1min20s, 18 reps"
+                    className="block w-full mt-1 p-2.5 rounded-lg text-sm"
+                    style={{background:'var(--surface-2)',color:'var(--text)'}} />
+                </label>
+              )}
               <div className="flex items-center justify-between gap-2 mb-3 mt-3">
                 <p className="text-xs font-semibold" style={{ color: 'var(--text-dim)' }}>{se.circuitRound ? 'Registrar estação desta volta' : 'Registro individual de séries'}</p>
                 <p className="text-xs" style={{ color: 'var(--text-faint)' }}>
@@ -440,6 +481,13 @@ export function SessionExecution() {
           );
         })}
 
+        {canAddAmrapRound && (
+          <button type="button" onClick={() => appendAmrapRound(session.id)}
+            className="w-full rounded-xl p-3 text-sm font-semibold"
+            style={{background:'var(--brand-dim)',color:'var(--brand)'}}>
+            + Iniciar volta {currentAmrapRound + 1} do AMRAP
+          </button>
+        )}
         <button
           onClick={() => setPickerOpen(true)}
           className="flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-medium border-2 border-dashed"

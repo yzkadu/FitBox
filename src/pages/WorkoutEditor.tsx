@@ -48,6 +48,8 @@ export function WorkoutEditor() {
   const [circuitDraft,setCircuitDraft] = useState(() => params.get('circuit') === '1');
   const [draftRounds,setDraftRounds] = useState(3);
   const [draftRest,setDraftRest] = useState(60);
+  const [draftFormat,setDraftFormat] = useState<'rounds'|'amrap'|'emom'|'for_time'>('rounds');
+  const [draftDuration,setDraftDuration] = useState(20);
   const [bulkStations,setBulkStations] = useState('');
   const [bulkError,setBulkError] = useState('');
   const { workouts, exercises } = useAppData();
@@ -72,21 +74,33 @@ export function WorkoutEditor() {
   const circuit = sorted.length ? Boolean(sorted[0].circuitMode) : circuitDraft;
   const rounds = sorted.length ? (sorted[0].circuitRounds ?? 3) : draftRounds;
   const circuitRest = sorted.length ? (sorted[0].circuitRestSeconds ?? 60) : draftRest;
+  const circuitFormat = sorted.length ? (sorted[0].circuitFormat ?? 'rounds') : draftFormat;
+  const circuitDuration = sorted.length ? (sorted[0].circuitDurationMinutes ?? 20) : draftDuration;
   function changeCircuit(enabled: boolean) {
     setCircuitDraft(enabled);
-    if (sorted.length) setWorkoutCircuit(workout!.id,enabled,rounds,circuitRest);
+    if (sorted.length) setWorkoutCircuit(workout!.id,enabled,rounds,circuitRest,circuitFormat,circuitDuration);
   }
   function changeRounds(value: number) {
     const next=Math.max(1,Math.min(20,value||1));
     setDraftRounds(next);
-    if (sorted.length) setWorkoutCircuit(workout!.id,true,next,circuitRest);
+    if (sorted.length) setWorkoutCircuit(workout!.id,true,next,circuitRest,circuitFormat,circuitDuration);
   }
   function changeCircuitRest(value: number) {
     const next=Math.max(0,Math.min(900,value||0));
     setDraftRest(next);
-    if (sorted.length) setWorkoutCircuit(workout!.id,true,rounds,next);
+    if (sorted.length) setWorkoutCircuit(workout!.id,true,rounds,next,circuitFormat,circuitDuration);
   }
   
+  function changeCircuitFormat(value: 'rounds'|'amrap'|'emom'|'for_time') {
+    setDraftFormat(value);
+    if (sorted.length) setWorkoutCircuit(workout!.id,true,rounds,circuitRest,value,circuitDuration);
+  }
+  function changeCircuitDuration(value: number) {
+    const next = Math.max(1,Math.min(180, value || 1));
+    setDraftDuration(next);
+    if (sorted.length) setWorkoutCircuit(workout!.id,true,rounds,circuitRest,circuitFormat,next);
+  }
+
   function addStationsFromText() {
     const lines = bulkStations.split(/\r?\n/).map(line=>line.trim()).filter(Boolean);
     if (!lines.length) return;
@@ -96,7 +110,7 @@ export function WorkoutEditor() {
     const missing = entries.filter(item=>!item.ex).map(item=>item.name);
     if (missing.length) {setBulkError('Exercícios não encontrados: '+missing.join(', '));return;}
     entries.forEach(item=>addExerciseToWorkout(workout!.id,item.ex!.id,1,item.goal));
-    setWorkoutCircuit(workout!.id,true,rounds,circuitRest);
+    setWorkoutCircuit(workout!.id,true,rounds,circuitRest,circuitFormat,circuitDuration);
     setBulkStations('');setBulkError('');
   }
 
@@ -117,14 +131,14 @@ export function WorkoutEditor() {
         used.add(id);
       }
     });
-    if (circuit) setWorkoutCircuit(workout!.id,true,rounds,circuitRest);
+    if (circuit) setWorkoutCircuit(workout!.id,true,rounds,circuitRest,circuitFormat,circuitDuration);
     setShowQuickBlocks(false);
   }
 
 
   function handleSelectExercise(ex: Exercise) {
     addExerciseToWorkout(workout!.id, ex.id, circuit ? 1 : 3, circuit ? '10 reps' : '10-12');
-    if (circuit) setWorkoutCircuit(workout!.id,true,rounds,circuitRest);
+    if (circuit) setWorkoutCircuit(workout!.id,true,rounds,circuitRest,circuitFormat,circuitDuration);
     setPickerOpen(false);
   }
 
@@ -169,14 +183,25 @@ export function WorkoutEditor() {
 
       <div className="rounded-xl px-4 py-3 mb-3" style={{background:'var(--surface-2)'}}>
         <div className="flex justify-between items-center gap-3">
-          <div><p className="text-sm font-semibold">Formato do treino</p><p className="text-xs mt-1" style={{color:'var(--text-faint)'}}>{circuit ? 'Circuito: todas as estações, repetidas por volta' : 'Tradicional: séries por exercício'}</p></div>
+          <div><p className="text-sm font-semibold">Formato do treino</p><p className="text-xs mt-1" style={{color:'var(--text-faint)'}}>{circuit ? 'Circuito: sequência da turma em estações' : 'Tradicional: séries por exercício'}</p></div>
           <button type="button" onClick={() => changeCircuit(!circuit)} aria-pressed={circuit}
             className="rounded-lg px-3 py-2 text-xs font-semibold" style={{background:circuit?'var(--brand)':'var(--surface-3)',color:circuit?'white':'var(--text)'}}>{circuit?'Circuito ativo':'Usar circuito'}</button>
         </div>
         {circuit && <div className="flex flex-wrap gap-3 mt-3">
-          <label className="text-xs">Voltas <input type="number" min={1} max={20} value={rounds} onChange={e => changeRounds(Number(e.target.value))} className="block w-20 rounded-lg p-2 mt-1" style={{background:'var(--surface-3)'}} /></label>
-          <label className="text-xs">Pausa entre voltas (seg) <input type="number" min={0} max={900} step={15} value={circuitRest} onChange={e => changeCircuitRest(Number(e.target.value))} className="block w-28 rounded-lg p-2 mt-1" style={{background:'var(--surface-3)'}} /></label>
-          <p className="w-full text-xs" style={{color:'var(--text-faint)'}}>Adicione as estações na ordem do professor. Em cada uma registre a meta: 500 m, 20 reps, 1 min etc. Durante o treino, a lista será organizada por voltas.</p>
+          <label className="text-xs w-full">Tipo de circuito
+            <select aria-label="Formato do circuito" value={circuitFormat} onChange={e => changeCircuitFormat(e.target.value as 'rounds'|'amrap'|'emom'|'for_time')}
+              className="block w-full rounded-lg p-2 mt-1" style={{background:'var(--surface-3)'}}>
+              <option value="rounds">Por voltas (circuito tradicional)</option>
+              <option value="amrap">AMRAP — máximo de voltas no tempo</option>
+              <option value="emom">EMOM — uma estação por minuto</option>
+              <option value="for_time">For Time — completar as voltas no menor tempo</option>
+            </select>
+          </label>
+          {(circuitFormat === 'rounds' || circuitFormat === 'for_time') && <label className="text-xs">Voltas <input type="number" min={1} max={20} value={rounds} onChange={e => changeRounds(Number(e.target.value))} className="block w-20 rounded-lg p-2 mt-1" style={{background:'var(--surface-3)'}} /></label>}
+          {circuitFormat !== 'rounds' && <label className="text-xs">{circuitFormat === 'for_time' ? 'Tempo limite (min)' : 'Duração (min)'}
+            <input type="number" min={1} max={180} value={circuitDuration} onChange={e => changeCircuitDuration(Number(e.target.value))} className="block w-24 rounded-lg p-2 mt-1" style={{background:'var(--surface-3)'}} /></label>}
+          {circuitFormat !== 'emom' && <label className="text-xs">Pausa entre voltas (seg) <input type="number" min={0} max={900} step={15} value={circuitRest} onChange={e => changeCircuitRest(Number(e.target.value))} className="block w-28 rounded-lg p-2 mt-1" style={{background:'var(--surface-3)'}} /></label>}
+          <p className="w-full text-xs" style={{color:'var(--text-faint)'}}>{circuitFormat === 'emom' ? 'Cada minuto é uma estação, repetindo a lista até terminar a duração. Registre a conclusão ao executar.' : circuitFormat === 'amrap' ? 'Complete o máximo de voltas no tempo definido; durante a sessão, conclua as estações e adicione a próxima volta quando precisar.' : circuitFormat === 'for_time' ? 'Complete as voltas na ordem; o tempo limite é uma referência, não encerra seu registro automaticamente.' : 'Adicione as estações na ordem do professor. Em cada uma registre a meta: 500 m, 20 reps, 1 min etc.'}</p>
         </div>}
         {circuit && <div className="mt-3 border-t pt-3" style={{borderColor:'var(--border)'}}>
           <label className="text-xs font-semibold" htmlFor="circuit-stations">Colar sequência da aula (opcional)</label>
