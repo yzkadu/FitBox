@@ -65,6 +65,8 @@ export interface SessionExercise {
   exerciseId: string;
   sets: SetLog[];
   notes?: string;
+  /** Resultado efetivamente informado pelo usuário; não confundir com a meta. */
+  actualResult?: string;
   /** Orientação de séries do montador, inclusive tempo e distância em estações HYROX. */
   targetReps?: string;
   restSeconds?: number;
