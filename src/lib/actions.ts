@@ -316,6 +316,7 @@ export function duplicateWorkout(source: Workout): Workout {
     addExerciseToWorkout(copy.id,item.exerciseId,item.targetSets,
       item.targetReps,item.notes,item.restSeconds);
   }
+  if (source.exercises[0]?.circuitMode) setWorkoutCircuit(copy.id,true,source.exercises[0].circuitRounds ?? 3,source.exercises[0].circuitRestSeconds ?? 60);
   return copy;
 }
 
@@ -338,6 +339,9 @@ export function addExerciseToWorkout(
       notes,
       restSeconds,
       order: w.exercises.length,
+      circuitMode: w.exercises[0]?.circuitMode,
+      circuitRounds: w.exercises[0]?.circuitRounds,
+      circuitRestSeconds: w.exercises[0]?.circuitRestSeconds,
     };
     w.exercises.push(entry);
   });
@@ -353,6 +357,20 @@ export function updateWorkoutExercise(
     const w = d.workouts.find((w) => w.id === workoutId);
     const entry = w?.exercises.find((e) => e.id === entryId);
     if (entry) Object.assign(entry, patch);
+  });
+  syncWorkoutExercises(workoutId);
+}
+
+/** Configuração do circuito armazenada no JSON de exercícios; não requer migração SQL. */
+export function setWorkoutCircuit(workoutId: string, enabled: boolean, rounds = 3, restSeconds = 60) {
+  store.update(d => {
+    const workout = d.workouts.find(w => w.id === workoutId);
+    if (!workout) return;
+    workout.exercises = workout.exercises.map(entry => ({...entry,
+      circuitMode: enabled,
+      circuitRounds: enabled ? Math.max(1,Math.min(20,Math.floor(rounds)||1)) : undefined,
+      circuitRestSeconds: enabled ? Math.max(0,Math.min(900,Math.floor(restSeconds)||0)) : undefined,
+    }));
   });
   syncWorkoutExercises(workoutId);
 }
@@ -402,31 +420,29 @@ export function startSession(workout: Workout): Session {
     workoutName: workout.name,
     startedAt: new Date().toISOString(),
     finishedAt: null,
-    exercises: workout.exercises
-      .slice()
-      .sort((a, b) => a.order - b.order)
-      .map((we) => {
-        // Pré-preenche com a sugestão do treinador virtual (progressão de carga
-        // baseada no histórico), quando existir, para agilizar o registro.
-        const suggestion = getSuggestedStartingPoint(pastSessions, we.exerciseId);
-        return {
-          id: uid(),
-          exerciseId: we.exerciseId,
-          notes: we.notes,
-          targetReps: we.targetReps,
-          restSeconds: we.restSeconds,
-          // Só o peso é pré-preenchido (ponto de partida sugerido); as reps ficam
-          // em branco até o usuário realmente registrar o que fez na série, para
-          // não gravar no histórico uma série que não foi executada.
-          sets: Array.from({ length: we.targetSets }).map((_, i) => ({
-            id: uid(),
-            setNumber: i + 1,
-            weight: suggestion?.weight ?? 0,
-            reps: 0,
-            completed: false,
-          })),
-        };
-      }),
+    exercises: (() => {
+      const stations = workout.exercises.slice().sort((a, b) => a.order - b.order);
+      const circuit = Boolean(stations[0]?.circuitMode);
+      const rounds = circuit ? Math.max(1,Math.min(20,stations[0].circuitRounds ?? 3)) : 1;
+      const result: SessionExercise[] = [];
+      for (let round = 1; round <= rounds; round++) {
+        stations.forEach((we, index) => {
+          const suggestion = getSuggestedStartingPoint(pastSessions, we.exerciseId);
+          result.push({
+            id: uid(), exerciseId: we.exerciseId, notes: we.notes, targetReps: we.targetReps,
+            restSeconds: circuit ? (index === stations.length - 1 ? we.circuitRestSeconds ?? 60 : 0) : we.restSeconds,
+            circuitRound: circuit ? round : undefined,
+            circuitStation: circuit ? index + 1 : undefined,
+            circuitRounds: circuit ? rounds : undefined,
+            sets: Array.from({length: circuit ? 1 : we.targetSets}).map((_,i) => ({
+              id: uid(), setNumber: circuit ? round : i+1,
+              weight: suggestion?.weight ?? 0, reps: 0, completed: false,
+            })),
+          });
+        });
+      }
+      return result;
+    })(),
   };
   store.update((d) => {
     d.sessions.push(session);
