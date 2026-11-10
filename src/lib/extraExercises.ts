@@ -4,6 +4,8 @@ import type { Exercise } from '../types';
  * quando existe mapeamento validado em exerciseMedia.ts.
  */
 export const EXTRA_EXERCISES: Exercise[] = [
+  { id: 'ex-new-supinacaodeantebraco', name: 'Supinação de antebraço', muscleGroup: 'outro', equipment: 'halter' },
+  { id: 'ex-new-kettlebellswing', name: 'Kettlebell swing', muscleGroup: 'cardio', equipment: 'kettlebell' },
   { id: 'ex-new-supinocompegadafechada', name: 'Supino com pegada fechada', muscleGroup: 'peito', equipment: 'barra' },
   { id: 'ex-new-flexaocommaoselevadas', name: 'Flexão com mãos elevadas', muscleGroup: 'peito', equipment: 'banco' },
   { id: 'ex-new-flexaoarqueiro', name: 'Flexão arqueiro', muscleGroup: 'peito', equipment: 'peso corporal' },

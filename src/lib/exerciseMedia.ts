@@ -1,4 +1,5 @@
 import type { Exercise } from '../types';
+import { getConditioningIllustration } from './conditioningIllustrationMedia';
 import { getChestIllustration } from './chestIllustrationMedia';
 import { getBicepsIllustration } from './bicepsIllustrationMedia';
 import { getTricepsIllustration } from './tricepsIllustrationMedia';
@@ -142,6 +143,16 @@ export interface ExerciseMediaResult {
 export function exerciseMedia(exercise?: Exercise | null): ExerciseMediaResult | null {
   const exerciseId = exercise?.id;
   if (!exerciseId) return null;
+  const conditioningIllustration = getConditioningIllustration(exerciseId);
+  if (conditioningIllustration) return {
+    first:conditioningIllustration.src,
+    spriteIndex:conditioningIllustration.index,
+    spriteRows:conditioningIllustration.rows,
+    spriteAspectRatio:conditioningIllustration.aspectRatio,
+    sourceId:exerciseId,
+    kind:'ilustracao',
+    credit:'Guia visual original de mobilidade, antebraço, cardio, HYROX e funcional enviado pelo usuário.',
+  };
   const tricepsIllustration = getTricepsIllustration(exerciseId);
   if (tricepsIllustration) return {
     first:tricepsIllustration.src,
