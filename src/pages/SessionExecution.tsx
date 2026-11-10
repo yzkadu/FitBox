@@ -9,6 +9,7 @@ import {
   addUpcomingCircuitStation,
   moveUpcomingCircuitStation,
   updateStationResult,
+  updateCircuitClock,
   removeSetFromSessionExercise,
   removeExerciseFromSession,
   updateSet,
@@ -128,7 +129,7 @@ export function SessionExecution() {
   const circuitEntry = session?.exercises.find(se => se.circuitFormat);
   const circuitFormat = circuitEntry?.circuitFormat;
   const hasPreparation = session?.exercises.some(se => se.blockType && se.blockType !== 'circuit') ?? false;
-  const storedClock = clockData && clockData.sessionId === sessionId ? clockData.state : null;
+  const storedClock = circuitEntry?.circuitClock ?? (clockData && clockData.sessionId === sessionId ? clockData.state : null);
   const clock: CircuitClockState = storedClock ?? {
     startedAt: hasPreparation ? null : Date.parse(session?.startedAt ?? new Date().toISOString()),
     pausedAt:null,pausedMs:0,
@@ -160,6 +161,7 @@ export function SessionExecution() {
   function setCircuitClock(next:CircuitClockState) {
     setClockData(sessionId ? {sessionId,state:next} : null);
     writeCircuitClock(sessionId,next);
+    if(sessionId) updateCircuitClock(sessionId,next);
     setClockTick(Date.now());
   }
   function toggleCircuitPause() {
@@ -378,7 +380,7 @@ export function SessionExecution() {
             </button>}
           </div>
           <p className="text-[10px]" style={{color:'var(--text-dim)'}}>
-            Pausa registrada neste aparelho; ao trocar de dispositivo, o relógio pode não acompanhar a pausa.
+            O estado do cronômetro é salvo junto à sessão; em outro dispositivo, reabra a sessão após a sincronização. O tempo total da sessão ainda inclui aquecimento e pausas.
             {circuitFormat === 'emom' ? ' A estação do minuto atual fica destacada abaixo. Ative os avisos após interagir com a tela.' : ''}
           </p>
         </div>
