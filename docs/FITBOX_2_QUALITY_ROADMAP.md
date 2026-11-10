@@ -93,3 +93,27 @@ Este documento separa o que está **implementado** do que permanece **planejado*
 **P1:** criação de treino, Home, sessão, programas, imagens de execução.
 **P2:** nutrição mais ágil, acompanhamento de evolução, IA adaptativa.
 **P3:** refinamentos visuais e personalização avançada.
+
+## Progresso verificado em 10/11/2026
+
+- [x] PR #19: miniaturas e correções dos vínculos de mídia (integrado).
+- [x] PR #20: atlas de pernas, glúteos e panturrilhas (integrado).
+- [x] PR #21: guia abdominal (integrado).
+- [x] PR #22: mobilidade, antebraço, cardio, HYROX e funcional (integrado).
+- [x] PR #23: circuito HYROX por voltas e estações (integrado).
+- [x] PR #24: atlas original das últimas 22 ilustrações, arquivo WebP efetivamente incluído (integrado).
+- [x] PR #25: formatos AMRAP, EMOM e For Time; resultado real informado por estação (integrado).
+- [x] Auditoria estática: 330 IDs únicos no catálogo, todos com vínculo declarado de mídia; 11 atlas WebP presentes. Vínculo **não comprova** que cada foto remota carrega nem que a pose está tecnicamente correta.
+- [ ] Inspeção visual autenticada em celular e desktop para cada exercício, incluindo faixas azuis, zoom e corpo/equipamento cortado.
+- [ ] Validar links externos de fotografias, créditos e correspondência biomecânica com revisão humana.
+- [ ] Exercitar ponta a ponta criação/edição/duplicação/conclusão de treino, queda de rede, autenticação e sincronização Supabase.
+- [ ] EMOM com alertas de troca de estação, cronômetro pausável e blocos mistos (aquecimento/circuito/desaquecimento).
+- [ ] P0 geral: proteção de sessão, testes multiusuário e persistência após troca de dispositivo.
+
+### PRs antigas que exigem decisão antes de qualquer merge
+
+- **#13:** remoção da interface de nutrição contradiz uso atual do módulo; não integrar automaticamente.
+- **#8:** mapeamento de apenas 238/327 exercícios está obsoleto; comparar IDs antes de reutilizar qualquer patch.
+- **#5:** pacote original de 89 ilustrações contém histórico de pendência binária; evitar duplicar os atlas agora integrados.
+
+**Critério de conclusão:** CI verde e preview Vercel são necessários, mas não substituem QA autenticado e verificação visual dos movimentos.

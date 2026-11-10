@@ -14,22 +14,39 @@ function ExercisePhoto({ src, alt, spriteIndex, spriteRows = 8, spriteAspectRati
   src: string; alt: string; spriteIndex?: number; spriteRows?: number; spriteAspectRatio?: string;
 }) {
   const [broken, setBroken] = useState(false);
-  useEffect(() => { setBroken(false); }, [src]);
+  useEffect(() => { setBroken(false); }, [src, spriteIndex, spriteRows]);
+  const invalidSprite = spriteIndex !== undefined && (!Number.isInteger(spriteIndex) || spriteIndex < 0 || spriteIndex >= spriteRows * 5);
   if (spriteIndex !== undefined) {
     // Quadro n de atlas com 5 colunas e quantidade variável de linhas.
     // Evita fotos antigas e URLs inexistentes: o binário está no próprio deploy.
     const column = spriteIndex % 5;
     const row = Math.floor(spriteIndex / 5);
     return (
-      <div className="w-full flex items-center justify-center"
-        style={{ background: 'white' }}>
-        <div role="img" aria-label={alt} style={{
-          width: '100%', aspectRatio: spriteAspectRatio,
-          backgroundImage: `url("${src}")`,
-          backgroundSize: `500% ${spriteRows * 100}%`,
-          backgroundPosition: `${column * 25}% ${spriteRows > 1 ? row * 100 / (spriteRows - 1) : 0}%`,
-          backgroundRepeat: 'no-repeat',
-        }}/>
+      <div className="w-full flex items-center justify-center relative"
+        style={{ background: 'white', minHeight: 32 }}>
+        {broken || invalidSprite ? (
+          <div role="img" aria-label={alt + ': ilustração indisponível'}
+            className="flex items-center justify-center gap-1 px-1 py-3 text-center"
+            style={{color:'var(--text-faint)'}}>
+            <ImageOff size={17} aria-hidden="true" />
+            <span className="text-[10px]">Ilustração indisponível</span>
+          </div>
+        ) : (
+          <>
+            {/* O CSS não emite onError. Uma imagem de verificação permite detectar
+                assets removidos ou falhas na rede sem exibir um cartão vazio. */}
+            <img src={src} alt="" aria-hidden="true" loading="lazy"
+              onError={() => setBroken(true)}
+              className="absolute w-px h-px opacity-0 pointer-events-none" />
+            <div role="img" aria-label={alt} style={{
+              width: '100%', aspectRatio: spriteAspectRatio,
+              backgroundImage: `url("${src}")`,
+              backgroundSize: `500% ${spriteRows * 100}%`,
+              backgroundPosition: `${column * 25}% ${spriteRows > 1 ? row * 100 / (spriteRows - 1) : 0}%`,
+              backgroundRepeat: 'no-repeat',
+            }}/>
+          </>
+        )}
       </div>
     );
   }
