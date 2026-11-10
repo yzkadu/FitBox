@@ -544,6 +544,26 @@ export function addExerciseToSession(sessionId: string, exerciseId: string, targ
   syncSessionExercises(sessionId);
 }
 
+/** Persiste início/pausa/retomada do cronômetro no JSON já sincronizado da sessão.
+ * Guarda o relógio em apenas uma estação para não duplicar os dados em todas as voltas.
+ */
+export function updateCircuitClock(
+  sessionId:string,clock:{startedAt:number|null;pausedAt:number|null;pausedMs:number},
+):boolean {
+  const current=store.getSnapshot().sessions.find(s=>s.id===sessionId);
+  if(!current||current.finishedAt||!current.exercises.some(se=>se.circuitFormat))return false;
+  if ((clock.startedAt !== null && !Number.isFinite(clock.startedAt)) ||
+      (clock.pausedAt !== null && !Number.isFinite(clock.pausedAt)) ||
+      !Number.isFinite(clock.pausedMs) || clock.pausedMs < 0) return false;
+  store.update(d=>{
+    const session=d.sessions.find(s=>s.id===sessionId);
+    const station=session?.exercises.find(se=>se.circuitFormat);
+    if(station) station.circuitClock=clock;
+  });
+  syncSessionExercises(sessionId);
+  return true;
+}
+
 /** Informação registrada durante a aula; diferente da meta planejada no editor. */
 export function updateStationResult(sessionId: string, sessionExerciseId: string, actualResult: string) {
   store.update(d => {
