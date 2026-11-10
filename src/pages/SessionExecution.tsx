@@ -336,7 +336,7 @@ export function SessionExecution() {
             Nenhum exercício ainda. Adicione abaixo.
           </p>
         )}
-        {session.exercises.map((se) => {
+        {session.exercises.map((se, stationIndex) => {
           const ex = exerciseById.get(se.exerciseId);
           const history = getExerciseHistory(sessions, se.exerciseId);
           const lastSession = history[history.length - 1];
@@ -346,6 +346,7 @@ export function SessionExecution() {
             coach.action === 'increase' ? 'var(--success)' : coach.action === 'deload' ? 'var(--warn)' : 'var(--text-faint)';
           return (
             <div key={se.id} className="rounded-2xl border p-3.5" style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
+              {se.circuitRound != null && <div className="flex items-center justify-between mb-3 rounded-lg px-3 py-2 text-xs font-semibold" style={{background:'var(--brand-dim)',color:'var(--brand)'}}><span>Volta {se.circuitRound} de {se.circuitRounds}</span><span>Estação {se.circuitStation} · {stationIndex + 1}/{session.exercises.length}</span></div>}
               <div className="flex items-center gap-2 mb-2">
                 <button type="button" aria-label="Ver demonstração do exercício"
                   onClick={() => setExerciseGuideId(exerciseGuideId === se.id ? null : se.id)}>
@@ -396,7 +397,7 @@ export function SessionExecution() {
               )}
 
               <div className="flex items-center justify-between gap-2 mb-3 mt-3">
-                <p className="text-xs font-semibold" style={{ color: 'var(--text-dim)' }}>Registro individual de séries</p>
+                <p className="text-xs font-semibold" style={{ color: 'var(--text-dim)' }}>{se.circuitRound ? 'Registrar estação desta volta' : 'Registro individual de séries'}</p>
                 <p className="text-xs" style={{ color: 'var(--text-faint)' }}>
                   {se.sets.filter(st => st.completed).length}/{se.sets.length} concluídas
                 </p>
@@ -428,13 +429,13 @@ export function SessionExecution() {
                 />
               ))}
 
-              <button
+              {!se.circuitRound && <button
                 onClick={() => addSetToSessionExercise(session.id, se.id)}
                 className="w-full text-xs font-medium rounded-lg py-2 mt-1"
                 style={{ background: 'var(--surface-2)', color: 'var(--brand)' }}
               >
                 + Adicionar série
-              </button>
+              </button>}
             </div>
           );
         })}
