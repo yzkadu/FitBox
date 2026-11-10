@@ -429,7 +429,7 @@ export function startSession(workout: Workout): Session {
       const circuit = Boolean(stations[0]?.circuitMode);
       const format = circuit ? stations[0].circuitFormat ?? 'rounds' : 'rounds';
       const durationMinutes = circuit ? Math.max(1,Math.min(180,stations[0].circuitDurationMinutes ?? 20)) : undefined;
-      const rounds = circuit ? (format === 'emom' ? Math.min(180,Math.ceil((durationMinutes ?? 20) / Math.max(1,stations.length))) : format === 'amrap' ? 20 : Math.max(1,Math.min(20,stations[0].circuitRounds ?? 3))) : 1;
+      const rounds = circuit ? (format === 'emom' ? Math.min(180,Math.ceil((durationMinutes ?? 20) / Math.max(1,stations.length))) : format === 'amrap' ? 1 : Math.max(1,Math.min(20,stations[0].circuitRounds ?? 3))) : 1;
       const result: SessionExercise[] = [];
       for (let round = 1; round <= rounds; round++) {
         stations.forEach((we, index) => {
@@ -527,6 +527,42 @@ export function addExerciseToSession(sessionId: string, exerciseId: string, targ
     s.exercises.push(entry);
   });
   syncSessionExercises(sessionId);
+}
+
+/** Informação registrada durante a aula; diferente da meta planejada no editor. */
+export function updateStationResult(sessionId: string, sessionExerciseId: string, actualResult: string) {
+  store.update(d => {
+    const session = d.sessions.find(s => s.id === sessionId);
+    const station = session?.exercises.find(se => se.id === sessionExerciseId);
+    if (station) station.actualResult = actualResult.slice(0, 120);
+  });
+  syncSessionExercises(sessionId);
+}
+
+/** Adiciona a próxima volta somente após concluir todas as estações da volta atual.
+ * Evita pré-gerar dezenas de cartões vazios em treinos AMRAP.
+ */
+export function appendAmrapRound(sessionId: string): boolean {
+  const current = store.getSnapshot().sessions.find(s => s.id === sessionId);
+  const entries = current?.exercises.filter(se => se.circuitFormat === 'amrap') ?? [];
+  const round = Math.max(0,...entries.map(se=>se.circuitRound ?? 0));
+  const last = entries.filter(se => se.circuitRound === round);
+  if (!current || current.finishedAt || !last.length || round >= 99 ||
+      !last.every(se => se.sets.every(st => st.completed))) return false;
+  store.update(d => {
+    const session = d.sessions.find(s => s.id === sessionId);
+    if (!session || session.finishedAt) return;
+    session.exercises.push(...last.map(se => ({
+      ...se,
+      id: uid(),
+      circuitRound: round + 1,
+      circuitRounds: round + 1,
+      actualResult: undefined,
+      sets: se.sets.map(st => ({...st,id:uid(),setNumber:round+1,reps:0,completed:false})),
+    })));
+  });
+  syncSessionExercises(sessionId);
+  return true;
 }
 
 export function updateSet(sessionId: string, sessionExerciseId: string, setId: string, patch: Partial<SetLog>) {
