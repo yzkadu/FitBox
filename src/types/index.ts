@@ -78,6 +78,8 @@ export interface SessionExercise {
   circuitDurationMinutes?: number;
   blockType?: WorkoutExercise['blockType'];
   circuitMinute?: number;
+  /** Relógio do circuito sincronizado no JSON da sessão (sem nova coluna SQL). */
+  circuitClock?: {startedAt:number|null;pausedAt:number|null;pausedMs:number};
 }
 
 /** A completed (or in-progress) workout session, derived from a Workout template */
