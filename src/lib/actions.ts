@@ -579,6 +579,86 @@ export function appendAmrapRound(sessionId: string): boolean {
   return true;
 }
 
+/** Ajustes feitos pelo professor no meio da aula.
+ * Somente as voltas a partir da atual recebem a nova estação.
+ * Nunca toca nas séries existentes nem altera a ficha original.
+ * EMOM exige um minuto fixo por estação e por isso não permite inserção aqui.
+ */
+export function addUpcomingCircuitStation(
+  sessionId:string,exerciseId:string,targetReps:string,fromNextRound=false,
+): {ok:true}|{ok:false;error:string} {
+  const current=store.getSnapshot().sessions.find(s=>s.id===sessionId);
+  if(!current || current.finishedAt) return {ok:false,error:'Sessão não está ativa.'};
+  const circuit=current.exercises.filter(se=>se.circuitRound != null);
+  if(!circuit.length) return {ok:false,error:'Esta sessão não possui um circuito.'};
+  const format=circuit[0].circuitFormat ?? 'rounds';
+  if(format==='emom') return {ok:false,error:'O EMOM possui minutos fixos. Ajuste a próxima aula na ficha.'};
+  if(format==='amrap' && fromNextRound) return {ok:false,error:'No AMRAP, inclua na volta atual para levar a estação às próximas.'};
+  const rounds=[...new Set(circuit.map(se=>se.circuitRound!))].sort((a,b)=>a-b);
+  const ongoing=rounds.find(round=>circuit.some(se=>se.circuitRound===round && se.sets.some(st=>!st.completed)));
+  const firstRound=(ongoing ?? rounds[rounds.length-1])+(fromNextRound?1:0);
+  const affected=rounds.filter(round=>round>=firstRound);
+  if(!affected.length) return {ok:false,error:'Não há voltas futuras para adicionar esta estação.'};
+  const goal=targetReps.trim().slice(0,80) || '10 reps';
+  store.update(d=>{
+    const session=d.sessions.find(s=>s.id===sessionId);
+    if(!session||session.finishedAt)return;
+    for(const round of affected) {
+      const positions=session.exercises.map((se,i)=>se.circuitRound===round?i:-1).filter(i=>i>=0);
+      const after=positions[positions.length-1];
+      if(after==null)return;
+      const prior=session.exercises[after];
+      const entry:SessionExercise={
+        id:uid(),exerciseId,targetReps:goal,blockType:'circuit',
+        restSeconds:prior.restSeconds,
+        circuitRound:round,circuitStation:positions.length+1,
+        circuitRounds:prior.circuitRounds,circuitFormat:prior.circuitFormat,
+        circuitDurationMinutes:prior.circuitDurationMinutes,
+        sets:[{id:uid(),setNumber:round,weight:0,reps:0,completed:false}],
+      };
+      // A nova estação fecha a volta; move a pausa da última estação para ela.
+      if(prior.restSeconds && prior.restSeconds>0) prior.restSeconds=0;
+      session.exercises.splice(after+1,0,entry);
+    }
+  });
+  syncSessionExercises(sessionId);
+  return {ok:true};
+}
+
+/** Reordena estações não concluídas a partir da volta selecionada.
+ * Voltas anteriores e qualquer estação já realizada ficam intactas.
+ */
+export function moveUpcomingCircuitStation(
+  sessionId:string,entryId:string,direction:-1|1,
+):{ok:true}|{ok:false;error:string} {
+  const session=store.getSnapshot().sessions.find(s=>s.id===sessionId);
+  const entry=session?.exercises.find(se=>se.id===entryId);
+  if(!session||session.finishedAt||!entry||entry.circuitRound==null)
+    return {ok:false,error:'Estação não disponível.'};
+  if(entry.circuitFormat==='emom') return {ok:false,error:'A ordem do EMOM segue os minutos definidos.'};
+  const station=entry.circuitStation??0,round=entry.circuitRound;
+  const inRound=session.exercises.filter(se=>se.circuitRound===round);
+  const neighbor=inRound.find(se=>se.circuitStation===station+direction);
+  if(!neighbor||entry.sets.some(st=>st.completed)||neighbor.sets.some(st=>st.completed))
+    return {ok:false,error:'Só é possível trocar estações ainda não concluídas.'};
+  store.update(d=>{
+    const target=d.sessions.find(s=>s.id===sessionId);
+    if(!target||target.finishedAt)return;
+    const rounds=[...new Set(target.exercises.flatMap(se=>se.circuitRound!=null&&se.circuitRound>=round?[se.circuitRound]:[]))];
+    for(const r of rounds) {
+      const a=target.exercises.findIndex(se=>se.circuitRound===r&&se.circuitStation===station);
+      const b=target.exercises.findIndex(se=>se.circuitRound===r&&se.circuitStation===station+direction);
+      if(a<0||b<0)continue;
+      if(target.exercises[a].sets.some(st=>st.completed)||target.exercises[b].sets.some(st=>st.completed))continue;
+      [target.exercises[a],target.exercises[b]]=[target.exercises[b],target.exercises[a]];
+      target.exercises[a].circuitStation=station;
+      target.exercises[b].circuitStation=station+direction;
+    }
+  });
+  syncSessionExercises(sessionId);
+  return {ok:true};
+}
+
 export function updateSet(sessionId: string, sessionExerciseId: string, setId: string, patch: Partial<SetLog>) {
   store.update((d) => {
     const s = d.sessions.find((s) => s.id === sessionId);
