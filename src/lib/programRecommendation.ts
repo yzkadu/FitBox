@@ -15,6 +15,9 @@
 
 import { createWorkout, addExerciseToWorkout, replaceWeeklySchedule } from './actions';
 import { READY_PROGRAMS } from './readyPrograms';
+import { BUILTIN_EXERCISES } from './exercises';
+import { canAutoSuggestExercise } from './anatomicalProfiles';
+import { balanceAnatomicalExercises, directAnatomicalCoverage } from './anatomicalSelection';
 import type { Equipment, ExperienceLevel, TrainingGoal, TrainingType, WeeklyFrequency } from './onboarding';
 import type { IconKey } from './workoutIcons';
 import { WEEKDAY_ORDER, type Weekday, type WeeklySchedule } from '../types';
@@ -165,6 +168,19 @@ function getCuratedPlan(input: RecommendationInput): RecommendedProgramPlan | nu
 
   const program = READY_PROGRAMS.find((p) => p.id === programId);
   if (!program?.weekPlan || program.weekPlan.length !== 7) return null;
+  // Diversifica fichas AUTOMÁTICAS do cadastro sem trocar equipamento/tier,
+  // alterar a divisão de grupos ou reorganizar programas curados e HYROX.
+  const permittedIds=new Set(Object.values(pools).flat());
+  const candidates=BUILTIN_EXERCISES.filter(ex=>permittedIds.has(ex.id)&&canAutoSuggestExercise(ex));
+  const priorWeekRegions=new Set<string>();
+  workouts=workouts.map(workout=>{
+    const exercises=balanceAnatomicalExercises(workout.exercises,candidates,
+      ex=>permittedIds.has(ex.id)&&canAutoSuggestExercise(ex),priorWeekRegions)
+      .map(({item})=>item);
+    for(const region of directAnatomicalCoverage(exercises.map(e=>e.id)).regions)priorWeekRegions.add(region);
+    return {...workout,exercises};
+  });
+
   const schedule: Partial<Record<Weekday, ScheduleEntry>> = {};
   WEEKDAY_ORDER.forEach((day, index) => {
     const step = program.weekPlan![index];
@@ -314,6 +330,7 @@ export function recommendProgram(input: RecommendationInput): RecommendedProgram
     `Divisão: ${splitLabel}, ${strengthDays}x de treino${hasCardio ? ' + 1x de cardio' : ''} por semana.`,
     `Exercícios pensados pro que você tem disponível: ${TIER_LABEL[tier]}.`,
     `Intensidade: ${profile.note}.`,
+    'Seleção de força diversificada por regiões e famílias biomecânicas (estimativa, não EMG).',
     'Dá pra mudar tudo depois — criar treino novo, editar exercícios ou remontar os dias.',
   ];
 
