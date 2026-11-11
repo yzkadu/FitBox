@@ -155,7 +155,7 @@ export function WorkoutEditor() {
   function handleSelectExercise(ex: Exercise) {
     addExerciseToWorkout(workout!.id, ex.id, circuit ? 1 : 3, circuit ? '10 reps' : '10-12');
     if (circuit) setWorkoutCircuit(workout!.id,true,rounds,circuitRest,circuitFormat,circuitDuration);
-    setPickerOpen(false);
+    // Biblioteca fica aberta para seleção em lote.
   }
 
   function handleSelectSubstitute(ex: Exercise) {
@@ -208,6 +208,10 @@ export function WorkoutEditor() {
           <button type="button" onClick={() => changeCircuit(!circuit)} aria-pressed={circuit}
             className="rounded-lg px-3 py-2 text-xs font-semibold" style={{background:circuit?'var(--brand)':'var(--surface-3)',color:circuit?'white':'var(--text)'}}>{circuit?'Circuito ativo':'Usar circuito'}</button>
         </div>
+        <details className="mt-3">
+          <summary className="text-xs cursor-pointer font-semibold" style={{color:'var(--brand)'}}>
+            {circuit ? 'Configurar estações, voltas e tempo' : 'Mais opções do formato'}
+          </summary>
         {circuit && !sorted.length && <p className="rounded-lg p-3 mt-3 text-xs" style={{background:'var(--brand-dim)',color:'var(--text)'}}>
           Aula HYROX livre: não há exercícios obrigatórios. Escolha o circuito, movimentos, metas e número de voltas conforme o quadro do professor. Terça e quinta podem ser completamente diferentes.
         </p>}
@@ -254,12 +258,13 @@ export function WorkoutEditor() {
             className="mt-2 rounded-lg px-3 py-2 text-xs font-semibold disabled:opacity-40"
             style={{background:'var(--brand)',color:'white'}}>Adicionar sequência</button>
         </div>}
+        </details>
       </div>
       <div className="mb-3">
         <button type="button" onClick={() => setShowQuickBlocks((open) => !open)}
           className="w-full flex items-center justify-between rounded-xl py-3 px-4 text-sm font-semibold"
           style={{ background: 'var(--brand-dim)', color: 'var(--brand)' }}>
-          <span className="flex items-center gap-2"><Sparkles size={16} /> Sugestões de blocos bem estruturados</span>
+          <span className="flex items-center gap-2"><Sparkles size={16} /> Treinos prontos para adicionar</span>
           <span>{showQuickBlocks ? 'Fechar' : 'Explorar'}</span>
         </button>
         {showQuickBlocks && (
@@ -279,10 +284,16 @@ export function WorkoutEditor() {
         )}
       </div>
 
+      <div className="rounded-xl mb-3 p-3" style={{background:'var(--brand-dim)'}}>
+        <p className="text-sm font-semibold">2 · Escolha e organize os exercícios</p>
+        <p className="text-xs mt-1" style={{color:'var(--text-dim)'}}>
+          {sorted.length} selecionado(s) · use a biblioteca e ajuste os detalhes depois.
+        </p>
+      </div>
       {sorted.length === 0 ? (
         <EmptyState
-          title="Adicione exercícios a este treino"
-          subtitle="Escolha do catálogo ou crie os seus próprios."
+          title="Seu treino está vazio"
+          subtitle="Escolha os exercícios primeiro. Séries e repetições podem ser ajustadas depois."
           action={
             <Button onClick={() => setPickerOpen(true)}>
               <span className="flex items-center gap-2">
@@ -368,7 +379,9 @@ export function WorkoutEditor() {
                     placeholder="reps/tempo"
                   />
                 </div>
-                <div className="pl-7 flex flex-col gap-2">
+                <details className="pl-7">
+                  <summary className="text-xs cursor-pointer py-2" style={{color:'var(--brand)'}}>Descanso, observações e bloco</summary>
+                  <div className="flex flex-col gap-2 pt-2">
                   {circuit && <label className="text-xs" style={{color:'var(--text-dim)'}}>Bloco da aula
                     <select value={we.blockType ?? 'circuit'} onChange={e=>updateWorkoutExercise(workout.id,we.id,{blockType:e.target.value as NonNullable<typeof we.blockType>})}
                       className="block rounded-lg p-2 mt-1 w-full" style={{background:'var(--surface-2)'}}>
@@ -390,7 +403,8 @@ export function WorkoutEditor() {
                     placeholder="Instruções, intensidade, adaptações ou equipamento..."
                     className="w-full rounded-lg px-3 py-2 text-xs resize-y"
                     style={{ background: 'var(--surface-2)' }} />
-                </div>
+                  </div>
+                </details>
               </Card>
             );
           })}
@@ -407,7 +421,9 @@ export function WorkoutEditor() {
         </div>
       )}
 
-      <ExercisePicker open={pickerOpen} onClose={() => setPickerOpen(false)} onSelect={handleSelectExercise} />
+      <ExercisePicker open={pickerOpen} onClose={() => setPickerOpen(false)}
+        onSelect={handleSelectExercise} title="Adicionar exercícios"
+        multiSelect selectedExerciseIds={sorted.map(entry=>entry.exerciseId)} />
 
       <ExercisePicker
         open={substitutingEntryId !== null}
