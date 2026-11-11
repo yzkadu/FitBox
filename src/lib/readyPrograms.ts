@@ -183,6 +183,21 @@ const PERSONAL_UPPER_HYROX_PROGRAM: ReadyProgram = {
 
 export const READY_PROGRAMS: ReadyProgram[] = [
   PERSONAL_UPPER_HYROX_PROGRAM,
+  {
+    id: 'hyrox-aula-funcional-livre',
+    title: 'HYROX · Aula funcional livre',
+    goal: 'hibrido',
+    split: 'unico',
+    modality: 'funcional',
+    place: 'academia',
+    level: 'intermediario',
+    sessionMinutes: 50,
+    description: 'Cada aula é diferente. Cadastre aquecimento, blocos, estações, metas, rounds e tempo conforme seu professor, sem circuito obrigatório.',
+    progression: 'Registre a execução realizada. O treino não exige as oito estações oficiais do HYROX e não repete automaticamente o circuito da aula anterior.',
+    recoveryNote: 'Adapte intensidade e recuperação. Modalidade funcional em grupo não é necessariamente uma simulação de prova.',
+    days: [{name:'HYROX · Aula livre',emoji:'activity',
+      focus:'Circuito variável: escolha os movimentos no dia da aula.',exercises:[]}],
+  },
   // ---------- Hipertrofia ----------
   {
     id: 'hip-ab',
