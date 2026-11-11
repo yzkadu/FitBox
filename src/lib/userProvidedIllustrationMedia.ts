@@ -1,6 +1,6 @@
-/** Dez ilustrações fornecidas pelo usuário em 11/11/2026.
+/** Onze ilustrações do guia FitBox, incluindo V sit ups.
  * Cada ID é vinculado ao próprio quadro WebP. Sem substituições por similaridade.
- * São cartões completos, com título, e não células dos antigos atlas de 5 colunas.
+ * Os arquivos são recortes limpos: somente desenhos, sem títulos, barras ou moldura.
  * A ausência de arquivo mantém a demonstração anterior, sem URLs quebradas.
  */
 export const USER_PROVIDED_ILLUSTRATIONS = {
@@ -14,6 +14,7 @@ export const USER_PROVIDED_ILLUSTRATIONS = {
   'ex-new-pullthroughnocabo': 'pull-through-no-cabo.webp',
   'ex-new-roscanobancoinclinado': 'rosca-no-banco-inclinado.webp',
   'ex-new-russiantwistcomanilha': 'russian-twist-com-anilha.webp',
+  'ex-new-vsitups': 'v-sit-ups.webp',
 } as const;
 
 const files = import.meta.glob('../assets/exercise-guide/user-updates-20261111/*.webp', {

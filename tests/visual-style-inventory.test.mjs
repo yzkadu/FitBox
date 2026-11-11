@@ -23,14 +23,14 @@ const currentPhotos = catalog.filter(item=>!illustrated.has(item.id) && photogra
 const expectedPhotos = [];
 
 test('catalog has unique exercise IDs with a media mapping for each',()=>{
-  assert.equal(catalog.length,329);
+  assert.equal(catalog.length,330);
   assert.equal(new Set(catalog.map(item=>item.id)).size,catalog.length);
   for(const item of catalog)assert.ok(illustrated.has(item.id)||photographs.has(item.id),item.id+' has no media');
 });
 
-test('all 329 catalog exercises now have an illustrated guide mapping',()=>{
+test('all 330 catalog exercises now have an illustrated guide mapping',()=>{
   assert.deepEqual(currentPhotos.map(item=>item.id).sort(),expectedPhotos.slice().sort());
-  assert.equal(catalog.filter(item=>illustrated.has(item.id)).length,329);
+  assert.equal(catalog.filter(item=>illustrated.has(item.id)).length,330);
 });
 
 test('personal program label is clean and ID remains stable',()=>{

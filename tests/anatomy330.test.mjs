@@ -11,11 +11,11 @@ const catalogIds=sources.flatMap(file=>{
 });
 const profiles=new Map(data.exercicios.map(item=>[item.id,item]));
 
-test('330 profiles match precisely the 330 stable exercise catalog IDs',()=>{
-  assert.equal(data.total,330);
-  assert.equal(data.exercicios.length,330);
-  assert.equal(profiles.size,330);
-  assert.equal(new Set(catalogIds).size,330);
+test('331 profiles match precisely the 331 stable exercise catalog IDs',()=>{
+  assert.equal(data.total,331);
+  assert.equal(data.exercicios.length,331);
+  assert.equal(profiles.size,331);
+  assert.equal(new Set(catalogIds).size,331);
   assert.deepEqual([...profiles.keys()].sort(),[...catalogIds].sort());
 });
 

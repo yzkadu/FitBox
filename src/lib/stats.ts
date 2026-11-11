@@ -1,5 +1,4 @@
 import type { CardioLog, Session, SetLog, WeeklySchedule } from '../types';
-import { WEEKDAY_ORDER } from '../types';
 
 export interface ExerciseHistoryPoint {
   date: string; // ISO
@@ -109,83 +108,108 @@ export function getTrainedExerciseIds(sessions: Session[]): string[] {
 }
 
 export interface WeeklyFrequencyPoint {
-  weekStart: string; // ISO date (Monday)
-  count: number;
+  weekStart: string; // data local da segunda-feira, AAAA-MM-DD
+  count: number; // dias distintos com atividade, não quantidade de sessões
+}
+
+/** Dia civil do usuário; nunca usar toISOString().slice(0,10) para registros locais. */
+function localDay(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
 
 function startOfWeek(d: Date): Date {
   const date = new Date(d);
-  const day = date.getDay(); // 0 = Sunday
-  const diff = day === 0 ? -6 : 1 - day; // move to Monday
-  date.setDate(date.getDate() + diff);
+  const day = date.getDay(); // domingo = 0
+  date.setDate(date.getDate() + (day === 0 ? -6 : 1 - day));
   date.setHours(0, 0, 0, 0);
   return date;
 }
 
-/** Number of finished sessions per ISO week, for the last N weeks (oldest first). */
-export function getWeeklyFrequency(sessions: Session[], weeks = 12): WeeklyFrequencyPoint[] {
-  const finished = sessions.filter((s) => s.finishedAt);
+/** Cardio, força, HYROX ou a combinação: um único dia ativo por data local.
+ * Login sem registro não conta como atividade. Sessões incompletas não contam.
+ */
+export function getActiveTrainingDays(sessions: Session[], cardioLogs: CardioLog[]): Set<string> {
+  const dates = new Set<string>();
+  for (const session of sessions) {
+    if (!session.finishedAt) continue;
+    const completed = new Date(session.finishedAt);
+    if (!Number.isNaN(completed.getTime())) dates.add(localDay(completed));
+  }
+  for (const log of cardioLogs) {
+    if (/^\d{4}-\d{2}-\d{2}$/.test(log.date) && Number.isFinite(log.durationMin) && log.durationMin > 0) {
+      dates.add(log.date);
+    }
+  }
+  return dates;
+}
+
+/** Dias com ao menos uma atividade, por semana (segunda a domingo). */
+export function getWeeklyFrequency(sessions: Session[], cardioLogs: CardioLog[] = [], weeks = 12): WeeklyFrequencyPoint[] {
   const now = new Date();
   const buckets: WeeklyFrequencyPoint[] = [];
+  const byWeek = new Map<string, WeeklyFrequencyPoint>();
   for (let i = weeks - 1; i >= 0; i--) {
-    const weekDate = new Date(now);
-    weekDate.setDate(now.getDate() - i * 7);
-    const ws = startOfWeek(weekDate);
-    buckets.push({ weekStart: ws.toISOString().slice(0, 10), count: 0 });
+    const date = new Date(now);
+    date.setDate(now.getDate() - i * 7);
+    const weekStart = localDay(startOfWeek(date));
+    const bucket = { weekStart, count: 0 };
+    buckets.push(bucket);
+    byWeek.set(weekStart, bucket);
   }
-  for (const s of finished) {
-    const ws = startOfWeek(new Date(s.finishedAt as string)).toISOString().slice(0, 10);
-    const bucket = buckets.find((b) => b.weekStart === ws);
+  const today = localDay(now);
+  for (const day of getActiveTrainingDays(sessions, cardioLogs)) {
+    if (day > today) continue; // lançamento futuro não vira treino realizado
+    const weekStart = localDay(startOfWeek(new Date(day + 'T12:00:00')));
+    const bucket = byWeek.get(weekStart);
     if (bucket) bucket.count += 1;
   }
   return buckets;
 }
 
-export function getCurrentStreakWeeks(sessions: Session[]): number {
-  const freq = getWeeklyFrequency(sessions, 52);
+export function getCurrentStreakWeeks(sessions: Session[], cardioLogs: CardioLog[] = []): number {
+  const frequency = getWeeklyFrequency(sessions, cardioLogs, 52);
+  let count = 0;
+  for (let i = frequency.length - 1; i >= 0; i--) {
+    if (frequency[i].count === 0) break;
+    count += 1;
+  }
+  return count;
+}
+
+/** Foguinho: sequência de dias consecutivos com atividade de qualquer modalidade.
+ * Cada data conta no máximo uma vez. O dia atual fica em aberto até ser concluído:
+ * se hoje ainda não houve atividade, uma sequência que terminou ontem continua
+ * aparecendo. Dias sem registro no passado quebram a sequência — mesmo que estejam
+ * marcados como descanso na agenda. A agenda não cria atividades fictícias.
+ */
+export function getCurrentStreakDays(
+  sessions: Session[], cardioLogs: CardioLog[], _weeklySchedule?: WeeklySchedule, today = new Date(),
+): number {
+  const activeDays = getActiveTrainingDays(sessions, cardioLogs);
+  const cursor = new Date(today);
+  cursor.setHours(12, 0, 0, 0); // mantém dia civil ao atravessar mudanças de horário
+  if (!activeDays.has(localDay(cursor))) cursor.setDate(cursor.getDate() - 1);
   let streak = 0;
-  for (let i = freq.length - 1; i >= 0; i--) {
-    if (freq[i].count > 0) streak += 1;
-    else break;
+  for (let guard = 0; guard < 3650; guard++) {
+    if (!activeDays.has(localDay(cursor))) break;
+    streak += 1;
+    cursor.setDate(cursor.getDate() - 1);
   }
   return streak;
 }
 
-/**
- * "Foguinho" de dias ativos: conta os dias consecutivos (terminando hoje) com
- * pelo menos um treino de força concluído ou uma atividade de cardio registrada.
- * Um dia de descanso PLANEJADO na agenda semanal não quebra a sequência — só
- * conta contra a pessoa se ela pulou um dia que deveria ter treino ou cardio.
- * O dia de hoje nunca quebra a sequência sozinho (pode ainda estar por vir).
- */
-export function getCurrentStreakDays(sessions: Session[], cardioLogs: CardioLog[], weeklySchedule: WeeklySchedule): number {
-  const activeDates = new Set<string>();
-  sessions.forEach((s) => {
-    if (s.finishedAt) activeDates.add(s.finishedAt.slice(0, 10));
-  });
-  cardioLogs.forEach((c) => activeDates.add(c.date));
+export function getTrainingDaysThisWeek(sessions: Session[], cardioLogs: CardioLog[]): number {
+  return getWeeklyFrequency(sessions, cardioLogs, 1)[0]?.count ?? 0;
+}
 
-  let streak = 0;
-  const cursor = new Date();
-  cursor.setHours(0, 0, 0, 0);
-  let isToday = true;
-  for (let guard = 0; guard < 3650; guard++) {
-    const iso = cursor.toISOString().slice(0, 10);
-    const weekdayKey = WEEKDAY_ORDER[(cursor.getDay() + 6) % 7];
-    const hasActivity = activeDates.has(iso);
-    if (hasActivity) {
-      streak += 1;
-    } else if (weeklySchedule[weekdayKey]?.kind === 'descanso') {
-      // dia de descanso planejado: não conta, mas também não quebra
-    } else if (isToday) {
-      // hoje ainda pode acontecer: não conta a favor nem quebra
-    } else {
-      break;
-    }
-    isToday = false;
-    cursor.setDate(cursor.getDate() - 1);
-  }
-  return streak;
+export function getTrainingDaysThisMonth(sessions: Session[], cardioLogs: CardioLog[]): number {
+  const currentMonth = localDay(new Date()).slice(0, 7);
+  const today = localDay(new Date());
+  return [...getActiveTrainingDays(sessions, cardioLogs)]
+    .filter(day => day.startsWith(currentMonth) && day <= today).length;
 }
 
 /** Início (segunda-feira, 00:00) da semana atual. */
@@ -215,12 +239,18 @@ export function getVolumeThisWeek(sessions: Session[]): number {
 }
 
 /** Tempo total treinado (em minutos) na semana atual. */
-export function getTrainingMinutesThisWeek(sessions: Session[]): number {
+export function getTrainingMinutesThisWeek(sessions: Session[], cardioLogs: CardioLog[] = []): number {
   const start = startOfCurrentWeek();
+  const today = localDay(new Date());
   let seconds = 0;
   for (const s of sessions) {
     if (!s.finishedAt || new Date(s.finishedAt) < start) continue;
     seconds += s.durationSeconds ?? 0;
+  }
+  for (const log of cardioLogs) {
+    if (log.date >= localDay(start) && log.date <= today && Number.isFinite(log.durationMin) && log.durationMin > 0) {
+      seconds += log.durationMin * 60;
+    }
   }
   return Math.round(seconds / 60);
 }

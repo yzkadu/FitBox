@@ -2,7 +2,7 @@
   "schema_version": "1.0.0",
   "data": "2026-11-10",
   "projeto": "FitBox",
-  "total": 330,
+  "total": 331,
   "orientacao": "Classificação estimativa por biomecânica e nome do exercício; não representa medida de ativação EMG ou garantia de hipertrofia regional. Revisar variações por técnica/equipamento antes de publicar.",
   "interpretação": "Região principal indica ênfase relativa, não isolamento muscular. Cardio e mobilidade não equivalem a séries de hipertrofia.",
   "sources": [
@@ -6359,7 +6359,26 @@
       "sugerir_automaticamente": true,
       "confianca": "boa (estimativa biomecânica)",
       "observacao": "Exercício adicionado ao repositório atual; não confundir com rosca alternada com halteres."
+    },
+    {
+      "numero": 331,
+      "id": "ex-new-vsitups",
+      "exercicio": "V sit ups",
+      "grupo_original_catalogo": "Abdômen",
+      "grupo_funcional": "Abdômen e core",
+      "porcao_regiao_em_enfase": "core.flexao",
+      "tags_apoio": [],
+      "musculos_principais": "Reto abdominal; flexores do quadril",
+      "musculos_secundarios": "Oblíquos",
+      "estabilizadores": "Transverso do abdômen",
+      "padrao_de_movimento": "flexão coordenada de tronco e quadril elevando braços e pernas em V, com retorno controlado",
+      "familia_biomecanica": "core_vup",
+      "modalidade": "força",
+      "series_hipertrofia": true,
+      "sugerir_automaticamente": true,
+      "confianca": "boa (estimativa biomecânica)",
+      "observacao": "Exercício dinâmico de abdômen e flexores do quadril. Manter controle lombar; não confundir com manutenção isométrica da posição V."
     }
   ],
-  "observacoes_catalogo": "Os 327 IDs originais são mantidos; três exercícios novos encontrados no GitHub foram anexados ao fim da numeração no arquivo. ID, não posição numérica, é a chave estável."
+  "observacoes_catalogo": "IDs originais preservados. Incluído V sit ups como exercício adicional com ID estável e perfil anatômico próprio; ID, não posição numérica, é a chave estável."
 }

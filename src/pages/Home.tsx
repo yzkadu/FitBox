@@ -5,7 +5,7 @@ import { useAppData } from '../hooks/useAppData';
 import { useAuth } from '../hooks/useAuth';
 import { useProfile } from '../hooks/useProfile';
 import { startSession } from '../lib/actions';
-import { getCurrentStreakDays, getSessionsThisWeek, getVolumeThisWeek, getTrainingMinutesThisWeek } from '../lib/stats';
+import { getCurrentStreakDays, getTrainingDaysThisWeek, getVolumeThisWeek, getTrainingMinutesThisWeek } from '../lib/stats';
 import { getTopCoachTip } from '../lib/coach';
 import { computeGroupReadiness, READINESS_COLORS, READINESS_ORDER } from '../lib/recovery';
 import type { Readiness } from '../lib/recovery';
@@ -67,9 +67,9 @@ export function Home() {
 
   const active = workouts.filter((w) => !w.archived);
   const streak = getCurrentStreakDays(sessions, cardioLogs, weeklySchedule);
-  const weekSessions = getSessionsThisWeek(sessions);
+  const weekSessions = getTrainingDaysThisWeek(sessions, cardioLogs);
   const weekVolume = getVolumeThisWeek(sessions);
-  const weekMinutes = getTrainingMinutesThisWeek(sessions);
+  const weekMinutes = getTrainingMinutesThisWeek(sessions, cardioLogs);
   const coachTip = getTopCoachTip(sessions);
   const coachExercise = coachTip ? exercises.find((e) => e.id === coachTip.exerciseId) : null;
   const coachColor = coachTip?.action === 'increase' ? 'var(--success)' : coachTip?.action === 'deload' ? 'var(--warn)' : 'var(--text)';
@@ -362,7 +362,7 @@ export function Home() {
         style={{ borderTop: '1px solid var(--border-soft)', borderBottom: '1px solid var(--border-soft)' }}
       >
         <Metric icon={<Flame size={16} />} value={streak} label={`dia${streak !== 1 ? 's' : ''} seguidos`} color="var(--warn)" />
-        <Metric icon={<Play size={16} />} value={weekSessions} label="treinos/semana" color="var(--success)" />
+        <Metric icon={<Play size={16} />} value={weekSessions} label="dias ativos/semana" color="var(--success)" />
         <Metric icon={<Zap size={16} />} value={weekVolume.toLocaleString('pt-BR')} label="kg volume/semana" color="var(--brand-2)" />
         <Metric icon={<Timer size={16} />} value={formatMinutes(weekMinutes)} label="tempo/semana" />
       </div>
