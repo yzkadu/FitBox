@@ -117,7 +117,72 @@ const runDay = (label: string, distanceKm?: number): WeekStep => ({ kind: 'cardi
 const comboDay = (index: number, label: string, durationMin = 12): WeekStep => ({ kind: 'combo', index, label, durationMin }); // duas opções livres no dia, sem ordem
 const off: WeekStep = { kind: 'rest' };
 
+export const PERSONAL_UPPER_HYROX_PROGRAM_ID = 'upper-hyrox-lower-personal-5dias';
+
+/** Plano enviado pelo usuário. Variações são alternativas, nunca exercícios extras. */
+const PERSONAL_UPPER_HYROX_PROGRAM: ReadyProgram = {
+  id: PERSONAL_UPPER_HYROX_PROGRAM_ID,
+  title: 'Meu plano · Upper / HYROX / Lower (5 dias)',
+  goal: 'hibrido',
+  split: 'abcde',
+  modality: 'hibrido',
+  place: 'academia',
+  level: 'intermediario',
+  sessionMinutes: 75,
+  description: 'Seg: superior com ênfase em peito, ombros e costas. Ter/qui: aula de HYROX livre. Qua: pernas e abdômen. Sex: superior com ênfase em braços.',
+  progression: 'Compostos: pausa de 90–120 s; isoladores: 60–90 s. Em geral, 1–3 repetições em reserva. Ao completar o topo das repetições com boa execução, progrida a carga gradualmente.',
+  recoveryNote: 'As variações são substituições, não volume extra. O HYROX muda conforme o professor: registre a sequência real, descanso, carga, distância, tempo e esforço. Ajuste as cargas após aulas intensas.',
+  days: [
+    { name: 'Upper A · Peito, ombros e costas', emoji: 'dumbbell',
+      focus: 'Superior completo, com maior ênfase em peito, ombros e costas.',
+      exercises: [
+        ex('ex-supino-inclinado-halter',3,'8-10','Alternativas: supino inclinado máquina ou Smith inclinado.',120),
+        ex('ex-fedb-v-bar-pulldown',3,'8-12','Puxada neutra. Alternativas: barra fixa assistida ou puxada articulada neutra.',120),
+        ex('ex-remada-maquina',3,'8-12','Preferir remada articulada com apoio. Alternativas: remada baixa ou unilateral.',120),
+        ex('ex-supino-maquina',2,'10-12','Alternativas: supino reto com halteres ou crossover médio.',90),
+        ex('ex-desenvolvimento-maquina',2,'8-12','Alternativas: desenvolvimento com halteres ou landmine unilateral.',90),
+        ex('ex-elevacao-lateral-cabo',3,'12-15','Alternativas: elevação lateral máquina ou halteres.',75),
+        ex('ex-crucifixo-inverso-maquina',2,'12-15','Alternativas: face pull ou reverse fly no cabo.',75),
+        ex('ex-rosca-direta-w',2,'10-12','Alternativas: rosca alternada ou rosca no cabo.',75),
+        ex('ex-triceps-pulley',2,'10-12','Alternativas: tríceps barra V ou extensão unilateral no cabo.',75),
+      ] },
+    { name: 'HYROX · Aula livre (terça)', emoji: 'activity', focus: 'Aula variável do professor: o circuito não tem estações fixas.', exercises: [] },
+    { name: 'Lower + abdômen · Completo', emoji: 'footprints',
+      focus: 'Quadríceps, posteriores, glúteos, panturrilhas e abdômen.',
+      exercises: [
+        ex('ex-agachamento-hack',3,'8-10','Alternativas: agachamento Smith, livre ou goblet.',120),
+        ex('ex-levantamento-terra-romeno',3,'8-10','Alternativas: stiff com halteres ou hinge em máquina.',120),
+        ex('ex-leg-press',2,'10-12','Alternativas: leg press horizontal ou avanço.',90),
+        ex('ex-mesa-flexora',3,'10-12','Alternativas: cadeira flexora ou flexora unilateral.',75),
+        ex('ex-cadeira-extensora',2,'12-15','Alternativas: extensora unilateral ou step-up.',75),
+        ex('ex-abducao-quadril',2,'12-15','Alternativas: abdução no cabo ou caminhada com miniband.',75),
+        ex('ex-panturrilha-em-pe',3,'12-15','Alternativas: panturrilha no leg press ou máquina em pé.',75),
+        ex('ex-elevacao-pernas',3,'10-15','Alternativas: elevação de joelhos ou reverse crunch.',75),
+        ex('ex-abdominal-cabo',3,'12-15','Alternativas: abdominal máquina ou no solo.',75),
+      ] },
+    { name: 'HYROX · Aula livre (quinta)', emoji: 'activity', focus: 'Outra aula variável do professor; não copia obrigatoriamente o treino de terça.', exercises: [] },
+    { name: 'Upper B · Ênfase em bíceps e tríceps', emoji: 'dumbbell',
+      focus: 'Superior completo com prioridade para braços e presença de peito, costas e ombros.',
+      exercises: [
+        ex('ex-new-roscabayesiannocabo',3,'10-12','Alternativas: rosca inclinada halteres ou cabo atrás do corpo.',75),
+        ex('ex-fedb-cable-rope-overhead-triceps-extension',3,'10-12','Tríceps francês no cabo. Alternativas: extensão acima da cabeça ou corda overhead.',75),
+        ex('ex-supino-maquina',2,'8-12','Alternativas: supino reto com halteres ou flexão com carga.',90),
+        ex('ex-remada-baixa',2,'8-12','Pegada neutra. Alternativas: remada apoiada ou unilateral.',90),
+        ex('ex-fedb-wide-grip-lat-pulldown',2,'10-12','Alternativas: barra fixa assistida pronada ou puxada articulada.',90),
+        ex('ex-elevacao-lateral-maquina',2,'12-15','Alternativas: elevação lateral no cabo ou halteres.',75),
+        ex('ex-rosca-scott-maquina',3,'10-12','Alternativas: Scott barra W ou rosca concentrada.',75),
+        ex('ex-triceps-pulley-barra',3,'10-12','Preferir barra V. Alternativas: tríceps corda ou extensão unilateral.',75),
+        ex('ex-rosca-martelo',2,'10-12','Alternativas: martelo na corda ou martelo cruzada.',75),
+        ex('ex-fedb-face-pull',2,'12-15','Alternativas: crucifixo inverso ou reverse fly no cabo.',75),
+      ] },
+  ],
+  weekPlan: [
+    workoutDay(0),workoutDay(1),workoutDay(2),workoutDay(3),workoutDay(4),off,off,
+  ],
+};
+
 export const READY_PROGRAMS: ReadyProgram[] = [
+  PERSONAL_UPPER_HYROX_PROGRAM,
   // ---------- Hipertrofia ----------
   {
     id: 'hip-ab',
@@ -856,6 +921,8 @@ export function applyReadyProgram(programId: string, options?: { applySchedule?:
   const workouts = program.days.map((day) => {
     const workout = createWorkout(day.name, day.emoji);
     day.exercises.forEach((e) => addExerciseToWorkout(workout.id, e.id, e.sets, e.reps, e.notes, e.restSeconds));
+    // Aulas de HYROX deste plano começam sem estações. O professor define
+    // a sequência no dia; a ficha permanece editável e sem exercícios fictícios.
     return workout;
   });
   if (options?.applySchedule && program.weekPlan?.length === 7) {
