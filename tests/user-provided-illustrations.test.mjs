@@ -27,11 +27,11 @@ test('all ten user illustration files are real WebP assets', () => {
 
 test('each user illustration is bound to the exact exercise ID', () => {
   const source = readText('src/lib/userProvidedIllustrationMedia.ts');
-  const actual = [...source.matchAll(/'(ex-[a-z0-9-]+)': '([^']+\\.webp)'/g)];
+  const actual = [...source.matchAll(/'(ex-[a-z0-9-]+)': '([^']+\.webp)'/g)];
   assert.equal(actual.length, 10);
   assert.deepEqual(Object.fromEntries(actual.map(match => [match[1],match[2]])), mappings);
-  assert.match(source, /import\\.meta\\.glob/);
-  assert.match(source, /return files\\[/);
+  assert.match(source, /import\.meta\.glob/);
+  assert.match(source, /return files\[/);
 });
 
 test('custom illustrations win over photos without affecting older atlases', () => {
