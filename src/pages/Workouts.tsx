@@ -410,7 +410,32 @@ export function Workouts() {
       {deletingId && <p role="status" className="text-xs mb-3" style={{color:'var(--text-dim)'}}>
         Confirmando exclusão no servidor...
       </p>}
-      <section className="mb-5" aria-label="Como começar a treinar">
+      <section className="mb-4" aria-label="Ações principais para treinar">
+        <p className="text-xs mb-2" style={{color:'var(--text-dim)'}}>Crie sua ficha ou consulte a biblioteca completa.</p>
+        <button type="button" onClick={openCreate}
+          className="w-full rounded-xl px-4 py-4 mb-2 text-left flex items-center gap-3"
+          style={{background:'var(--brand)',color:'white'}}>
+          <Plus size={22} />
+          <span className="flex-1"><strong className="block text-base">Criar treino</strong>
+            <span className="block mt-1 text-xs" style={{opacity:.85}}>Nome → exercícios → ajustes opcionais</span>
+          </span>
+          <ChevronRight size={18}/>
+        </button>
+      <button type="button" onClick={() => navigate('/treinos/catalogo')}
+        className="w-full flex items-center gap-3 text-left rounded-xl px-4 py-3 mb-5"
+        style={{background:'var(--surface-2)',border:'1px solid var(--border)'}}>
+        <BookOpen size={20} style={{color:'var(--brand)'}}/>
+        <span className="flex-1">
+          <strong className="text-sm block">Biblioteca de exercícios</strong>
+          <span className="text-xs block mt-1" style={{color:'var(--text-dim)'}}>
+            Ver todos os {exercises.length} exercícios por músculo, aparelho e execução
+          </span>
+        </span><ChevronRight size={17} style={{color:'var(--text-faint)'}}/>
+      </button>
+      </section>
+      <details className="mb-4 rounded-xl p-3" style={{background:"var(--surface-2)"}}>
+        <summary className="cursor-pointer text-sm font-semibold" style={{color:"var(--brand)"}}>Outras maneiras de montar: IA, programas e semana</summary>
+        <section className="pt-4" aria-label="Outras maneiras de criar treinos">
         <div className="mb-3">
           <p className="text-xs font-semibold uppercase tracking-widest" style={{color:'var(--brand)'}}>Comece por aqui</p>
           <h2 className="text-xl font-semibold mt-1">Como quer montar seu treino?</h2>
@@ -464,19 +489,9 @@ export function Workouts() {
             </span>
           </button>
         </div>
-      </section>
+        </section>
+      </details>
 
-      <button type="button" onClick={() => navigate('/treinos/catalogo')}
-        className="w-full flex items-center gap-3 text-left rounded-xl px-4 py-3 mb-5"
-        style={{background:'var(--surface-2)',border:'1px solid var(--border)'}}>
-        <BookOpen size={20} style={{color:'var(--brand)'}}/>
-        <span className="flex-1">
-          <strong className="text-sm block">Biblioteca de exercícios</strong>
-          <span className="text-xs block mt-1" style={{color:'var(--text-dim)'}}>
-            Ver todos os {exercises.length} exercícios por músculo, aparelho e execução
-          </span>
-        </span><ChevronRight size={17} style={{color:'var(--text-faint)'}}/>
-      </button>
       <KaduProgramBanner workouts={workouts} exercises={exercises} />
 
       {creating && (
