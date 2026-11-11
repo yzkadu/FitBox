@@ -265,8 +265,8 @@ export function ProgramLibrary() {
                 <AppIcon value={p.days[0]?.emoji} size={18} />
               </span>
               <div className="flex-1 min-w-0">
-                {index===0 && profile && <p className="text-[10px] uppercase tracking-wide font-semibold mb-1 flex items-center gap-1"
-                  style={{color:'var(--brand)'}}><Sparkles size={12}/> Sugestão pelo seu perfil</p>}
+                {(p.id===PERSONAL_UPPER_HYROX_PROGRAM_ID || index===0 && profile) && <p className="text-[10px] uppercase tracking-wide font-semibold mb-1 flex items-center gap-1"
+                  style={{color:'var(--brand)'}}><Sparkles size={12}/> {p.id===PERSONAL_UPPER_HYROX_PROGRAM_ID ? 'Plano do documento' : 'Sugestão pelo seu perfil'}</p>}
                 <p className="font-semibold text-sm">{p.title}</p>
                 <p className="text-xs mt-1" style={{color:'var(--text-dim)'}}>
                   {p.id===PERSONAL_UPPER_HYROX_PROGRAM_ID ? 'Seg–sex · 3 musculações + 2 aulas HYROX livres' : GOAL_LABELS[p.goal]+' · '+p.days.length+' ficha(s) · '+(p.sessionMinutes??45)+' min aprox.'}
