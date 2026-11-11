@@ -12,17 +12,15 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts';
-import { Target, Pencil, X, Flame, CalendarCheck, Scale, Activity } from 'lucide-react';
+import { Flame, CalendarCheck, Scale, Activity } from 'lucide-react';
 import { useAppData } from '../hooks/useAppData';
 import { useAuth } from '../hooks/useAuth';
 import { useProfile } from '../hooks/useProfile';
 import { getWeeklyFrequency, getCurrentStreakDays, getTotalSessionsThisMonth } from '../lib/stats';
-import { assessWeightGoal } from '../lib/goal';
-import { setWeightGoal } from '../lib/actions';
 import { calcImc, classifyImc, healthyWeightRangeKg } from '../lib/imc';
-import { PageHeader, Card, EmptyState, Button, Pill } from '../components/ui';
+import { PageHeader, Card, EmptyState, Pill } from '../components/ui';
 import { chartColors, seriesOrder, tooltipStyle } from '../lib/chartTheme';
-import type { BodyMeasurement, CardioLog, Session, WeeklySchedule, WeightGoal } from '../types';
+
 
 const MEASURE_FIELDS: {
   key: 'chestCm' | 'waistCm' | 'hipCm' | 'armLeftCm' | 'thighLeftCm' | 'calfLeftCm' | 'forearmLeftCm';
@@ -35,18 +33,6 @@ const MEASURE_FIELDS: {
   { key: 'calfLeftCm', label: 'Panturrilha' },
   { key: 'forearmLeftCm', label: 'Antebraço' },
 ];
-
-function todayIso() {
-  return new Date().toISOString().slice(0, 10);
-}
-
-const VERDICT_COLOR: Record<string, string> = {
-  'no-caminho': 'var(--success)',
-  atencao: 'var(--warn)',
-  'fora-do-ritmo': 'var(--danger)',
-  cedo: 'var(--text-dim)',
-  'sem-dados': 'var(--text-dim)',
-};
 
 /** Tile compacto de estatística — usado na fileira de resumo no topo da Evolução. */
 function StatTile({
@@ -79,218 +65,8 @@ function StatTile({
   );
 }
 
-function WeightGoalCard({
-  goal,
-  measurements,
-  sessions,
-  cardioLogs,
-  weeklySchedule,
-}: {
-  goal: WeightGoal | null;
-  measurements: BodyMeasurement[];
-  sessions: Session[];
-  cardioLogs: CardioLog[];
-  weeklySchedule: WeeklySchedule;
-}) {
-  const [editing, setEditing] = useState(goal === null);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState('');
-  const formatDate = (start: string, weeks: number) => {
-    const date = new Date(start + 'T12:00:00');
-    date.setDate(date.getDate() + Math.ceil(weeks) * 7);
-    return date.toLocaleDateString('pt-BR');
-  };
-  const lastWeight = measurements
-    .filter((m) => m.weightKg != null)
-    .slice()
-    .sort((a, b) => b.date.localeCompare(a.date))[0]?.weightKg;
-
-  const [form, setForm] = useState({
-    startWeightKg: goal ? String(goal.startWeightKg) : lastWeight != null ? String(lastWeight) : '',
-    targetLossKg: goal ? String(Math.abs(goal.targetLossKg)) : '',
-    weeklyRateKg: goal && goal.targetWeeks > 0 ? String(Math.abs(goal.targetLossKg / goal.targetWeeks)) : '0.25',
-    direction: goal && goal.targetLossKg < 0 ? 'ganhar' : 'perder',
-  });
-
-  const startWeight = Number(form.startWeightKg);
-  const changeKg = Number(form.targetLossKg);
-  const rateKg = Number(form.weeklyRateKg);
-  const valid = Number.isFinite(startWeight) && startWeight >= 20 && startWeight <= 500 &&
-    Number.isFinite(changeKg) && changeKg > 0 &&
-    Number.isFinite(rateKg) && rateKg >= 0.05 && rateKg <= 2 &&
-    (form.direction === 'ganhar' ? startWeight + changeKg <= 500 : startWeight - changeKg >= 20);
-  const weeks = valid ? Math.ceil(changeKg / rateKg) : null;
-  const targetWeight = startWeight + (form.direction === 'ganhar' ? changeKg : -changeKg);
-
-  async function handleSave() {
-    if (!valid || weeks === null) { setError('Revise o peso, a mudança desejada e o ritmo.'); return; }
-    setSaving(true); setError('');
-    try {
-      const result = await setWeightGoal({
-        startWeightKg: startWeight,
-        targetLossKg: changeKg * (form.direction === 'ganhar' ? -1 : 1),
-        targetWeeks: weeks,
-        startDate: goal?.startDate ?? todayIso(),
-      });
-      if (!result.ok) { setError(result.error); return; }
-      setEditing(false);
-    } catch {
-      setError('Não foi possível salvar a meta. Verifique sua conexão.');
-    } finally { setSaving(false); }
-  }
-
-  async function handleDelete() {
-    setSaving(true); setError('');
-    try {
-      const result = await setWeightGoal(null);
-      if (!result.ok) { setError(result.error); return; }
-      setEditing(true);
-    } catch {
-      setError('Não foi possível apagar a meta.');
-    } finally { setSaving(false); }
-  }
-
-  if (editing) {
-    return (
-      <Card className="mb-4">
-        <p className="text-sm font-medium mb-1 flex items-center gap-1.5">
-          <Target size={15} style={{ color: 'var(--brand)' }} /> Meta de peso
-        </p>
-        <p className="text-xs mb-3" style={{ color: 'var(--text-faint)' }}>
-          Estimativa geral pra te ajudar a planejar — não substitui orientação médica ou nutricional.
-        </p>
-        <div className="flex gap-2 mb-3">
-          {(['perder', 'ganhar'] as const).map((direction) => (
-            <button type="button" key={direction}
-              onClick={() => setForm({ ...form, direction })}
-              className="flex-1 rounded-lg px-3 py-2 text-xs font-medium"
-              style={{ background: form.direction === direction ? 'var(--brand)' : 'var(--surface-2)',
-                color: form.direction === direction ? 'white' : 'var(--text-dim)' }}>
-              {direction === 'perder' ? 'Perder peso' : 'Ganhar peso'}
-            </button>
-          ))}
-        </div>
-        <div className="grid grid-cols-2 gap-3 mb-3">
-          <label className="flex flex-col gap-1">
-            <span className="text-xs" style={{ color: 'var(--text-faint)' }}>
-              Peso atual (kg)
-            </span>
-            <input
-              type="number"
-              inputMode="decimal"
-              value={form.startWeightKg}
-              onChange={(e) => setForm({ ...form, startWeightKg: e.target.value })}
-              className="w-full rounded-lg px-3 py-2 text-sm"
-              style={{ background: 'var(--surface-2)' }}
-            />
-          </label>
-          <label className="flex flex-col gap-1">
-            <span className="text-xs" style={{ color: 'var(--text-faint)' }}>
-              Quer {form.direction === 'perder' ? 'perder' : 'ganhar'} (kg)
-            </span>
-            <input
-              type="number"
-              inputMode="decimal"
-              value={form.targetLossKg}
-              onChange={(e) => setForm({ ...form, targetLossKg: e.target.value })}
-              placeholder="Ex: 5"
-              className="w-full rounded-lg px-3 py-2 text-sm"
-              style={{ background: 'var(--surface-2)' }}
-            />
-          </label>
-          <label className="flex flex-col gap-1 col-span-2">
-            <span className="text-xs" style={{ color: 'var(--text-faint)' }}>
-              Ritmo (kg por semana)
-            </span>
-            <input
-              type="number"
-              inputMode="numeric"
-              value={form.weeklyRateKg}
-              min="0.05"
-              max="2"
-              step="0.05"
-              onChange={(e) => setForm({ ...form, weeklyRateKg: e.target.value })}
-              placeholder="Ex: 0.25"
-              className="w-full rounded-lg px-3 py-2 text-sm"
-              style={{ background: 'var(--surface-2)' }}
-            />
-          </label>
-        </div>
-        {weeks !== null && (
-          <div className="rounded-lg p-3 text-xs mb-3" style={{ background: 'var(--surface-2)' }}>
-            <p>Peso-alvo: {targetWeight.toFixed(1)} kg</p>
-            <p>Prazo estimado: {weeks} semanas</p>
-            <p>Data prevista: {formatDate(goal?.startDate ?? todayIso(), weeks)}</p>
-            {rateKg > 1 && <p className="mt-1" style={{ color: 'var(--warn)' }}>Ritmo elevado: procure orientação individualizada.</p>}
-          </div>
-        )}
-        {error && <p role="alert" className="text-xs mb-2" style={{ color: 'var(--danger)' }}>{error}</p>}
-        <div className="flex gap-2">
-          <Button
-            full
-            disabled={!valid || saving}
-            onClick={handleSave}
-          >
-            {goal ? 'Salvar alterações' : 'Definir meta'}
-          </Button>
-          {goal && (
-            <Button variant="secondary" onClick={() => setEditing(false)} className="!px-4">
-              Cancelar
-            </Button>
-          )}
-        </div>
-      </Card>
-    );
-  }
-
-  const assessment = assessWeightGoal(goal as WeightGoal, measurements, sessions, cardioLogs, weeklySchedule);
-  const g = goal as WeightGoal;
-  const targetWeightKg = g.startWeightKg - g.targetLossKg;
-
-  return (
-    <Card className="mb-4">
-      <div className="flex items-start justify-between mb-1">
-        <p className="text-sm font-medium flex items-center gap-1.5">
-          <Target size={15} style={{ color: 'var(--brand)' }} /> Meta de peso
-        </p>
-        <div className="flex items-center gap-2">
-          <button onClick={() => setEditing(true)} style={{ color: 'var(--text-faint)' }}>
-            <Pencil size={14} />
-          </button>
-          <button aria-label="Apagar meta" disabled={saving} onClick={handleDelete} style={{ color: 'var(--text-faint)' }}>
-            <X size={15} />
-          </button>
-        </div>
-      </div>
-      <p className="text-xs mb-3" style={{ color: 'var(--text-faint)' }}>
-        {g.startWeightKg} kg → {targetWeightKg.toFixed(1)} kg · {g.targetLossKg >= 0 ? 'Perder' : 'Ganhar'} {Math.abs(g.targetLossKg).toFixed(1)} kg
-        em aproximadamente {g.targetWeeks} semanas ({Math.abs(assessment.targetWeeklyRateKg).toFixed(2)} kg/semana).
-        Previsão: {formatDate(g.startDate, g.targetWeeks)}.
-      </p>
-
-      <p className="text-xs mb-3" style={{ color: 'var(--text-dim)' }}>
-        {assessment.pace.message}
-      </p>
-      {error && <p role="alert" className="text-xs mb-2" style={{ color: 'var(--danger)' }}>{error}</p>}
-
-      <div
-        className="rounded-xl p-3 text-sm mb-2"
-        style={{ background: 'var(--surface-2)', color: VERDICT_COLOR[assessment.verdict] ?? 'var(--text)' }}
-      >
-        {assessment.verdictMessage}
-      </div>
-
-      {assessment.consistencyPct != null && (
-        <p className="text-xs" style={{ color: 'var(--text-faint)' }}>
-          Frequência de treino (últimas semanas) vs agenda planejada: {assessment.consistencyPct}%
-        </p>
-      )}
-    </Card>
-  );
-}
-
 export function Progress() {
-  const { sessions, measurements, cardioLogs, weeklySchedule, weightGoal } = useAppData();
+  const { sessions, measurements, cardioLogs, weeklySchedule } = useAppData();
   const { user } = useAuth();
   const [profile] = useProfile(user?.id);
   const [activeFields, setActiveFields] = useState<Set<string>>(new Set(['waistCm']));
@@ -317,7 +93,7 @@ export function Progress() {
     : [];
   const healthyRange = heightCm ? healthyWeightRangeKg(heightCm) : null;
 
-  const measureData = measurements.map((m) => {
+  const measureData = sortedByDate.map((m) => {
     const point: Record<string, number | string> = {
       date: new Date(m.date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
     };
@@ -351,20 +127,29 @@ export function Progress() {
   const currentImc = heightCm && latestWeight != null ? calcImc(latestWeight, heightCm) : null;
   const currentImcClass = currentImc != null ? classifyImc(currentImc) : null;
 
+  const valueStats = (field: keyof BodyMeasurement) => {
+    const values = sortedByDate
+      .map(entry => ({date:entry.date,value:entry[field]}))
+      .filter((item):item is {date:string;value:number} => typeof item.value === 'number' && Number.isFinite(item.value));
+    const recent = values.slice(-3);
+    const average = recent.length ? recent.reduce((sum,item)=>sum+item.value,0)/recent.length : null;
+    const first = values[0]?.value ?? null;
+    const last = values[values.length-1]?.value ?? null;
+    return {count:values.length,average,first,last,delta:first!==null&&last!==null&&values.length>1?last-first:null};
+  };
+  const weightStats=valueStats('weightKg');
+  const fmt=(value:number,unit:string)=>value.toLocaleString('pt-BR',{maximumFractionDigits:1,minimumFractionDigits:1})+' '+unit;
+  const measureStats=MEASURE_FIELDS.map(field=>({...field,stats:valueStats(field.key)}))
+    .filter(item=>item.stats.count>0);
+  const recentMeasurements=sortedByDate.slice(-6).reverse();
+
   const hasAnyData = sessions.some((s) => s.finishedAt) || measurements.length > 0;
 
-  if (!hasAnyData && !weightGoal) {
+  if (!hasAnyData) {
     return (
       <div className="px-4 pb-6">
         <PageHeader title="Evolução" />
-        <WeightGoalCard
-          goal={weightGoal}
-          measurements={measurements}
-          sessions={sessions}
-          cardioLogs={cardioLogs}
-          weeklySchedule={weeklySchedule}
-        />
-        <EmptyState title="Ainda sem dados" subtitle="Complete treinos e registre medidas para ver seus gráficos aqui." />
+        <EmptyState title="Seu histórico começa com uma anotação" subtitle="Registre peso e medidas corporais ou conclua um treino. As médias e tendências aparecem automaticamente conforme você adiciona registros." />
       </div>
     );
   }
@@ -399,15 +184,51 @@ export function Progress() {
         />
       </div>
 
-      <WeightGoalCard
-        goal={weightGoal}
-        measurements={measurements}
-        sessions={sessions}
-        cardioLogs={cardioLogs}
-        weeklySchedule={weeklySchedule}
-      />
 
 
+
+      <Card className="mb-4">
+        <h2 className="text-sm font-semibold">Resumo das anotações</h2>
+        <p className="text-xs mt-1 mb-3" style={{color:'var(--text-dim)'}}>Médias dos últimos 3 registros de cada medida (não são metas). Evoluem à medida que você anota.</p>
+        <div className="grid grid-cols-2 gap-2 mb-3">
+          <div className="rounded-lg p-3" style={{background:'var(--surface-2)'}}>
+            <p className="text-xs" style={{color:'var(--text-dim)'}}>Peso · média recente</p>
+            <p className="text-lg font-semibold">{weightStats.average===null?'—':fmt(weightStats.average,'kg')}</p>
+            <p className="text-xs" style={{color:'var(--text-faint)'}}>{weightStats.count} registro(s)</p>
+          </div>
+          <div className="rounded-lg p-3" style={{background:'var(--surface-2)'}}>
+            <p className="text-xs" style={{color:'var(--text-dim)'}}>Peso · primeira → última anotação</p>
+            <p className="text-lg font-semibold">{weightStats.delta===null?'—':(weightStats.delta>0?'+':'')+fmt(weightStats.delta,'kg')}</p>
+            <p className="text-xs" style={{color:'var(--text-faint)'}}>Variação observada, sem julgamento de meta</p>
+          </div>
+        </div>
+        {measureStats.length>0 && <div className="grid grid-cols-2 gap-2">
+          {measureStats.map(({key,label,stats})=>(
+            <div key={key} className="rounded-lg p-2.5" style={{background:'var(--surface-2)'}}>
+              <p className="text-xs font-semibold">{label}</p>
+              <p className="text-sm mt-1">{stats.average===null?'—':fmt(stats.average,'cm')} <span className="text-[10px]" style={{color:'var(--text-faint)'}}>média de até 3</span></p>
+              <p className="text-xs mt-1" style={{color:'var(--text-dim)'}}>{stats.delta===null?'Aguardando mais anotações':(stats.delta>0?'+':'')+fmt(stats.delta,'cm')+' desde a primeira'}</p>
+            </div>
+          ))}
+        </div>}
+      </Card>
+      <Card className="mb-4">
+        <h2 className="text-sm font-semibold mb-2">Últimas anotações corporais</h2>
+        <p className="text-xs mb-3" style={{color:'var(--text-dim)'}}>Diário de medidas: cada anotação continua preservada no histórico.</p>
+        <div className="flex flex-col gap-2">
+          {recentMeasurements.map(entry=>(
+            <div key={entry.id} className="rounded-lg p-2.5" style={{background:'var(--surface-2)'}}>
+              <p className="text-xs font-semibold">{new Date(entry.date+'T12:00:00').toLocaleDateString('pt-BR')}</p>
+              <p className="text-xs mt-1" style={{color:'var(--text-dim)'}}>
+                {([['weightKg','kg','Peso'],...MEASURE_FIELDS.map(f=>[f.key,'cm',f.label])] as [keyof BodyMeasurement,string,string][])
+                  .filter(([key])=>typeof entry[key]==='number')
+                  .map(([key,unit,label])=>label+': '+fmt(entry[key] as number,unit)).join(' · ')}
+              </p>
+              {entry.notes && <p className="text-xs mt-1">{entry.notes}</p>}
+            </div>
+          ))}
+        </div>
+      </Card>
       <Card className="mb-4">
         <p className="text-sm font-medium mb-3">Frequência de treino (10 semanas)</p>
         <div style={{ width: '100%', height: 160 }}>
