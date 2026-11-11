@@ -73,7 +73,7 @@ export function GuidedBuilder() {
   const filteredCandidates = candidates.filter(p=>
     !search.trim() || (p.title+' '+p.description+' '+GOAL_LABELS[p.goal])
       .toLocaleLowerCase('pt-BR').includes(search.toLocaleLowerCase('pt-BR').trim()));
-  const visibleCandidates = showAll?filteredCandidates:filteredCandidates.slice(0,6);
+  const visibleCandidates = showAll?filteredCandidates:filteredCandidates.slice(0,3);
 
   function useMyProfile() {
     if (!profile) return;
@@ -198,9 +198,7 @@ export function GuidedBuilder() {
         <ArrowLeft size={15}/>{step===1?'Voltar aos treinos':'Etapa anterior'}
       </button>
       <PageHeader title="Montador inteligente"/>
-      <p className="text-sm mb-4" style={{color:'var(--text-dim)'}}>
-        Monte uma semana de verdade: escolha seu objetivo, combine modalidades e revise tudo antes de salvar.
-      </p>
+      <p className="text-xs mb-4" style={{color:'var(--text-dim)'}}>Objetivo, plano-base e semana. Detalhes opcionais ficam recolhidos.</p>
       <div className="grid grid-cols-3 gap-2 mb-5" role="list" aria-label="Etapas do montador">
         {(['Preferências','Programa-base','Minha semana'] as const).map((t,i)=>(
           <div key={t} role="listitem" className="rounded-xl px-2 py-2 text-center"
@@ -259,6 +257,9 @@ export function GuidedBuilder() {
               {PLACES.map(p=><Chip key={p} active={prefs.place===p}
                 onClick={()=>patchPrefs({place:p})}>{PLACE_LABELS[p]}</Chip>)}
             </div>
+            <details className="rounded-xl p-3" style={{background:'var(--surface-2)'}}>
+            <summary className="text-sm font-semibold cursor-pointer">Mais opções: equipamentos, nível e duração</summary>
+            <div className="pt-3">
             <FieldTitle hint="Selecione os equipamentos que você realmente pode usar. Se nenhum for marcado, o app considera todos os compatíveis com o local.">
               Equipamentos disponíveis
             </FieldTitle>
@@ -279,6 +280,7 @@ export function GuidedBuilder() {
               {[20,30,40,50,60,75].map(n=><Chip key={n} active={prefs.minutes===n}
                 onClick={()=>patchPrefs({minutes:n})}>{n} minutos</Chip>)}
             </div>
+            </div></details>
           </Card>
           <Card>
             <FieldTitle hint="Marque apenas os dias em que você tem disponibilidade. Descanso também faz parte do plano.">
@@ -339,16 +341,18 @@ export function GuidedBuilder() {
               </span>
             </button>;
           })}
-          {filteredCandidates.length>6 && (
+          {filteredCandidates.length>3 && (
             <button type="button" className="text-sm text-center py-2" style={{color:'var(--brand)'}}
               onClick={()=>setShowAll(v=>!v)}>
-              {showAll?'Ver menos opções':`Ver mais ${filteredCandidates.length-6} programas`}
+              {showAll?'Ver menos opções':`Ver mais ${filteredCandidates.length-3} programas`}
             </button>
           )}
           {filteredCandidates.length===0 && <p className="text-sm" style={{color:'var(--text-dim)'}}>Nenhum programa com esse nome.</p>}
           <Card>
-            <FieldTitle hint="Opcional: em vez de somar dois treinos completos, substituímos uma ficha por uma sessão compatível do segundo programa.">
-              Quero combinar com outro programa
+            <details><summary className="text-sm font-semibold cursor-pointer">Combinar outro programa (opcional)</summary>
+            <div className="pt-3">
+            <FieldTitle hint="Inclua uma sessão complementar somente quando houver espaço na semana.">
+              Programa secundário
             </FieldTitle>
             <select aria-label="Programa secundário" value={secondary}
               onChange={e=>setSecondary(e.target.value)}
@@ -362,7 +366,12 @@ export function GuidedBuilder() {
             <p className="text-xs mt-2 flex gap-2" style={{color:'var(--text-dim)'}}>
               <Info size={15} className="shrink-0"/> A combinação evita duplicar séries e não adiciona sessões pesadas automaticamente.
             </p>
+            </div></details>
           </Card>
+          {prefs.modes.includes('hyrox') && <button type="button" onClick={()=>navigate('/programas')}
+            className="w-full p-3 rounded-xl text-left text-xs" style={{background:'var(--brand-dim)',color:'var(--brand)'}}>
+            HYROX da turma é variável? Escolha “HYROX · Aula funcional livre” em Programas prontos para cadastrar as estações do professor sem exercício fixo.
+          </button>}
           {error && <p role="alert" className="text-sm" style={{color:'var(--danger)'}}>{error}</p>}
           <Button full disabled={!selected} onClick={createPreview}>
             Montar minha semana <ArrowRight size={16} className="inline ml-1"/>
