@@ -44,7 +44,7 @@ export function ExerciseCatalog() {
       <button type="button" onClick={()=>setGroup('todos')} aria-pressed={group==='todos'}
         className="shrink-0 rounded-full px-3 py-2 text-xs"
         style={{background:group==='todos'?'var(--brand)':'var(--surface-2)',color:group==='todos'?'white':'var(--text)'}}>Todos</button>
-      {MUSCLE_GROUP_ORDER.map(g=><button key={g} type="button" onClick={()=>setGroup(g)} aria-pressed={group===g}
+      {MUSCLE_GROUP_ORDER.map(g=><button key={g} type="button" onClick={()=>setGroup(g as MuscleGroup)} aria-pressed={group===g}
         className="shrink-0 rounded-full px-3 py-2 text-xs"
         style={{background:group===g?'var(--brand)':'var(--surface-2)',color:group===g?'white':'var(--text)'}}>{MUSCLE_GROUP_LABELS[g]}</button>)}
     </div>
