@@ -9,6 +9,7 @@ import type { Exercise } from '../types';
 import { MUSCLE_GROUP_LABELS } from '../lib/exercises';
 import { exerciseMedia, exerciseGuidance } from '../lib/exerciseMedia';
 import { ExerciseAnatomy, getExerciseAnatomicalFocus, preferredAnatomicalView } from './ExerciseAnatomy';
+import { getExerciseAnatomicalProfile, getRegionLabel } from '../lib/anatomicalProfiles';
 
 function ExercisePhoto({ src, alt, spriteIndex, spriteRows = 8, spriteAspectRatio = '280 / 205' }: {
   src: string; alt: string; spriteIndex?: number; spriteRows?: number; spriteAspectRatio?: string;
@@ -111,6 +112,7 @@ export function ExerciseGuide({ exercise, compact = false }: { exercise?: Exerci
   const [showSecondPosition, setShowSecondPosition] = useState(false);
 
   const focus = getExerciseAnatomicalFocus(exercise);
+  const anatomicalProfile = getExerciseAnatomicalProfile(exercise ?? undefined);
   const images = exerciseMedia(exercise);
   const steps = exerciseGuidance(exercise);
 
@@ -242,6 +244,19 @@ export function ExerciseGuide({ exercise, compact = false }: { exercise?: Exerci
           )}
         </div>
       </div>
+
+      {anatomicalProfile && (
+        <div className="rounded-lg p-3 text-xs" style={{background:'var(--surface)',border:'1px solid var(--border)'}}>
+          <p className="font-semibold mb-1">Músculos trabalhados</p>
+          <p><strong>Principal:</strong> {anatomicalProfile.primaryMuscles.join('; ')}</p>
+          {anatomicalProfile.secondaryMuscles.length>0 && <p className="mt-1"><strong>Secundários:</strong> {anatomicalProfile.secondaryMuscles.join('; ')}</p>}
+          {!compact && anatomicalProfile.stabilizers.length>0 && <p className="mt-1"><strong>Estabilizadores:</strong> {anatomicalProfile.stabilizers.join('; ')}</p>}
+          {anatomicalProfile.regionTags.length>0 && <p className="mt-1" style={{color:'var(--text-dim)'}}>
+            <strong>Ênfase:</strong> {anatomicalProfile.regionTags.map(getRegionLabel).join('; ')}
+          </p>}
+          <p className="mt-1 text-[10px]" style={{color:'var(--text-faint)'}}>Participação estimada pela biomecânica; não equivale a porcentagem de ativação.</p>
+        </div>
+      )}
 
       {steps && (
         <div className="rounded-lg p-3" style={{ background: 'var(--surface)' }}>
