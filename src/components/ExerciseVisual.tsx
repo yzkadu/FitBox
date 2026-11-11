@@ -108,10 +108,14 @@ export function ExerciseGuide({ exercise, compact = false }: { exercise?: Exerci
   const [muscleExpanded, setMuscleExpanded] = useState(false);
   const [fullMapOpen, setFullMapOpen] = useState(false);
   const [stepsExpanded, setStepsExpanded] = useState(false);
+  const [showSecondPosition, setShowSecondPosition] = useState(false);
 
   const focus = getExerciseAnatomicalFocus(exercise);
   const images = exerciseMedia(exercise);
   const steps = exerciseGuidance(exercise);
+
+  // A segunda fotografia continua disponível, sem ocupar espaço por padrão.
+  useEffect(() => { setShowSecondPosition(false); }, [exercise?.id]);
 
   useEffect(() => {
     if (profile?.gender) setModel(profile.gender);
@@ -132,7 +136,7 @@ export function ExerciseGuide({ exercise, compact = false }: { exercise?: Exerci
         </div>
         <span className="text-[10px] rounded-full px-2 py-1 shrink-0 font-semibold"
           style={{ background: 'var(--brand-dim)', color: 'var(--brand)' }}>
-          {images ? (images.kind === 'ilustracao' ? 'Ilustração do exercício' : images.second ? '2 fotos reais' : 'Foto real') : 'Sem foto validada'}
+          {images ? (images.kind === 'ilustracao' ? 'Ilustração do exercício' : images.second ? 'Foto real · posição extra' : 'Foto real') : 'Sem foto validada'}
         </span>
       </div>
 
@@ -168,8 +172,8 @@ export function ExerciseGuide({ exercise, compact = false }: { exercise?: Exerci
         <div className="min-w-0 flex flex-col gap-2">
           {images ? (
             <>
-              <div className={images.second ? 'grid grid-cols-2 gap-1.5 min-w-0' : 'grid grid-cols-1 gap-1.5 min-w-0'}>
-                {[images.first, ...(images.second ? [images.second] : [])].map((src, index) => (
+              <div className="grid grid-cols-1 gap-1.5 min-w-0">
+                {[images.first].map((src, index) => (
                   <div key={src} className="rounded-lg overflow-hidden min-w-0"
                     style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
                     <div className={images.spriteIndex !== undefined && index === 0
@@ -186,11 +190,34 @@ export function ExerciseGuide({ exercise, compact = false }: { exercise?: Exerci
                   </div>
                 ))}
               </div>
+              {images.second && (
+                <div className="flex flex-col gap-2">
+                  <button type="button" onClick={() => setShowSecondPosition(value => !value)}
+                    aria-expanded={showSecondPosition}
+                    aria-label={showSecondPosition ? 'Ocultar segunda posição do exercício' : 'Ver segunda posição do exercício'}
+                    className="self-start text-xs font-medium rounded-lg px-3 py-2"
+                    style={{ background:'var(--surface)',color:'var(--brand)',border:'1px solid var(--border)' }}>
+                    {showSecondPosition ? 'Ocultar segunda posição' : 'Ver segunda posição'}
+                  </button>
+                  {showSecondPosition && (
+                    <div className="rounded-lg overflow-hidden min-w-0"
+                      style={{border:'1px solid var(--border)',background:'var(--surface)'}}>
+                      <div className={compact ? 'h-[130px] sm:h-[162px]' : 'h-[172px] sm:h-[205px]'}>
+                        <ExercisePhoto src={images.second}
+                          alt={exercise.name + ' — segunda fotografia da execução'}/>
+                      </div>
+                      <p className="text-[10px] py-1.5 text-center" style={{color:'var(--text-faint)'}}>
+                        Posição complementar (2 de 2)
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
               <p className="text-[10px] leading-relaxed" style={{ color: 'var(--text-faint)' }}>
                 {images.kind === 'ilustracao'
                   ? 'Representação ilustrada de uma posição do exercício. Consulte o passo a passo e ajuste a execução ao seu nível.'
                   : images.second
-                    ? 'Duas fotografias do exercício; não são animação. Confira também o passo a passo.'
+                    ? 'Uma fotografia principal; a segunda posição está disponível acima. Confira também o passo a passo.'
                     : 'Fotografia real mostrando uma posição do exercício. Para executar o movimento completo, siga as instruções abaixo.'}
               </p>
             </>
