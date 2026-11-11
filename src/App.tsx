@@ -11,6 +11,7 @@ import { SessionExecution } from './pages/SessionExecution';
 import { SessionEditor } from './pages/SessionEditor';
 import { History } from './pages/History';
 import { ExerciseDetail } from './pages/ExerciseDetail';
+import { ExerciseCatalog } from './pages/ExerciseCatalog';
 import { Progress } from './pages/Progress';
 import { BodyStats } from './pages/BodyStats';
 import { MuscleMap } from './pages/MuscleMap';
@@ -124,6 +125,7 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/treinos" element={<Workouts />} />
           <Route path="/montador" element={<GuidedBuilder />} />
+          <Route path="/treinos/catalogo" element={<ExerciseCatalog />} />
           <Route path="/treinos/:workoutId" element={<WorkoutEditor />} />
           <Route path="/historico" element={<History />} />
           <Route path="/exercicio/:exerciseId" element={<ExerciseDetail />} />
