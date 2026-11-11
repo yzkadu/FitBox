@@ -17,7 +17,8 @@ const plan=programs.slice(programs.indexOf('const PERSONAL_UPPER_HYROX_PROGRAM:'
   programs.indexOf('export const READY_PROGRAMS:'));
 
 test('personal plan preserves three strength days and two independent empty HYROX lessons',()=>{
-  assert.match(plan,/upper-hyrox-lower-personal-5dias/);
+  assert.match(programs,/PERSONAL_UPPER_HYROX_PROGRAM_ID = 'upper-hyrox-lower-personal-5dias'/);
+  assert.match(plan,/id: PERSONAL_UPPER_HYROX_PROGRAM_ID/);
   assert.match(plan,/Upper A · Peito, ombros e costas/);
   assert.match(plan,/Lower \+ abdômen · Completo/);
   assert.match(plan,/Upper B · Ênfase em bíceps e tríceps/);
