@@ -20,6 +20,7 @@ import { getWeeklyFrequency, getCurrentStreakDays, getTotalSessionsThisMonth } f
 import { calcImc, classifyImc, healthyWeightRangeKg } from '../lib/imc';
 import { PageHeader, Card, EmptyState, Pill } from '../components/ui';
 import { chartColors, seriesOrder, tooltipStyle } from '../lib/chartTheme';
+import type { BodyMeasurement } from '../types';
 
 
 const MEASURE_FIELDS: {
