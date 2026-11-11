@@ -79,6 +79,7 @@ const emptyForm = {
   calfRightCm: '',
   forearmLeftCm: '',
   forearmRightCm: '',
+  notes: '',
 };
 
 export function BodyStats() {
@@ -125,6 +126,7 @@ export function BodyStats() {
       calfRightCm: m.calfRightCm?.toString() ?? '',
       forearmLeftCm: m.forearmLeftCm?.toString() ?? '',
       forearmRightCm: m.forearmRightCm?.toString() ?? '',
+      notes: m.notes ?? '',
     });
     setSheetOpen(true);
   }
@@ -145,6 +147,7 @@ export function BodyStats() {
       calfRightCm: num(form.calfRightCm),
       forearmLeftCm: num(form.forearmLeftCm),
       forearmRightCm: num(form.forearmRightCm),
+      notes: form.notes.trim() || undefined,
     };
     if (editingId) {
       updateMeasurement(editingId, payload);
@@ -173,6 +176,20 @@ export function BodyStats() {
     weightEntries[0] && baselineWeightEntry && baselineWeightEntry.id !== weightEntries[0].id
       ? Math.round((weightEntries[0].weightKg! - baselineWeightEntry.weightKg!) * 10) / 10
       : null;
+
+  // A média usa somente registros reais, ignorando campos não preenchidos.
+  // Comparação entre blocos de até três medições, sem pressupor ganho/perda desejáveis.
+  const rollingMetrics = MEASURE_FIELD_DEFS.map(field=>{
+    const values=sortedMeasurements
+      .map(entry=>entry[field.key])
+      .filter((value):value is number=>typeof value==='number' && Number.isFinite(value));
+    if(!values.length)return null;
+    const mean=(xs:number[])=>xs.reduce((sum,x)=>sum+x,0)/xs.length;
+    const recent=mean(values.slice(0,3));
+    const previous=values.length>3?mean(values.slice(3,6)):null;
+    return {key:field.key,label:field.label||'Peso',unit:field.unit,recent,previous,count:values.length};
+  }).filter((value):value is NonNullable<typeof value>=>value!==null);
+  const formatMeasure=(value:number,unit:string)=>value.toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})+' '+unit;
 
   const heightCm = profile?.heightCm ?? null;
   const imc = heightCm && latestWeight != null ? calcImc(latestWeight, heightCm) : null;
@@ -232,6 +249,25 @@ export function BodyStats() {
         </Card>
       )}
 
+      {rollingMetrics.length>0 && <Card className="mb-4">
+        <h2 className="text-sm font-semibold">Médias das anotações</h2>
+        <p className="text-xs mt-1 mb-3" style={{color:'var(--text-dim)'}}>Média móvel dos últimos três registros disponíveis por medida. Com seis registros, compare os dois grupos mais recentes.</p>
+        <div className="grid grid-cols-2 gap-2">
+          {rollingMetrics.map(metric=>(
+            <div key={metric.key} className="rounded-lg p-2.5" style={{background:'var(--surface-2)'}}>
+              <p className="text-xs font-semibold">{metric.label}</p>
+              <p className="text-sm mt-1">{formatMeasure(metric.recent,metric.unit)}</p>
+              <p className="text-[11px] mt-1" style={{color:'var(--text-dim)'}}>
+                {metric.previous===null ? metric.count+' registro(s); média inicial' :
+                  (metric.recent-metric.previous>=0?'+':'')+formatMeasure(metric.recent-metric.previous,metric.unit)+' vs. média anterior'}
+              </p>
+            </div>
+          ))}
+        </div>
+      </Card>}
+      <details className="mb-4 rounded-xl p-3" style={{background:'var(--surface-2)'}}>
+        <summary className="cursor-pointer text-sm font-semibold">Mais informações: IMC, mapa muscular e fotos</summary>
+        <div className="mt-3">
       <Card className="mb-4">
         <div className="flex items-center gap-2 mb-1">
           <Activity size={16} style={{ color: 'var(--brand)' }} />
@@ -324,8 +360,10 @@ export function BodyStats() {
         </div>
       )}
 
+        </div>
+      </details>
       <p className="text-sm font-semibold mb-2" style={{ color: 'var(--text-dim)' }}>
-        Histórico de medidas
+        Histórico de anotações
       </p>
       {sortedMeasurements.length === 0 ? (
         <EmptyState title="Nenhuma medida registrada" subtitle="Registre seu peso e medidas para acompanhar sua evolução." />
@@ -359,6 +397,7 @@ export function BodyStats() {
                       );
                     })}
                   </div>
+                  {m.notes && <p className="text-xs mt-2" style={{color:'var(--text-dim)'}}>Anotação: {m.notes}</p>}
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
                   <button onClick={() => openEditMeasurement(m)} style={{ color: 'var(--text-faint)' }}>
@@ -433,6 +472,13 @@ export function BodyStats() {
               <input type="number" inputMode="decimal" value={form.thighRightCm} onChange={(e) => setForm({ ...form, thighRightCm: e.target.value })} className="w-full rounded-lg px-3 py-2 text-sm" style={{ background: 'var(--surface-2)' }} />
             </Field>
           </div>
+          <Field label="Anotações (opcional)">
+            <textarea rows={3} value={form.notes}
+              onChange={e=>setForm({...form,notes:e.target.value})}
+              placeholder="Como estava se sentindo, horário, observações..."
+              className="w-full rounded-lg px-3 py-2 text-sm"
+              style={{background:'var(--surface-2)'}} />
+          </Field>
           <Button full onClick={handleSave} className="mt-2">
             {editingId ? 'Salvar alterações' : 'Salvar medição'}
           </Button>
