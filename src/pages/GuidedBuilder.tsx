@@ -7,6 +7,8 @@ import { useAuth } from '../hooks/useAuth';
 import { useProfile } from '../hooks/useProfile';
 import { BUILTIN_EXERCISES } from '../lib/exercises';
 import { EQUIPMENT_LABELS,EQUIPMENT_ORDER,equipmentMatches,type EquipmentCategory } from '../lib/equipmentCategories';
+import { getRegionLabel } from '../lib/anatomicalProfiles';
+import { directAnatomicalCoverage } from '../lib/anatomicalSelection';
 import { WEEKDAY_ORDER, WEEKDAY_LABELS } from '../types';
 import type { Weekday } from '../types';
 import { PLACE_LABELS, LEVEL_LABELS, GOAL_LABELS } from '../lib/readyPrograms';
@@ -411,6 +413,26 @@ export function GuidedBuilder() {
             ))}
           </Card>
 
+          {prefs.modes.includes('forca') && !prefs.modes.includes('hyrox') && (() => {
+            const active=new Set(draft.slots.map(slot=>slot.workoutIndex).filter((idx):idx is number=>idx!==null));
+            const ids=draft.workouts.flatMap((workout,i)=>active.has(i)?workout.exercises.map(ex=>ex.id):[]);
+            const coverage=directAnatomicalCoverage(ids);
+            return <Card className="mb-3">
+              <h3 className="text-sm font-semibold mb-1">Cobertura anatômica prevista na semana</h3>
+              <p className="text-xs mb-2" style={{color:'var(--text-dim)'}}>
+                {coverage.regions.length} ênfases e {coverage.families.length} famílias biomecânicas na musculação planejada.
+                Cardio, mobilidade e participação indireta não contam como séries completas.
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {coverage.regions.map(region=><span key={region} className="rounded-lg px-2 py-1 text-[11px]"
+                  style={{background:'var(--surface-2)',color:'var(--text-dim)'}}>{getRegionLabel(region)}</span>)}
+              </div>
+              {coverage.indirectMuscles.length>0 && <p className="text-xs mt-2" style={{color:'var(--text-faint)'}}>
+                Participação secundária: {coverage.indirectMuscles.slice(0,5).join('; ')}
+                {coverage.indirectMuscles.length>5?'…':''}.
+              </p>}
+            </Card>;
+          })()}
           {draft.workouts.map((workout,dayIndex)=>{
             const used=draft.slots.some(s=>s.workoutIndex===dayIndex);
             return <Card key={dayIndex}>
@@ -449,12 +471,15 @@ export function GuidedBuilder() {
                           aria-label="Remover exercício" style={{color:'var(--danger)'}}><Trash2 size={16}/></button>
                       </div>
                       <select value={entry.id} aria-label={`Substituir exercício ${ei+1}`}
-                        onChange={e=>updateExercise(dayIndex,ei,{id:e.target.value,notes:undefined})}
+                        onChange={e=>updateExercise(dayIndex,ei,{id:e.target.value,notes:undefined,anatomyReason:undefined})}
                         className="w-full rounded-lg px-2 py-2 text-xs mb-2"
                         style={{background:'var(--surface)',color:'var(--text)'}}>
                         {!alternatives.some(x=>x.id===entry.id) && ex && <option value={ex.id}>{ex.name}</option>}
                         {alternatives.map(e=><option key={e.id} value={e.id}>{e.name}</option>)}
                       </select>
+                      {entry.anatomyReason && <p className="mb-2 text-[11px]" style={{color:'var(--brand)'}}>
+                        {entry.anatomyReason}
+                      </p>}
                       <div className="grid grid-cols-2 gap-2">
                         <div>
                           <label className="text-[11px] block mb-1" style={{color:'var(--text-faint)'}}>Séries</label>

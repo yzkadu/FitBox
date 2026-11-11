@@ -15,6 +15,9 @@
 
 import { createWorkout, addExerciseToWorkout, replaceWeeklySchedule } from './actions';
 import { READY_PROGRAMS } from './readyPrograms';
+import { BUILTIN_EXERCISES } from './exercises';
+import { canAutoSuggestExercise } from './anatomicalProfiles';
+import { balanceAnatomicalExercises, directAnatomicalCoverage } from './anatomicalSelection';
 import type { Equipment, ExperienceLevel, TrainingGoal, TrainingType, WeeklyFrequency } from './onboarding';
 import type { IconKey } from './workoutIcons';
 import { WEEKDAY_ORDER, type Weekday, type WeeklySchedule } from '../types';
@@ -215,7 +218,7 @@ function getCuratedPlan(input: RecommendationInput): RecommendedProgramPlan | nu
     ],
     workouts: program.days.map((d) => ({
       name: d.name, icon: d.emoji as IconKey,
-      exercises: d.exercises.map((e) => ({ id: e.id, sets: e.sets, reps: e.reps, notes: e.notes, restSeconds: e.restSeconds })),
+      exercises: d.exercises.filter(e=>canAutoSuggestExercise(e.id)).map((e) => ({ id: e.id, sets: e.sets, reps: e.reps, notes: e.notes, restSeconds: e.restSeconds })),
     })),
     schedule,
   };
@@ -295,6 +298,19 @@ export function recommendProgram(input: RecommendationInput): RecommendedProgram
     splitLabel = 'Push / Pull / Legs (2x na semana)';
   }
 
+  // Diversifica fichas AUTOMÁTICAS do cadastro sem trocar equipamento/tier,
+  // alterar a divisão de grupos ou reorganizar programas curados e HYROX.
+  const permittedIds=new Set(Object.values(pools).flat());
+  const candidates=BUILTIN_EXERCISES.filter(ex=>permittedIds.has(ex.id)&&canAutoSuggestExercise(ex));
+  const priorWeekRegions=new Set<string>();
+  workouts=workouts.map(workout=>{
+    const exercises=balanceAnatomicalExercises(workout.exercises,candidates,
+      ex=>permittedIds.has(ex.id)&&canAutoSuggestExercise(ex),priorWeekRegions)
+      .map(({item})=>item);
+    for(const region of directAnatomicalCoverage(exercises.map(e=>e.id)).regions)priorWeekRegions.add(region);
+    return {...workout,exercises};
+  });
+
   const schedule: Partial<Record<Weekday, ScheduleEntry>> = {};
   let dayIdx = 0;
   for (const workoutIndex of dayPattern) {
@@ -314,6 +330,7 @@ export function recommendProgram(input: RecommendationInput): RecommendedProgram
     `Divisão: ${splitLabel}, ${strengthDays}x de treino${hasCardio ? ' + 1x de cardio' : ''} por semana.`,
     `Exercícios pensados pro que você tem disponível: ${TIER_LABEL[tier]}.`,
     `Intensidade: ${profile.note}.`,
+    'Seleção de força diversificada por regiões e famílias biomecânicas (estimativa, não EMG).',
     'Dá pra mudar tudo depois — criar treino novo, editar exercícios ou remontar os dias.',
   ];
 

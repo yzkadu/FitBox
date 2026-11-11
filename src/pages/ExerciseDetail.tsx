@@ -6,6 +6,7 @@ import { getExerciseHistory, getPersonalRecord, getExerciseTrend } from '../lib/
 import { getCoachSuggestion } from '../lib/coach';
 import { Card, EmptyState } from '../components/ui';
 import { ExerciseGuide } from '../components/ExerciseVisual';
+import { getExerciseAnatomicalProfile, getRegionLabel } from '../lib/anatomicalProfiles';
 import { chartColors, tooltipStyle } from '../lib/chartTheme';
 
 export function ExerciseDetail() {
@@ -14,6 +15,7 @@ export function ExerciseDetail() {
   const { sessions, exercises } = useAppData();
 
   const exercise = exercises.find((e) => e.id === exerciseId);
+  const anatomy=getExerciseAnatomicalProfile(exercise);
   const history = getExerciseHistory(sessions, exerciseId ?? '');
   const pr = getPersonalRecord(sessions, exerciseId ?? '');
   const trend = getExerciseTrend(sessions, exerciseId ?? '');
@@ -44,6 +46,24 @@ export function ExerciseDetail() {
       </div>
 
       {exercise && <div className="mb-4"><ExerciseGuide exercise={exercise}/></div>}
+      {exercise && <Card className="mb-4">
+        <h2 className="text-sm font-semibold mb-2">Anatomia e participação muscular</h2>
+        {anatomy ? (
+          <div className="flex flex-col gap-2 text-xs">
+            <p><strong>Ênfase:</strong> {anatomy.regionTags.map(getRegionLabel).join(' · ') || anatomy.functionalGroup}</p>
+            <p><strong>Músculos principais:</strong> {anatomy.primaryMuscles.join('; ') || 'Não identificados'}</p>
+            <p><strong>Secundários:</strong> {anatomy.secondaryMuscles.join('; ') || 'Não identificados'}</p>
+            <p><strong>Estabilizadores:</strong> {anatomy.stabilizers.join('; ') || 'Não identificados'}</p>
+            <p><strong>Padrão:</strong> {anatomy.movementPattern} · <strong>Modalidade:</strong> {anatomy.modality}</p>
+            {!anatomy.autoSuggestEnabled && <p style={{color:'var(--warn)'}}>Fora de sugestões automáticas até revisão técnica. Disponível para escolha manual.</p>}
+            {anatomy.confidence.startsWith('moderada') && <p style={{color:'var(--warn)'}}>Classificação a revisar: confiança moderada.</p>}
+            {anatomy.notes && <p style={{color:'var(--text-dim)'}}>{anatomy.notes}</p>}
+            <p style={{color:'var(--text-faint)'}}>Estimativas de ênfase relativa, não isolamento ou percentuais de ativação. Participação secundária não corresponde a uma série completa de hipertrofia. O mapa muscular é separado da demonstração de execução.</p>
+          </div>
+        ) : (
+          <p className="text-xs" style={{color:'var(--text-dim)'}}>Exercício personalizado ou sem revisão anatômica. Mantemos somente o grupo geral; nenhuma porção muscular específica foi inferida.</p>
+        )}
+      </Card>}
 
       {!pr ? (
         <EmptyState title="Sem histórico ainda" subtitle="Registre esse exercício em um treino para ver sua evolução." />
