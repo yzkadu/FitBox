@@ -87,7 +87,7 @@ export function WorkoutEditor() {
 
   const exerciseById = new Map(exercises.map((e) => [e.id, e]));
   const sorted = workout.exercises.slice().sort((a, b) => a.order - b.order);
-  const circuit = sorted.length ? Boolean(sorted[0].circuitMode) : circuitDraft;
+  const circuit = sorted.length ? Boolean(sorted[0].circuitMode) : (circuitDraft || /^HYROX · Aula livre/.test(workout.name));
   const rounds = sorted.length ? (sorted[0].circuitRounds ?? 3) : draftRounds;
   const circuitRest = sorted.length ? (sorted[0].circuitRestSeconds ?? 60) : draftRest;
   const circuitFormat = sorted.length ? (sorted[0].circuitFormat ?? 'rounds') : draftFormat;
@@ -168,6 +168,7 @@ export function WorkoutEditor() {
     : null;
 
   function handleStart() {
+    if (!sorted.length) { setBulkError('Adicione as estações que o professor passou nesta aula antes de iniciar.'); return; }
     if (circuit && !sorted.some(we=>(we.blockType ?? 'circuit')==='circuit')) {
       setBulkError('Marque ao menos uma estação no bloco Circuito antes de iniciar.');
       return;
@@ -207,6 +208,9 @@ export function WorkoutEditor() {
           <button type="button" onClick={() => changeCircuit(!circuit)} aria-pressed={circuit}
             className="rounded-lg px-3 py-2 text-xs font-semibold" style={{background:circuit?'var(--brand)':'var(--surface-3)',color:circuit?'white':'var(--text)'}}>{circuit?'Circuito ativo':'Usar circuito'}</button>
         </div>
+        {circuit && !sorted.length && <p className="rounded-lg p-3 mt-3 text-xs" style={{background:'var(--brand-dim)',color:'var(--text)'}}>
+          Aula HYROX livre: não há exercícios obrigatórios. Escolha o circuito, movimentos, metas e número de voltas conforme o quadro do professor. Terça e quinta podem ser completamente diferentes.
+        </p>}
         {circuit && <div className="flex flex-wrap gap-3 mt-3">
           <label className="text-xs w-full">Tipo de circuito
             <select aria-label="Formato do circuito" value={circuitFormat} onChange={e => changeCircuitFormat(e.target.value as 'rounds'|'amrap'|'emom'|'for_time')}
