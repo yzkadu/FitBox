@@ -1,4 +1,5 @@
 import type { Exercise } from '../types';
+import { getUserProvidedIllustration } from './userProvidedIllustrationMedia';
 import { getSupplementIllustration } from './supplementIllustrationMedia';
 import { getConditioningIllustration } from './conditioningIllustrationMedia';
 import { getChestIllustration } from './chestIllustrationMedia';
@@ -138,12 +139,23 @@ export interface ExerciseMediaResult {
   spriteIndex?: number;
   spriteRows?: number;
   spriteAspectRatio?: string;
+  standaloneCard?: boolean;
   credit: string;
   sourceUrl?: string;
 }
 export function exerciseMedia(exercise?: Exercise | null): ExerciseMediaResult | null {
   const exerciseId = exercise?.id;
   if (!exerciseId) return null;
+  // Novas ilustrações enviadas pelo usuário têm prioridade sobre as fotografias
+  // de acervo. Caso falte um arquivo no build, preserva-se o fluxo anterior.
+  const userIllustration = getUserProvidedIllustration(exerciseId);
+  if (userIllustration) return {
+    first: userIllustration,
+    sourceId: exerciseId,
+    kind: 'ilustracao',
+    standaloneCard: true,
+    credit: 'Ilustração de execução fornecida pelo usuário para o FitBox.',
+  };
   const supplement = getSupplementIllustration(exerciseId);
   if (supplement) return {
     first:supplement.src,

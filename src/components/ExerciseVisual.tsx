@@ -11,8 +11,8 @@ import { exerciseMedia, exerciseGuidance } from '../lib/exerciseMedia';
 import { ExerciseAnatomy, getExerciseAnatomicalFocus, preferredAnatomicalView } from './ExerciseAnatomy';
 import { getExerciseAnatomicalProfile, getRegionLabel } from '../lib/anatomicalProfiles';
 
-function ExercisePhoto({ src, alt, spriteIndex, spriteRows = 8, spriteAspectRatio = '280 / 205' }: {
-  src: string; alt: string; spriteIndex?: number; spriteRows?: number; spriteAspectRatio?: string;
+function ExercisePhoto({ src, alt, spriteIndex, spriteRows = 8, spriteAspectRatio = '280 / 205', standaloneCard = false }: {
+  src: string; alt: string; spriteIndex?: number; spriteRows?: number; spriteAspectRatio?: string; standaloneCard?: boolean;
 }) {
   const [broken, setBroken] = useState(false);
   useEffect(() => { setBroken(false); }, [src, spriteIndex, spriteRows]);
@@ -52,7 +52,7 @@ function ExercisePhoto({ src, alt, spriteIndex, spriteRows = 8, spriteAspectRati
     );
   }
   return (
-    <div className="w-full h-full" style={{ background: 'var(--surface)' }}>
+    <div className={standaloneCard ? "w-full" : "w-full h-full"} style={{ background: 'var(--surface)' }}>
       {broken ? (
         <div className="flex flex-col items-center justify-center h-full gap-1 p-2"
           style={{ color: 'var(--text-faint)' }}>
@@ -62,7 +62,8 @@ function ExercisePhoto({ src, alt, spriteIndex, spriteRows = 8, spriteAspectRati
       ) : (
         <img src={src} alt={alt} loading="lazy" decoding="async"
           referrerPolicy="no-referrer" onError={() => setBroken(true)}
-          className="w-full h-full object-contain p-1" style={{ objectPosition: 'center center' }}/>
+          className={standaloneCard ? "block w-full h-auto object-contain p-1" : "w-full h-full object-contain p-1"}
+          style={{ objectPosition: 'center center' }}/>
       )}
     </div>
   );
@@ -178,11 +179,12 @@ export function ExerciseGuide({ exercise, compact = false }: { exercise?: Exerci
                 {[images.first].map((src, index) => (
                   <div key={src} className="rounded-lg overflow-hidden min-w-0"
                     style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
-                    <div className={images.spriteIndex !== undefined && index === 0
+                    <div className={(images.spriteIndex !== undefined && index === 0) || (images.standaloneCard && index === 0)
                       ? 'w-full'
                       : compact ? 'h-[130px] sm:h-[162px]' : 'h-[172px] sm:h-[205px]'}>
                       <ExercisePhoto src={src} spriteIndex={index === 0 ? images.spriteIndex : undefined}
                         spriteRows={images.spriteRows} spriteAspectRatio={images.spriteAspectRatio}
+                        standaloneCard={images.standaloneCard}
                         alt={exercise.name + (images.kind === 'ilustracao' ? ' — ilustração do movimento' : ' — fotografia real ' + (index + 1))}/>
                     </div>
                     <p className="text-[10px] py-1.5 text-center"

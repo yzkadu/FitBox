@@ -1,32 +1,36 @@
-# Auditoria de estilo das imagens de execução — 11/11/2026
+# Auditoria e atualização de imagens de execução — 11/11/2026
 
-**Requisito:** manter o padrão de ilustração (como a referência de agachamento hack enviada pelo usuário), sem fotografias misturadas no guia de execução.
+## Situação após o envio das novas imagens
 
-Inspeção estática do catálogo atual: **329 exercícios únicos**, **319 com associação de atlas ilustrado**, **10 com fotografia em vez de ilustração**, **nenhum sem associação de mídia**. Os 330 registros de `anatomy330.json` não devem ser confundidos com os 329 IDs efetivos do catálogo; revisar divergência separadamente antes de adicionar/remover registros.
+O catálogo conserva os **329 IDs de exercício**. As **319 associações existentes a atlas ilustrados** foram preservadas; os **10 exercícios que antes usavam fotografias** recebem agora ilustrações WebP locais fornecidas pelo usuário. O resolvedor `exerciseMedia` dá prioridade à imagem recebida e mantém o acervo anterior como fallback técnico se a imagem nova estiver ausente no build.
 
-A auditoria verifica o tipo de mídia configurado pelo código e a prioridade do resolvedor; **não substitui inspeção visual no app ou validação biomecânica**. As 319 associações ilustradas precisam de revisão individual de desenho e enquadramento.
+As oito figuras da prancha composta foram recortadas em 8 cartões independentes, sem trocar a ordem, e as duas ilustrações individuais foram convertidas para WebP. As dimensões e o enquadramento originais foram mantidos proporcionalmente; não se alterou a técnica representada.
 
-| # | Exercício | ID | Foto externa atualmente utilizada |
-|---|---|---|---|
-| 1 | Agachamento hack | `ex-agachamento-hack` | [0.jpg](https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Hack_Squat/0.jpg) |
-| 2 | Cadeira adutora | `ex-cadeira-adutora` | [0.jpg](https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Thigh_Adductor/0.jpg) |
-| 3 | Panturrilha burro | `ex-fedb-donkey-calf-raises` | [0.jpg](https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Donkey_Calf_Raises/0.jpg) |
-| 4 | Rosca no banco inclinado | `ex-new-roscanobancoinclinado` | [0.jpg](https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Incline_Dumbbell_Curl/0.jpg) |
-| 5 | Extensora com pausa | `ex-new-extensoracompausa` | [0.jpg](https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Leg_Extensions/0.jpg) |
-| 6 | Extensão de quadril em quatro apoios | `ex-new-extensaodequadrilemquatroapoios` | [0.jpg](https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Glute_Kickback/0.jpg) |
-| 7 | Pull through no cabo | `ex-new-pullthroughnocabo` | [0.jpg](https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Pull_Through/0.jpg) |
-| 8 | Passada para trás com halteres | `ex-new-passadaparatrascomhalteres` | [0.jpg](https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Rear_Lunge/0.jpg) |
-| 9 | Caminhada lateral com miniband | `ex-new-caminhadalateralcomminiband` | [0.jpg](https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Monster_Walk/0.jpg) |
-| 10 | Russian twist com anilha | `ex-new-russiantwistcomanilha` | [0.jpg](https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Russian_Twist/0.jpg) |
+| Exercício | ID no catálogo | Novo arquivo |
+|---|---|---|
+| Agachamento hack | `ex-agachamento-hack` | `agachamento-hack.webp` |
+| Cadeira adutora | `ex-cadeira-adutora` | `cadeira-adutora.webp` |
+| Caminhada lateral com miniband | `ex-new-caminhadalateralcomminiband` | `caminhada-lateral-com-miniband.webp` |
+| Extensão de quadril em quatro apoios | `ex-new-extensaodequadrilemquatroapoios` | `extensao-quadril-quatro-apoios.webp` |
+| Extensora com pausa | `ex-new-extensoracompausa` | `extensora-com-pausa.webp` |
+| Panturrilha burro | `ex-fedb-donkey-calf-raises` | `panturrilha-burro.webp` |
+| Passada para trás com halteres | `ex-new-passadaparatrascomhalteres` | `passada-para-tras-com-halteres.webp` |
+| Pull through no cabo | `ex-new-pullthroughnocabo` | `pull-through-no-cabo.webp` |
+| Rosca no banco inclinado | `ex-new-roscanobancoinclinado` | `rosca-no-banco-inclinado.webp` |
+| Russian twist com anilha | `ex-new-russiantwistcomanilha` | `russian-twist-com-anilha.webp` |
 
-## Entrega e próxima etapa
+Arquivos: `src/assets/exercise-guide/user-updates-20261111/`.
+Correspondência por ID: `src/lib/userProvidedIllustrationMedia.ts`.
+Prioridade/fallback: `src/lib/exerciseMedia.ts`.
 
-- [x] Plano renomeado para **Upper / HYROX / Lower · 5 dias**, preservando seu ID, fichas e histórico.
-- [x] Filtro da biblioteca renomeado para **Upper / HYROX / Lower** (em lugar de “Meu plano”).
-- [x] Listagem com links das **10 fotografias vinculadas**, para substituir pelo padrão ilustrado.
-- [x] Exemplo de agachamento hack **recebido nesta conversa**; a mídia ainda **não foi substituída no código** nesta atualização.
-- [ ] Usuário fornecer as ilustrações faltantes (9 exercícios além do hack); validá-las por movimento e equipamento.
-- [ ] Integrar recortes originais sem faixas de cabeçalho, conferir IDs, composição e proporções; preservar fotos atuais até a implantação e **pedir autorização antes de excluir qualquer arquivo**.
-- [ ] Verificar imagens efetivamente renderizadas em Safari iPhone e outras telas. Não concluir QA só pelo mapeamento.
+## QA e pendências
 
-A prancha visual interativa foi entregue como arquivo na conversa: `fitbox_prancha_10_imagens_fora_padrao.html`; as fotos de 9 exercícios são carregadas pelas mesmas URLs externas de origem do app ao abrir com conexão à internet.
+- [x] Novos dez binários WebP adicionados ao repositório, sem apagar as fotografias externas usadas anteriormente.
+- [x] Vínculo por ID exato, sem uso de outro exercício como substituto.
+- [x] Teste automático do formato dos dez arquivos e da prioridade de mídia.
+- [x] Inventário estático atualizado para **329 associações ilustradas** e **zero exercícios apenas com fotografia**.
+- [ ] Validar visualmente os dez cartões em Safari iPhone e desktop, especialmente redimensionamento e contraste.
+- [ ] Inspeção biomecânica humana dos novos desenhos e dos demais 319 atlas ilustrados.
+- [ ] Validar comportamento autenticado, sincronização e navegação de ponta a ponta em dispositivo real.
+
+**Nota:** ter uma associação a ilustração não comprova que o desenho está tecnicamente perfeito. O registro `anatomy330.json` tem 330 entradas e não deve ser confundido com os 329 IDs efetivos do catálogo.
