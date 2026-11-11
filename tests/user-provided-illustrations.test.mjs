@@ -42,3 +42,11 @@ test('custom illustrations win over photos without affecting older atlases', () 
   assert.ok(customIndex > 0 && customIndex < atlasIndex && atlasIndex < photoIndex);
   assert.match(resolver, /kind: 'ilustracao'/);
 });
+
+test('portrait illustration cards display uncropped at natural aspect ratio', () => {
+  const media = readText('src/lib/exerciseMedia.ts');
+  const visual = readText('src/components/ExerciseVisual.tsx');
+  assert.match(media, /standaloneCard: true/);
+  assert.match(visual, /images\.standaloneCard/);
+  assert.match(visual, /block w-full h-auto object-contain/);
+});
