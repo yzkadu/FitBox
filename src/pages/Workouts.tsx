@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Dumbbell, ChevronRight, Trash2, CalendarDays, Bot, Check, X as XIcon, Sparkles, LayoutGrid, Wand2, PersonStanding, Search, ArrowRight, ChevronDown, ChevronUp, Copy } from 'lucide-react';
+import { Plus, Dumbbell, ChevronRight, Trash2, CalendarDays, Bot, Check, X as XIcon, Sparkles, LayoutGrid, Wand2, PersonStanding, Search, BookOpen, ArrowRight, ChevronDown, ChevronUp, Copy } from 'lucide-react';
 import { useAppData } from '../hooks/useAppData';
 import { useAuth } from '../hooks/useAuth';
 import { useProfile } from '../hooks/useProfile';
@@ -414,7 +414,7 @@ export function Workouts() {
         <div className="mb-3">
           <p className="text-xs font-semibold uppercase tracking-widest" style={{color:'var(--brand)'}}>Comece por aqui</p>
           <h2 className="text-xl font-semibold mt-1">Como quer montar seu treino?</h2>
-          <p className="text-xs mt-1" style={{color:'var(--text-dim)'}}>Use o montador guiado, explore programas prontos ou crie uma ficha livre.</p>
+          <p className="text-xs mt-1" style={{color:'var(--text-dim)'}}>Escolha os exercícios na biblioteca ou comece com uma sugestão.</p>
         </div>
         <button type="button" onClick={() => navigate('/montador')}
           className="w-full text-left rounded-2xl p-4 mb-2 flex items-center gap-3"
@@ -466,6 +466,17 @@ export function Workouts() {
         </div>
       </section>
 
+      <button type="button" onClick={() => navigate('/treinos/catalogo')}
+        className="w-full flex items-center gap-3 text-left rounded-xl px-4 py-3 mb-5"
+        style={{background:'var(--surface-2)',border:'1px solid var(--border)'}}>
+        <BookOpen size={20} style={{color:'var(--brand)'}}/>
+        <span className="flex-1">
+          <strong className="text-sm block">Biblioteca de exercícios</strong>
+          <span className="text-xs block mt-1" style={{color:'var(--text-dim)'}}>
+            Ver todos os {exercises.length} exercícios por músculo, aparelho e execução
+          </span>
+        </span><ChevronRight size={17} style={{color:'var(--text-faint)'}}/>
+      </button>
       <KaduProgramBanner workouts={workouts} exercises={exercises} />
 
       {creating && (
@@ -495,9 +506,9 @@ export function Workouts() {
 
           {mode === 'manual' ? (
             <>
-              <p className="text-sm font-semibold mb-1">Criar uma ficha personalizada</p>
+              <p className="text-sm font-semibold mb-1">1 · Dê um nome ao treino</p>
               <p className="text-xs mb-3" style={{color:'var(--text-dim)'}}>
-                Comece pelo nome. Depois você escolhe exercícios, carga, séries e repetições.
+                Na próxima tela, escolha os exercícios. Séries, ordem e ajustes ficam disponíveis depois.
               </p>
               <label htmlFor="new-workout-name" className="block text-xs font-medium mb-1.5"
                 style={{color:'var(--text-dim)'}}>Nome da ficha</label>
@@ -512,7 +523,7 @@ export function Workouts() {
                 style={{background:'var(--surface-2)',color:'var(--text)'}}
               />
               <div className="flex gap-1.5 flex-wrap mb-3" aria-label="Sugestões de nomes para ficha">
-                {['Superior A','Pernas e glúteos','Full body','HYROX + core'].map(suggestion=>(
+                {['Superior A','Inferior completo','Full body','HYROX livre'].map(suggestion=>(
                   <button key={suggestion} type="button" onClick={()=>setName(suggestion)}
                     className="rounded-full px-2.5 py-1.5 text-[11px]"
                     style={{background:'var(--surface-2)',color:'var(--text-dim)'}}>
@@ -554,7 +565,7 @@ export function Workouts() {
                   Cancelar
                 </Button>
                 <Button full onClick={handleCreate}>
-                  Criar
+                  Próximo · escolher exercícios
                 </Button>
               </div>
             </>
