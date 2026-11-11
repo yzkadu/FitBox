@@ -171,7 +171,7 @@ const PERSONAL_UPPER_HYROX_PROGRAM: ReadyProgram = {
         ex('ex-fedb-wide-grip-lat-pulldown',2,'10-12','Alternativas: barra fixa assistida pronada ou puxada articulada.',90),
         ex('ex-elevacao-lateral-maquina',2,'12-15','Alternativas: elevação lateral no cabo ou halteres.',75),
         ex('ex-rosca-scott-maquina',3,'10-12','Alternativas: Scott barra W ou rosca concentrada.',75),
-        ex('ex-triceps-pulley-barra',3,'10-12','Preferir barra V. Alternativas: tríceps corda ou extensão unilateral.',75),
+        ex('ex-new-tricepsbarravnopulley',3,'10-12','Alternativas: tríceps corda ou extensão unilateral.',75),
         ex('ex-rosca-martelo',2,'10-12','Alternativas: martelo na corda ou martelo cruzada.',75),
         ex('ex-fedb-face-pull',2,'12-15','Alternativas: crucifixo inverso ou reverse fly no cabo.',75),
       ] },
