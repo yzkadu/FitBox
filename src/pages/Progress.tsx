@@ -175,7 +175,7 @@ export function Progress() {
               ? `${weightTrendKg > 0 ? '+' : ''}${weightTrendKg}kg em ~28d`
               : undefined
           }
-          subTone={weightTrendKg != null ? (weightTrendKg > 0 ? 'down' : 'up') : 'neutral'}
+          subTone="neutral"
         />
         <StatTile
           icon={<Activity size={13} />}
