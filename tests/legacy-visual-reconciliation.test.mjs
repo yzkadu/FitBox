@@ -108,7 +108,7 @@ const mediaFiles=[
   'src/lib/lowerBodyIllustrationMedia.ts','src/lib/abdomenIllustrationMedia.ts',
   'src/lib/conditioningIllustrationMedia.ts','src/lib/supplementIllustrationMedia.ts',
 ];
-const catalogIds=new Set(catalog.flatMap(source=>[...source.matchAll(/\\bid:\\s*'(ex-[^']+)'/g)].map(m=>m[1])));
+const catalogIds=new Set(catalog.flatMap(source=>[...source.matchAll(/\bid:\s*'(ex-[^']+)'/g)].map(m=>m[1])));
 const mediaIds=new Set(mediaFiles.flatMap(path=>[...read(path).matchAll(/['"](ex-[a-z0-9-]+)['"]/g)].map(m=>m[1])));
 
 test('89 IDs do inventário histórico continuam no catálogo atual',()=>{
@@ -124,17 +124,17 @@ test('89 exercícios antigos já possuem vínculo com uma fonte de mídia no có
 
 test('modelo atual conserva atlas ilustrados e mapas de fotos sem forçar os WebP antigos',()=>{
   const resolver=read('src/lib/exerciseMedia.ts');
-  assert.match(resolver,/getSupplementIllustration\\(exerciseId\\)/);
-  assert.match(resolver,/getConditioningIllustration\\(exerciseId\\)/);
-  assert.match(resolver,/getLowerBodyIllustration\\(exerciseId\\)/);
-  assert.match(resolver,/getChestIllustration\\(exerciseId\\)/);
-  assert.doesNotMatch(resolver,/userExecutionGuide|\\/exercise-guide\\/01\\.webp/);
+  assert.match(resolver,/getSupplementIllustration\(exerciseId\)/);
+  assert.match(resolver,/getConditioningIllustration\(exerciseId\)/);
+  assert.match(resolver,/getLowerBodyIllustration\(exerciseId\)/);
+  assert.match(resolver,/getChestIllustration\(exerciseId\)/);
+  assert.doesNotMatch(resolver,/userExecutionGuide|\/exercise-guide\/01\.webp/);
 });
 
 test('somente uma foto aparece inicialmente; segunda posição continua acessível',()=>{
   const visual=read('src/components/ExerciseVisual.tsx');
-  assert.match(visual,/\\[images\\.first\\]\\.map\\(/);
+  assert.match(visual,/\[images\.first\]\.map\(/);
   assert.match(visual,/showSecondPosition &&/);
-  assert.match(visual,/src=\\{images\\.second\\}/);
-  assert.match(visual,/aria-expanded=\\{showSecondPosition\\}/);
+  assert.match(visual,/src=\{images\.second\}/);
+  assert.match(visual,/aria-expanded=\{showSecondPosition\}/);
 });
