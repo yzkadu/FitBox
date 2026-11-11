@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { Calendar, Dumbbell, LayoutGrid, TrendingUp, MoreHorizontal, Bike, History, Ruler, Apple, Bot, Activity, X } from 'lucide-react';
+import { Calendar, Dumbbell, LayoutGrid, TrendingUp, MoreHorizontal, Bike, History, Ruler, Bot, Activity, X } from 'lucide-react';
 
 const primaryTabs = [
   { to: '/', label: 'Hoje', icon: Calendar, end: true },
@@ -10,7 +10,6 @@ const primaryTabs = [
 ];
 
 const moreLinks = [
-  { to: '/nutricao', label: 'Nutrição', icon: Apple },
   { to: '/treinador', label: 'Treinador IA', icon: Bot },
   { to: '/cardio', label: 'Cardio', icon: Bike },
   { to: '/historico', label: 'Histórico', icon: History },

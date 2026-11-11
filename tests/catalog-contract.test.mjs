@@ -36,9 +36,24 @@ test('mídias: todos os vínculos explícitos apontam para exercícios existente
 
 test('rotas essenciais continuam no aplicativo',()=>{
   const app = file('src/App.tsx');
-  for(const route of ['/treinos','/montador','/programas','/historico','/evolucao','/nutricao','/cardio']){
+  for(const route of ['/treinos','/montador','/programas','/historico','/evolucao','/cardio']){
     assert.ok(app.includes('path="'+route+'"') || app.includes("path='"+route+"'"),'rota ausente: '+route);
   }
+});
+
+test('nutrição fica fora da interface sem excluir os dados existentes',()=>{
+  const files=[
+    'src/App.tsx','src/components/BottomNav.tsx','src/components/Sidebar.tsx',
+    'src/pages/Home.tsx','src/pages/Progress.tsx',
+  ];
+  for(const path of files){
+    const content=file(path);
+    assert.doesNotMatch(content,/NutritionQuickCard|<Nutrition\b|to=['"]\/nutricao['"]|path=['"]\/nutricao['"]/,
+      path+' ainda expõe o módulo de nutrição na interface');
+  }
+  // Não removemos módulo, dados, histórico, tipos ou mecanismos de persistência.
+  assert.match(file('src/pages/Nutrition.tsx'),/export function Nutrition\(/);
+  assert.match(file('src/components/NutritionQuickCard.tsx'),/export function NutritionQuickCard\(/);
 });
 
 test('guia de peito: 40 imagens referenciam exercícios existentes sem duplicatas',()=>{

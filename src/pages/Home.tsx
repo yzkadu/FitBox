@@ -2,7 +2,6 @@ import { useMemo, useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Play, Check, Flame, Plus, ArrowRight, Bot, Bike, BedDouble, MessageCircle, Zap, Timer, ChevronDown, Gauge } from 'lucide-react';
 import { useAppData } from '../hooks/useAppData';
-import { NutritionQuickCard } from '../components/NutritionQuickCard';
 import { useAuth } from '../hooks/useAuth';
 import { useProfile } from '../hooks/useProfile';
 import { startSession } from '../lib/actions';
@@ -357,10 +356,6 @@ export function Home() {
           )}
         </div>
       </div>
-
-      <section aria-label="Minha nutrição hoje" className="mb-4">
-        <NutritionQuickCard compact />
-      </section>
 
       <div
         className="grid grid-cols-2 gap-y-3 gap-x-2 lg:flex lg:items-center lg:justify-between lg:gap-2 py-4 mb-5"

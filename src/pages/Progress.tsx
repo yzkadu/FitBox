@@ -14,7 +14,6 @@ import {
 } from 'recharts';
 import { Target, Pencil, X, Flame, CalendarCheck, Scale, Activity } from 'lucide-react';
 import { useAppData } from '../hooks/useAppData';
-import { NutritionQuickCard } from '../components/NutritionQuickCard';
 import { useAuth } from '../hooks/useAuth';
 import { useProfile } from '../hooks/useProfile';
 import { getWeeklyFrequency, getCurrentStreakDays, getTotalSessionsThisMonth } from '../lib/stats';
@@ -365,7 +364,6 @@ export function Progress() {
           cardioLogs={cardioLogs}
           weeklySchedule={weeklySchedule}
         />
-        <NutritionQuickCard />
         <EmptyState title="Ainda sem dados" subtitle="Complete treinos e registre medidas para ver seus gráficos aqui." />
       </div>
     );
@@ -409,7 +407,6 @@ export function Progress() {
         weeklySchedule={weeklySchedule}
       />
 
-      <NutritionQuickCard />
 
       <Card className="mb-4">
         <p className="text-sm font-medium mb-3">Frequência de treino (10 semanas)</p>
