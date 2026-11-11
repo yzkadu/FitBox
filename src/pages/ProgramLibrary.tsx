@@ -8,7 +8,7 @@ import { useProfile } from '../hooks/useProfile';
 import { useAppData } from '../hooks/useAppData';
 import { WEEKDAY_LABELS } from '../types';
 import {
-  READY_PROGRAMS, GOAL_LABELS, SPLIT_LABELS, PLACE_LABELS, LEVEL_LABELS,
+  READY_PROGRAMS, PERSONAL_UPPER_HYROX_PROGRAM_ID, GOAL_LABELS, SPLIT_LABELS, PLACE_LABELS, LEVEL_LABELS,
   applyReadyProgram, programPlace, programModality, MODALITY_LABELS,
   type ProgramGoal, type ProgramPlace, type ProgramLevel, type SplitLength, type ReadyProgram, type ProgramModality,
 } from '../lib/readyPrograms';
@@ -28,9 +28,10 @@ const PLACE_FILTERS: ProgramPlace[] = ['academia', 'misto', 'peso_corporal', 'ca
 const LEVEL_FILTERS: ProgramLevel[] = ['iniciante', 'intermediario', 'avancado'];
 const SPLIT_FILTERS: SplitLength[] = ['unico', 'ab', 'abc', 'abcd', 'abcde'];
 const WEEKDAYS = ['seg', 'ter', 'qua', 'qui', 'sex', 'sab', 'dom'] as const;
-type QuickCategory = 'todos'|'emagrecimento'|'hipertrofia'|'hyrox'|'corrida'|'casa';
+type QuickCategory = 'todos'|'meu-plano'|'emagrecimento'|'hipertrofia'|'hyrox'|'corrida'|'casa';
 const QUICK_CATEGORIES: {id:QuickCategory;label:string}[] = [
   {id:'todos',label:'Todos'},
+  {id:'meu-plano',label:'Meu plano'},
   {id:'emagrecimento',label:'Emagrecimento'},
   {id:'hipertrofia',label:'Musculação'},
   {id:'hyrox',label:'HYROX'},
@@ -39,6 +40,7 @@ const QUICK_CATEGORIES: {id:QuickCategory;label:string}[] = [
 ];
 function matchesQuickCategory(p: ReadyProgram, category: QuickCategory): boolean {
   if(category==='todos') return true;
+  if(category==='meu-plano') return p.id===PERSONAL_UPPER_HYROX_PROGRAM_ID;
   if(category==='hyrox') return p.id.toLowerCase().includes('hyrox') || p.title.toLowerCase().includes('hyrox');
   if(category==='corrida') return programModality(p)==='corrida' || p.goal==='corrida';
   if(category==='casa') return ['peso_corporal','casa_equipamento'].includes(programPlace(p));
@@ -82,6 +84,8 @@ export function ProgramLibrary() {
   const [goalFilter, setGoalFilter] = useState<ProgramGoal | null>(null);
   const [quickCategory, setQuickCategory] = useState<QuickCategory>('todos');
   const [searchQuery, setSearchQuery] = useState('');
+  const [showAllPrograms,setShowAllPrograms] = useState(false);
+  const [showPlanGuidance,setShowPlanGuidance] = useState(false);
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [confirmAgendaReplace, setConfirmAgendaReplace] = useState(false);
@@ -110,7 +114,7 @@ export function ProgramLibrary() {
         (!levelFilter || p.level === levelFilter || (!p.level && levelFilter === 'intermediario')) &&
         (!splitFilter || p.split === splitFilter))
       .map((p, index) => ({ p, index, score: profile ? fitScore(p, profile) : 0 }))
-      .sort((a, b) => b.score - a.score || a.index - b.index)
+      .sort((a, b) => (a.p.id===PERSONAL_UPPER_HYROX_PROGRAM_ID ? -1 : b.p.id===PERSONAL_UPPER_HYROX_PROGRAM_ID ? 1 : b.score-a.score || a.index-b.index))
       .map((entry) => entry.p);
   }, [goalFilter, modalityFilter, placeFilter, levelFilter, splitFilter, profile, quickCategory, searchQuery]);
 
@@ -119,6 +123,7 @@ export function ProgramLibrary() {
     setError(null);
     setPresetAdded(false);
     setDetailsOpen(false);
+    setShowPlanGuidance(false);
     setConfirmAgendaReplace(false);
     setPreview(p);
   }
@@ -157,7 +162,7 @@ export function ProgramLibrary() {
 
   return (
     <div className="px-4 lg:px-0">
-      <PageHeader title="Programas prontos" />
+      <PageHeader title="Escolha seu treino" />
       <button type="button" onClick={()=>navigate('/montador')}
         className="flex items-center gap-3 w-full p-3.5 mb-4 rounded-xl text-left"
         style={{background:'var(--brand-dim)',border:'1px solid var(--brand)'}}>
@@ -171,10 +176,7 @@ export function ProgramLibrary() {
         </span>
         <ChevronRight size={17} style={{color:'var(--brand)'}}/>
       </button>
-      <p className="text-sm mb-4" style={{ color: 'var(--text-dim)' }}>
-        Treinos pensados para a vida real: musculação, HYROX, corrida, casa e condicionamento.
-        Confira as opções sugeridas, escolha quantas atividades quer fazer no mesmo dia e adapte conforme sua recuperação.
-      </p>
+      <p className="text-xs mb-4" style={{color:'var(--text-dim)'}}>Escolha um plano, veja a semana e personalize depois. Nenhum treino existente será excluído.</p>
 
       <div className="relative mb-3">
         <Search size={17} className="absolute left-3 top-1/2 -translate-y-1/2" style={{color:'var(--text-faint)'}}/>
@@ -250,13 +252,10 @@ export function ProgramLibrary() {
         </button>
       </div>}
 
-      <p className="text-xs mb-3" style={{ color: 'var(--text-faint)' }}>
-        {filtered.length} programa{filtered.length !== 1 ? 's' : ''} encontrado{filtered.length !== 1 ? 's' : ''}.
-        {profile ? ' Ordenados por afinidade com seu perfil.' : ''}
-      </p>
+      <p className="text-xs mb-3" style={{color:'var(--text-faint)'}}>{filtered.length} opções disponíveis</p>
 
       <div className="flex flex-col gap-2.5 pb-6">
-        {filtered.map((p,index) => (
+        {(showAllPrograms || searchQuery.trim() || quickCategory!=='todos' || advancedOpen ? filtered : filtered.slice(0,5)).map((p,index) => (
           <Card key={p.id} className="!p-0 overflow-hidden"
             style={index===0 && profile ? {borderColor:'var(--brand)'} : undefined}>
             <button type="button" onClick={() => openPreview(p)}
@@ -269,14 +268,9 @@ export function ProgramLibrary() {
                 {index===0 && profile && <p className="text-[10px] uppercase tracking-wide font-semibold mb-1 flex items-center gap-1"
                   style={{color:'var(--brand)'}}><Sparkles size={12}/> Sugestão pelo seu perfil</p>}
                 <p className="font-semibold text-sm">{p.title}</p>
-                <p className="text-xs mt-1.5" style={{ color: 'var(--text-dim)' }}>{p.description}</p>
-                <div className="flex flex-wrap gap-1 mt-2">
-                  <Pill tone="brand">{GOAL_LABELS[p.goal]}</Pill>
-                  <Pill>{PLACE_LABELS[programPlace(p)]}</Pill>
-                  {p.level && <Pill>{LEVEL_LABELS[p.level]}</Pill>}
-                  {p.sessionMinutes && <Pill>{p.sessionMinutes} min</Pill>}
-                  {p.days.length>0 && <Pill>{p.days.length} ficha{p.days.length===1?'':'s'}</Pill>}
-                </div>
+                <p className="text-xs mt-1" style={{color:'var(--text-dim)'}}>
+                  {p.id===PERSONAL_UPPER_HYROX_PROGRAM_ID ? 'Seg–sex · 3 musculações + 2 aulas HYROX livres' : GOAL_LABELS[p.goal]+' · '+p.days.length+' ficha(s) · '+(p.sessionMinutes??45)+' min aprox.'}
+                </p>
                 <span className="text-[11px] font-semibold block mt-2" style={{color:'var(--brand)'}}>
                   Ver treinos e escolher <ChevronRight size={12} className="inline"/>
                 </span>
@@ -285,6 +279,9 @@ export function ProgramLibrary() {
             </button>
           </Card>
         ))}
+        {!showAllPrograms && !searchQuery.trim() && quickCategory==='todos' && !advancedOpen && filtered.length>5 && (
+          <button type="button" className="w-full py-3 text-sm font-semibold" style={{color:'var(--brand)'}} onClick={()=>setShowAllPrograms(true)}>Ver todas as {filtered.length} opções</button>
+        )}
         {filtered.length === 0 && (
           <div className="text-center py-8">
             <p className="text-sm mb-2" style={{ color: 'var(--text-dim)' }}>Nenhum programa com todos esses filtros.</p>
@@ -412,14 +409,17 @@ export function ProgramLibrary() {
               </div>
             )}
 
-            {preview.progression && (
+            {(preview.progression || preview.recoveryNote) && <button type="button" onClick={()=>setShowPlanGuidance(v=>!v)} aria-expanded={showPlanGuidance}
+              className="w-full rounded-xl py-2.5 px-3 text-xs font-medium flex items-center justify-between"
+              style={{background:'var(--surface-2)',color:'var(--brand)'}}>Orientações de progressão e recuperação {showPlanGuidance?<ChevronUp size={15}/>:<ChevronDown size={15}/>}</button>}
+            {showPlanGuidance && preview.progression && (
               <p className="text-xs rounded-xl px-3 py-2.5 flex gap-2"
                 style={{ background: 'var(--surface-2)', color: 'var(--text-dim)' }}>
                 <Target size={15} className="shrink-0" style={{ color: 'var(--brand)' }} />
                 <span><strong>Progressão:</strong> {preview.progression}</span>
               </p>
             )}
-            {preview.recoveryNote && (
+            {showPlanGuidance && preview.recoveryNote && (
               <p className="text-xs flex gap-2" style={{ color: 'var(--text-dim)' }}>
                 <Info size={15} className="shrink-0" />
                 <span>{preview.recoveryNote}</span>
@@ -447,6 +447,7 @@ export function ProgramLibrary() {
                 </p>
                 {day.focus && <p className="text-xs mb-2" style={{ color: 'var(--text-faint)' }}>{day.focus}</p>}
                 <ul className="flex flex-col gap-1.5">
+                  {day.exercises.length===0 && <li className="text-xs p-2 rounded-lg" style={{background:'var(--surface)'}}>Aula variável: monte as estações do dia conforme o professor, sem exercícios obrigatórios.</li>}
                   {day.exercises.map((ex, ei) =>
                     <ExerciseSpecRow key={ei} exerciseId={ex.id} sets={ex.sets} reps={ex.reps} notes={ex.notes} />)}
                 </ul>
