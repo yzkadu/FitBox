@@ -4,6 +4,7 @@ import {readFileSync} from 'node:fs';
 const read = (p) => readFileSync(new URL('../'+p,import.meta.url),'utf8');
 const catalogFiles = ['src/lib/exercises.ts','src/lib/extraExercises.ts'];
 const illustrationFiles = [
+  'src/lib/userProvidedIllustrationMedia.ts',
   'src/lib/supplementIllustrationMedia.ts','src/lib/conditioningIllustrationMedia.ts',
   'src/lib/tricepsIllustrationMedia.ts','src/lib/bicepsIllustrationMedia.ts',
   'src/lib/chestIllustrationMedia.ts','src/lib/backShoulderIllustrationMedia.ts',
@@ -19,13 +20,7 @@ const catalog = catalogFiles.flatMap(path => [...read(path).matchAll(/\{\s*id:\s
 const illustrated = new Set(illustrationFiles.flatMap(path => [...read(path).matchAll(/['"](ex-[a-z0-9-]+)['"]/g)].map(m=>m[1])));
 const photographs = new Set(photoFiles.flatMap(path => [...read(path).matchAll(/['"](ex-[a-z0-9-]+)['"]\s*:/g)].map(m=>m[1])));
 const currentPhotos = catalog.filter(item=>!illustrated.has(item.id) && photographs.has(item.id));
-const expectedPhotos = [
-  'ex-agachamento-hack','ex-cadeira-adutora','ex-fedb-donkey-calf-raises',
-  'ex-new-roscanobancoinclinado','ex-new-extensoracompausa',
-  'ex-new-extensaodequadrilemquatroapoios','ex-new-pullthroughnocabo',
-  'ex-new-passadaparatrascomhalteres','ex-new-caminhadalateralcomminiband',
-  'ex-new-russiantwistcomanilha',
-];
+const expectedPhotos = [];
 
 test('catalog has unique exercise IDs with a media mapping for each',()=>{
   assert.equal(catalog.length,329);
@@ -33,9 +28,9 @@ test('catalog has unique exercise IDs with a media mapping for each',()=>{
   for(const item of catalog)assert.ok(illustrated.has(item.id)||photographs.has(item.id),item.id+' has no media');
 });
 
-test('remaining photo-only exercises are named explicitly for illustration replacement',()=>{
+test('all 329 catalog exercises now have an illustrated guide mapping',()=>{
   assert.deepEqual(currentPhotos.map(item=>item.id).sort(),expectedPhotos.slice().sort());
-  assert.equal(catalog.filter(item=>illustrated.has(item.id)).length,319);
+  assert.equal(catalog.filter(item=>illustrated.has(item.id)).length,329);
 });
 
 test('personal program label is clean and ID remains stable',()=>{
