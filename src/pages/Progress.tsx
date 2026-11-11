@@ -16,7 +16,7 @@ import { Flame, CalendarCheck, Scale, Activity } from 'lucide-react';
 import { useAppData } from '../hooks/useAppData';
 import { useAuth } from '../hooks/useAuth';
 import { useProfile } from '../hooks/useProfile';
-import { getWeeklyFrequency, getCurrentStreakDays, getTotalSessionsThisMonth } from '../lib/stats';
+import { getWeeklyFrequency, getCurrentStreakDays, getTrainingDaysThisMonth } from '../lib/stats';
 import { calcImc, classifyImc, healthyWeightRangeKg } from '../lib/imc';
 import { PageHeader, Card, EmptyState, Pill } from '../components/ui';
 import { chartColors, seriesOrder, tooltipStyle } from '../lib/chartTheme';
@@ -72,10 +72,10 @@ export function Progress() {
   const [profile] = useProfile(user?.id);
   const [activeFields, setActiveFields] = useState<Set<string>>(new Set(['waistCm']));
 
-  const freq = useMemo(() => getWeeklyFrequency(sessions, 10), [sessions]);
+  const freq = useMemo(() => getWeeklyFrequency(sessions, cardioLogs, 10), [sessions, cardioLogs]);
   const freqData = freq.map((f) => ({
     week: new Date(f.weekStart).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
-    treinos: f.count,
+    dias: f.count,
   }));
 
   const sortedByDate = measurements.slice().sort((a, b) => a.date.localeCompare(b.date));
@@ -115,7 +115,7 @@ export function Progress() {
 
   // ---------- Resumo do topo ----------
   const streakDays = getCurrentStreakDays(sessions, cardioLogs, weeklySchedule);
-  const monthCount = getTotalSessionsThisMonth(sessions);
+  const monthCount = getTrainingDaysThisMonth(sessions, cardioLogs);
   const trendCutoff = Date.now() - 28 * 24 * 60 * 60 * 1000;
   const baselineWeightEntry =
     weightEntries.slice().reverse().find((m) => Date.parse(m.date) <= trendCutoff) ?? weightEntries[0];
@@ -144,7 +144,7 @@ export function Progress() {
     .filter(item=>item.stats.count>0);
   const recentMeasurements=sortedByDate.slice(-6).reverse();
 
-  const hasAnyData = sessions.some((s) => s.finishedAt) || measurements.length > 0;
+  const hasAnyData = sessions.some((s) => s.finishedAt) || cardioLogs.length > 0 || measurements.length > 0;
 
   if (!hasAnyData) {
     return (
@@ -165,7 +165,7 @@ export function Progress() {
           label="Sequência"
           value={`${streakDays} dia${streakDays === 1 ? '' : 's'}`}
         />
-        <StatTile icon={<CalendarCheck size={13} />} label="Treinos/mês" value={String(monthCount)} />
+        <StatTile icon={<CalendarCheck size={13} />} label="Dias ativos/mês" value={String(monthCount)} />
         <StatTile
           icon={<Scale size={13} />}
           label="Peso"
@@ -231,7 +231,7 @@ export function Progress() {
         </div>
       </Card>
       <Card className="mb-4">
-        <p className="text-sm font-medium mb-3">Frequência de treino (10 semanas)</p>
+        <p className="text-sm font-medium mb-3">Frequência de treino (10 semanas) · dias ativos</p>
         <div style={{ width: '100%', height: 160 }}>
           <ResponsiveContainer>
             <BarChart data={freqData} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
@@ -242,9 +242,9 @@ export function Progress() {
                 contentStyle={tooltipStyle}
                 labelStyle={{ color: chartColors.textSecondary }}
                 cursor={{ fill: 'rgba(255,255,255,0.04)' }}
-                formatter={(value) => [value, 'Treinos']}
+                formatter={(value) => [value, 'Dias ativos']}
               />
-              <Bar dataKey="treinos" fill={chartColors.categorical.blue} radius={[4, 4, 0, 0]} maxBarSize={22} />
+              <Bar dataKey="dias" fill={chartColors.categorical.blue} radius={[4, 4, 0, 0]} maxBarSize={22} />
             </BarChart>
           </ResponsiveContainer>
         </div>

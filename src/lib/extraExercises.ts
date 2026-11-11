@@ -80,6 +80,7 @@ export const EXTRA_EXERCISES: Exercise[] = [
   { id: 'ex-new-elevacaopelvicanotrx', name: 'Elevação pélvica no TRX', muscleGroup: 'gluteo', equipment: 'TRX' },
   { id: 'ex-new-caminhadalateralcomminiband', name: 'Caminhada lateral com miniband', muscleGroup: 'gluteo', equipment: 'mini band' },
   { id: 'ex-new-abdominalcanivete', name: 'Abdominal canivete', muscleGroup: 'abdomen', equipment: 'peso corporal' },
+  { id: 'ex-new-vsitups', name: 'V sit ups', muscleGroup: 'abdomen', equipment: 'peso corporal' },
   { id: 'ex-new-hollowhold', name: 'Hollow hold', muscleGroup: 'abdomen', equipment: 'peso corporal' },
   { id: 'ex-new-pranchacomtoquenoombro', name: 'Prancha com toque no ombro', muscleGroup: 'abdomen', equipment: 'peso corporal' },
   { id: 'ex-new-pranchacomelevacaodeperna', name: 'Prancha com elevação de perna', muscleGroup: 'abdomen', equipment: 'peso corporal' },
