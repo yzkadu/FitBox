@@ -139,6 +139,7 @@ export interface ExerciseMediaResult {
   spriteIndex?: number;
   spriteRows?: number;
   spriteAspectRatio?: string;
+  standaloneCard?: boolean;
   credit: string;
   sourceUrl?: string;
 }
@@ -152,6 +153,7 @@ export function exerciseMedia(exercise?: Exercise | null): ExerciseMediaResult |
     first: userIllustration,
     sourceId: exerciseId,
     kind: 'ilustracao',
+    standaloneCard: true,
     credit: 'Ilustração de execução fornecida pelo usuário para o FitBox.',
   };
   const supplement = getSupplementIllustration(exerciseId);
