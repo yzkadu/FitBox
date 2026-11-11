@@ -179,7 +179,7 @@ export function ExerciseGuide({ exercise, compact = false }: { exercise?: Exerci
                 {[images.first].map((src, index) => (
                   <div key={src} className="rounded-lg overflow-hidden min-w-0"
                     style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
-                    <div className={(images.spriteIndex !== undefined || images.standaloneCard) && index === 0
+                    <div className={(images.spriteIndex !== undefined && index === 0) || (images.standaloneCard && index === 0)
                       ? 'w-full'
                       : compact ? 'h-[130px] sm:h-[162px]' : 'h-[172px] sm:h-[205px]'}>
                       <ExercisePhoto src={src} spriteIndex={index === 0 ? images.spriteIndex : undefined}
