@@ -122,7 +122,7 @@ export const PERSONAL_UPPER_HYROX_PROGRAM_ID = 'upper-hyrox-lower-personal-5dias
 /** Plano enviado pelo usuário. Variações são alternativas, nunca exercícios extras. */
 const PERSONAL_UPPER_HYROX_PROGRAM: ReadyProgram = {
   id: PERSONAL_UPPER_HYROX_PROGRAM_ID,
-  title: 'Meu plano · Upper / HYROX / Lower (5 dias)',
+  title: 'Upper / HYROX / Lower · 5 dias',
   goal: 'hibrido',
   split: 'abcde',
   modality: 'hibrido',
