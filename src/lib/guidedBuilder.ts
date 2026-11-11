@@ -164,21 +164,35 @@ export function createBuilderDraft(prefs: BuilderPrefs, mainId: string, inspirat
     ? Math.min(days.length,primary.days.length,prefs.level==='iniciante'?3:5)
     : 0;
   if (prefs.modes.includes('cardio') && desired === days.length && days.length>=3) desired--;
+  // A cobertura semanal deve refletir APENAS fichas efetivamente escolhidas.
+  // Não podemos contabilizar dias descartados ao atingir o limite de sessões.
   const weekRegions=new Set<string>();
-  const makeWorkout=(day:ReadyProgram['days'][number]):BuilderWorkout=>{
-    const exercises=safeExercises(day,prefs,weekRegions);
-    for(const region of directAnatomicalCoverage(exercises.map(e=>e.id)).regions)weekRegions.add(region);
+  const previewWorkout=(day:ReadyProgram['days'][number],regions:ReadonlySet<string>):BuilderWorkout=>{
+    const exercises=safeExercises(day,prefs,regions);
     return {title:day.name,emoji:day.emoji,exercises};
   };
-  const workouts: BuilderWorkout[] = primary.days.map(makeWorkout)
-    .filter(w=>w.exercises.length>0).slice(0,desired);
+  const commitCoverage=(workout:BuilderWorkout)=>{
+    for(const region of directAnatomicalCoverage(workout.exercises.map(e=>e.id)).regions)weekRegions.add(region);
+  };
+  const workouts:BuilderWorkout[]=[];
+  for(const day of primary.days){
+    if(workouts.length>=desired)break;
+    const candidate=previewWorkout(day,weekRegions);
+    if(!candidate.exercises.length)continue;
+    workouts.push(candidate);
+    commitCoverage(candidate);
+  }
 
   const warnings: string[] = [];
   if (wantsStrength && !workouts.length) {
     warnings.push('Este programa não contém exercícios compatíveis. Escolha outro ou altere os equipamentos.');
   }
   if (secondary?.days.length && workouts.length >= 2) {
-    const candidate = secondary.days.map(makeWorkout).find(d=>d.exercises.length>=3);
+    // Avaliar a inspiração sem alterar o estado da seleção principal.
+    // Nenhuma das alternativas descartadas deve influenciar a próxima ficha.
+    const candidate = secondary.days
+      .map(day=>previewWorkout(day,weekRegions))
+      .find(d=>d.exercises.length>=3);
     if (candidate) {
       // Nunca substituir uma ficha existente sem a escolha explícita da pessoa.
       // Acrescentar uma sessão separada somente quando há dia e recuperação
@@ -192,6 +206,7 @@ export function createBuilderDraft(prefs: BuilderPrefs, mainId: string, inspirat
         const signature=candidate.exercises.map(e=>e.id).join('|');
         if (!ids.has(signature)) {
           workouts.push({...candidate,title:candidate.title+' · segundo programa'});
+          commitCoverage(candidate);
           warnings.push('O segundo programa foi acrescentado como ficha independente. Confira dias de recuperação e volume semanal antes de salvar.');
         } else {
           warnings.push('O segundo programa repetiria uma ficha já incluída; não adicionamos uma duplicata.');
