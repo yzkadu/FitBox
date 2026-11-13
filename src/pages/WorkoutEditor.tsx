@@ -147,7 +147,7 @@ export function WorkoutEditor() {
       return;
     }
     if (activityLogs.some(log =>
-      log.kind === 'hyrox' && log.date === hyroxDate && log.label === workout.name
+      log.kind === 'hyrox' && log.date === hyroxDate && log.label === workout.name.slice(0,80)
     )) {
       setHyroxError('Esta aula já foi registrada nessa data. Consulte Atividades rápidas para evitar duplicidade.');
       return;
@@ -162,7 +162,7 @@ export function WorkoutEditor() {
     setHyroxSaving(true);
     try {
       const saved = await addActivityLog({
-        kind: 'hyrox', label: workout.name, date: hyroxDate,
+        kind: 'hyrox', label: workout.name.slice(0,80), date: hyroxDate,
         durationMin: minutes, caloriesKcal: kcal,
         notes: 'Aula HYROX registrada na configuração do circuito.',
       });
@@ -290,6 +290,33 @@ export function WorkoutEditor() {
           <p className="w-full text-xs" style={{color:'var(--text-faint)'}}>{circuitFormat === 'emom' ? 'Cada minuto é uma estação, repetindo a lista até terminar a duração. Registre a conclusão ao executar.' : circuitFormat === 'amrap' ? 'Complete o máximo de voltas no tempo definido; durante a sessão, conclua as estações e adicione a próxima volta quando precisar.' : circuitFormat === 'for_time' ? 'Complete as voltas na ordem; o tempo limite é uma referência, não encerra seu registro automaticamente.' : 'Adicione as estações na ordem do professor. Em cada uma registre a meta: 500 m, 20 reps, 1 min etc.'}</p>
         </div>}
         {circuit && <p className="text-xs mt-2" style={{color:'var(--text-faint)'}}>Aquecimento, força e técnica uma vez antes das voltas; desaquecimento uma vez depois. Só as estações do Circuito se repetem.</p>}
+        {circuit && <div className="mt-3 border-t pt-3" style={{borderColor:'var(--border)'}}>
+          <label className="text-xs font-semibold" htmlFor="circuit-stations">Sequência do quadro da aula</label>
+          <label className="mt-2 block rounded-lg border p-3 text-xs cursor-pointer" style={{borderColor:'var(--border)',color:'var(--brand)'}}>
+            Fotografar ou selecionar foto do quadro
+            <input type="file" accept="image/*" capture="environment" className="block w-full mt-2 text-xs"
+              onChange={e=>{attachBoardPhoto(e.currentTarget.files?.[0]);e.currentTarget.value='';}}/>
+          </label>
+          {boardPhoto && <div className="mt-2">
+            <img src={boardPhoto} alt="Foto do quadro da aula; referência para transcrever as estações" className="w-full max-h-72 object-contain rounded-lg"
+              style={{background:'var(--surface)'}}/>
+            <button type="button" className="text-xs underline mt-1" onClick={()=>{
+              if(boardPhotoRef.current) URL.revokeObjectURL(boardPhotoRef.current);
+              boardPhotoRef.current=null;setBoardPhoto(null);
+            }}>Remover foto</button>
+          </div>}
+          <p className="text-xs mt-1" style={{color:'var(--text-dim)'}}>
+            A foto fica somente nesta tela, sem upload. Confira o quadro e transcreva cada estação; não há leitura automática da imagem.
+          </p>
+          <p className="text-xs mt-1 mb-2" style={{color:'var(--text-faint)'}}>Uma estação por linha: nome exato do catálogo | meta. Exemplo: SkiErg | 500 m</p>
+          <textarea id="circuit-stations" rows={3} value={bulkStations} onChange={e=>setBulkStations(e.target.value)}
+            placeholder={'SkiErg | 500 m\nWall ball | 20 reps'} className="w-full rounded-lg p-3 text-sm" style={{background:'var(--surface-3)'}} />
+          {bulkError && <p role="alert" className="text-xs mt-2" style={{color:'var(--danger)'}}>{bulkError}</p>}
+          <button type="button" onClick={addStationsFromText} disabled={!bulkStations.trim()}
+            className="mt-2 rounded-lg px-3 py-2 text-xs font-semibold disabled:opacity-40"
+            style={{background:'var(--brand)',color:'white'}}>Adicionar sequência</button>
+        </div>}
+        </details>
         {circuit && (
           <form onSubmit={registerHyroxResult} className="rounded-xl border p-3 mt-4 flex flex-col gap-3"
             style={{borderColor:'var(--border)',background:'var(--surface)'}}>
@@ -337,33 +364,6 @@ export function WorkoutEditor() {
             </p>
           </form>
         )}
-        {circuit && <div className="mt-3 border-t pt-3" style={{borderColor:'var(--border)'}}>
-          <label className="text-xs font-semibold" htmlFor="circuit-stations">Sequência do quadro da aula</label>
-          <label className="mt-2 block rounded-lg border p-3 text-xs cursor-pointer" style={{borderColor:'var(--border)',color:'var(--brand)'}}>
-            Fotografar ou selecionar foto do quadro
-            <input type="file" accept="image/*" capture="environment" className="block w-full mt-2 text-xs"
-              onChange={e=>{attachBoardPhoto(e.currentTarget.files?.[0]);e.currentTarget.value='';}}/>
-          </label>
-          {boardPhoto && <div className="mt-2">
-            <img src={boardPhoto} alt="Foto do quadro da aula; referência para transcrever as estações" className="w-full max-h-72 object-contain rounded-lg"
-              style={{background:'var(--surface)'}}/>
-            <button type="button" className="text-xs underline mt-1" onClick={()=>{
-              if(boardPhotoRef.current) URL.revokeObjectURL(boardPhotoRef.current);
-              boardPhotoRef.current=null;setBoardPhoto(null);
-            }}>Remover foto</button>
-          </div>}
-          <p className="text-xs mt-1" style={{color:'var(--text-dim)'}}>
-            A foto fica somente nesta tela, sem upload. Confira o quadro e transcreva cada estação; não há leitura automática da imagem.
-          </p>
-          <p className="text-xs mt-1 mb-2" style={{color:'var(--text-faint)'}}>Uma estação por linha: nome exato do catálogo | meta. Exemplo: SkiErg | 500 m</p>
-          <textarea id="circuit-stations" rows={3} value={bulkStations} onChange={e=>setBulkStations(e.target.value)}
-            placeholder={'SkiErg | 500 m\nWall ball | 20 reps'} className="w-full rounded-lg p-3 text-sm" style={{background:'var(--surface-3)'}} />
-          {bulkError && <p role="alert" className="text-xs mt-2" style={{color:'var(--danger)'}}>{bulkError}</p>}
-          <button type="button" onClick={addStationsFromText} disabled={!bulkStations.trim()}
-            className="mt-2 rounded-lg px-3 py-2 text-xs font-semibold disabled:opacity-40"
-            style={{background:'var(--brand)',color:'white'}}>Adicionar sequência</button>
-        </div>}
-        </details>
       </div>
       <div className="mb-3">
         <button type="button" onClick={() => setShowQuickBlocks((open) => !open)}
