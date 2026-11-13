@@ -133,7 +133,7 @@ export function WorkoutEditor() {
     const minutes = Number(hyroxMinutes);
     const kcal = hyroxKcal.trim() === '' ? undefined : Number(hyroxKcal);
     const parsed = new Date(hyroxDate + 'T12:00:00');
-    if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(hyroxDate) || Number.isNaN(parsed.getTime()) ||
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(hyroxDate) || Number.isNaN(parsed.getTime()) ||
         localIsoDate(parsed) !== hyroxDate || hyroxDate > localIsoDate(new Date())) {
       setHyroxError('Escolha uma data válida até hoje.');
       return;
