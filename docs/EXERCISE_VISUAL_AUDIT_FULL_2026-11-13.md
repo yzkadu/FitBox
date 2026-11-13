@@ -50,3 +50,11 @@ foram validados por um profissional ou testados em todos os celulares.
   depende de acesso ao ambiente da Vercel e teste visual do usuário.
 - O desenho original pode ter anatomia imperfeita; reorganizar
   a arte não corrige erros presentes na imagem original.
+
+## Resultado da geração automatizada
+
+Execução confirmada em 13/11/2026: **319 arquivos WebP individuais** para os atlas,
+com **1.902.058 bytes** no total. Duplicidades de fonte com primeira ocorrência
+preservada: `ex-new-supinocompegadafechada`, `ex-new-shuttlerun` e
+`ex-new-subidadeescadas`. Os 11 WebPs enviados anteriormente continuam
+intactos e têm prioridade sobre os 319 arquivos novos.
