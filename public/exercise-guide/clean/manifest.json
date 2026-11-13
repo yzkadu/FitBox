@@ -1,0 +1,1668 @@
+{
+  "count": 319,
+  "groups": [
+    {
+      "group": "chest",
+      "source_cells": 40,
+      "file": "public/exercise-guide/chest/sprite.webp"
+    },
+    {
+      "group": "back",
+      "source_cells": 40,
+      "file": "public/exercise-guide/back/sprite.webp"
+    },
+    {
+      "group": "shoulders",
+      "source_cells": 34,
+      "file": "public/exercise-guide/shoulders/sprite.webp"
+    },
+    {
+      "group": "biceps",
+      "source_cells": 28,
+      "file": "public/exercise-guide/biceps/sprite.webp"
+    },
+    {
+      "group": "triceps",
+      "source_cells": 25,
+      "file": "public/exercise-guide/triceps/sprite.webp"
+    },
+    {
+      "group": "legs",
+      "source_cells": 30,
+      "file": "public/exercise-guide/legs/sprite.webp"
+    },
+    {
+      "group": "glutes",
+      "source_cells": 15,
+      "file": "public/exercise-guide/glutes/sprite.webp"
+    },
+    {
+      "group": "calves",
+      "source_cells": 5,
+      "file": "public/exercise-guide/calves/sprite.webp"
+    },
+    {
+      "group": "abdomen",
+      "source_cells": 35,
+      "file": "public/exercise-guide/abdomen/sprite.webp"
+    },
+    {
+      "group": "conditioning",
+      "source_cells": 48,
+      "file": "public/exercise-guide/conditioning/sprite.webp"
+    },
+    {
+      "group": "supplement-22",
+      "source_cells": 22,
+      "file": "src/assets/exercise-guide/supplement-22/sprite.webp"
+    }
+  ],
+  "entries": {
+    "ex-supino-reto-barra": {
+      "group": "chest",
+      "index": 0,
+      "file": "/exercise-guide/clean/chest/ex-supino-reto-barra.webp"
+    },
+    "ex-supino-reto-halter": {
+      "group": "chest",
+      "index": 1,
+      "file": "/exercise-guide/clean/chest/ex-supino-reto-halter.webp"
+    },
+    "ex-supino-inclinado-halter": {
+      "group": "chest",
+      "index": 2,
+      "file": "/exercise-guide/clean/chest/ex-supino-inclinado-halter.webp"
+    },
+    "ex-supino-inclinado-barra": {
+      "group": "chest",
+      "index": 3,
+      "file": "/exercise-guide/clean/chest/ex-supino-inclinado-barra.webp"
+    },
+    "ex-supino-declinado-barra": {
+      "group": "chest",
+      "index": 4,
+      "file": "/exercise-guide/clean/chest/ex-supino-declinado-barra.webp"
+    },
+    "ex-supino-maquina": {
+      "group": "chest",
+      "index": 5,
+      "file": "/exercise-guide/clean/chest/ex-supino-maquina.webp"
+    },
+    "ex-supino-inclinado-maquina": {
+      "group": "chest",
+      "index": 6,
+      "file": "/exercise-guide/clean/chest/ex-supino-inclinado-maquina.webp"
+    },
+    "ex-crucifixo-halter": {
+      "group": "chest",
+      "index": 7,
+      "file": "/exercise-guide/clean/chest/ex-crucifixo-halter.webp"
+    },
+    "ex-crossover": {
+      "group": "chest",
+      "index": 8,
+      "file": "/exercise-guide/clean/chest/ex-crossover.webp"
+    },
+    "ex-voador-peck-deck": {
+      "group": "chest",
+      "index": 9,
+      "file": "/exercise-guide/clean/chest/ex-voador-peck-deck.webp"
+    },
+    "ex-flexao": {
+      "group": "chest",
+      "index": 10,
+      "file": "/exercise-guide/clean/chest/ex-flexao.webp"
+    },
+    "ex-pullover-halter": {
+      "group": "chest",
+      "index": 11,
+      "file": "/exercise-guide/clean/chest/ex-pullover-halter.webp"
+    },
+    "ex-fedb-decline-dumbbell-bench-press": {
+      "group": "chest",
+      "index": 12,
+      "file": "/exercise-guide/clean/chest/ex-fedb-decline-dumbbell-bench-press.webp"
+    },
+    "ex-fedb-decline-dumbbell-flyes": {
+      "group": "chest",
+      "index": 13,
+      "file": "/exercise-guide/clean/chest/ex-fedb-decline-dumbbell-flyes.webp"
+    },
+    "ex-fedb-incline-dumbbell-flyes": {
+      "group": "chest",
+      "index": 14,
+      "file": "/exercise-guide/clean/chest/ex-fedb-incline-dumbbell-flyes.webp"
+    },
+    "ex-fedb-incline-cable-flye": {
+      "group": "chest",
+      "index": 15,
+      "file": "/exercise-guide/clean/chest/ex-fedb-incline-cable-flye.webp"
+    },
+    "ex-fedb-flat-bench-cable-flyes": {
+      "group": "chest",
+      "index": 16,
+      "file": "/exercise-guide/clean/chest/ex-fedb-flat-bench-cable-flyes.webp"
+    },
+    "ex-fedb-one-arm-dumbbell-bench-press": {
+      "group": "chest",
+      "index": 17,
+      "file": "/exercise-guide/clean/chest/ex-fedb-one-arm-dumbbell-bench-press.webp"
+    },
+    "ex-fedb-wide-grip-barbell-bench-press": {
+      "group": "chest",
+      "index": 18,
+      "file": "/exercise-guide/clean/chest/ex-fedb-wide-grip-barbell-bench-press.webp"
+    },
+    "ex-fedb-svend-press": {
+      "group": "chest",
+      "index": 19,
+      "file": "/exercise-guide/clean/chest/ex-fedb-svend-press.webp"
+    },
+    "ex-fedb-smith-machine-bench-press": {
+      "group": "chest",
+      "index": 20,
+      "file": "/exercise-guide/clean/chest/ex-fedb-smith-machine-bench-press.webp"
+    },
+    "ex-fedb-smith-machine-incline-bench-press": {
+      "group": "chest",
+      "index": 21,
+      "file": "/exercise-guide/clean/chest/ex-fedb-smith-machine-incline-bench-press.webp"
+    },
+    "ex-fedb-smith-machine-decline-press": {
+      "group": "chest",
+      "index": 22,
+      "file": "/exercise-guide/clean/chest/ex-fedb-smith-machine-decline-press.webp"
+    },
+    "ex-fedb-dumbbell-bench-press-with-neutral-grip": {
+      "group": "chest",
+      "index": 23,
+      "file": "/exercise-guide/clean/chest/ex-fedb-dumbbell-bench-press-with-neutral-grip.webp"
+    },
+    "ex-fedb-cable-chest-press": {
+      "group": "chest",
+      "index": 24,
+      "file": "/exercise-guide/clean/chest/ex-fedb-cable-chest-press.webp"
+    },
+    "ex-fedb-push-ups-with-feet-elevated": {
+      "group": "chest",
+      "index": 25,
+      "file": "/exercise-guide/clean/chest/ex-fedb-push-ups-with-feet-elevated.webp"
+    },
+    "ex-fedb-incline-dumbbell-bench-with-palms-facing-in": {
+      "group": "chest",
+      "index": 26,
+      "file": "/exercise-guide/clean/chest/ex-fedb-incline-dumbbell-bench-with-palms-facing-in.webp"
+    },
+    "ex-fedb-push-up-wide": {
+      "group": "chest",
+      "index": 27,
+      "file": "/exercise-guide/clean/chest/ex-fedb-push-up-wide.webp"
+    },
+    "ex-fedb-leverage-chest-press": {
+      "group": "chest",
+      "index": 28,
+      "file": "/exercise-guide/clean/chest/ex-fedb-leverage-chest-press.webp"
+    },
+    "ex-fedb-decline-push-up": {
+      "group": "chest",
+      "index": 29,
+      "file": "/exercise-guide/clean/chest/ex-fedb-decline-push-up.webp"
+    },
+    "ex-new-supinocompegadafechada": {
+      "group": "chest",
+      "index": 30,
+      "file": "/exercise-guide/clean/chest/ex-new-supinocompegadafechada.webp"
+    },
+    "ex-new-flexaocommaoselevadas": {
+      "group": "chest",
+      "index": 31,
+      "file": "/exercise-guide/clean/chest/ex-new-flexaocommaoselevadas.webp"
+    },
+    "ex-new-flexaoarqueiro": {
+      "group": "chest",
+      "index": 32,
+      "file": "/exercise-guide/clean/chest/ex-new-flexaoarqueiro.webp"
+    },
+    "ex-new-crucifixounilateralnocabo": {
+      "group": "chest",
+      "index": 33,
+      "file": "/exercise-guide/clean/chest/ex-new-crucifixounilateralnocabo.webp"
+    },
+    "ex-new-crossoveraltoparabaixo": {
+      "group": "chest",
+      "index": 34,
+      "file": "/exercise-guide/clean/chest/ex-new-crossoveraltoparabaixo.webp"
+    },
+    "ex-new-pressdepeitonapoliaempe": {
+      "group": "chest",
+      "index": 35,
+      "file": "/exercise-guide/clean/chest/ex-new-pressdepeitonapoliaempe.webp"
+    },
+    "ex-new-flexaocomtoquenoombro": {
+      "group": "chest",
+      "index": 36,
+      "file": "/exercise-guide/clean/chest/ex-new-flexaocomtoquenoombro.webp"
+    },
+    "ex-new-supinocomkettlebell": {
+      "group": "chest",
+      "index": 37,
+      "file": "/exercise-guide/clean/chest/ex-new-supinocomkettlebell.webp"
+    },
+    "ex-new-flexaonotrx": {
+      "group": "chest",
+      "index": 38,
+      "file": "/exercise-guide/clean/chest/ex-new-flexaonotrx.webp"
+    },
+    "ex-new-flexaocomresistenciaelastica": {
+      "group": "chest",
+      "index": 39,
+      "file": "/exercise-guide/clean/chest/ex-new-flexaocomresistenciaelastica.webp"
+    },
+    "ex-puxada-frente": {
+      "group": "back",
+      "index": 0,
+      "file": "/exercise-guide/clean/back/ex-puxada-frente.webp"
+    },
+    "ex-puxada-supinada": {
+      "group": "back",
+      "index": 1,
+      "file": "/exercise-guide/clean/back/ex-puxada-supinada.webp"
+    },
+    "ex-remada-curvada": {
+      "group": "back",
+      "index": 2,
+      "file": "/exercise-guide/clean/back/ex-remada-curvada.webp"
+    },
+    "ex-remada-cavalinho": {
+      "group": "back",
+      "index": 3,
+      "file": "/exercise-guide/clean/back/ex-remada-cavalinho.webp"
+    },
+    "ex-remada-baixa": {
+      "group": "back",
+      "index": 4,
+      "file": "/exercise-guide/clean/back/ex-remada-baixa.webp"
+    },
+    "ex-remada-unilateral": {
+      "group": "back",
+      "index": 5,
+      "file": "/exercise-guide/clean/back/ex-remada-unilateral.webp"
+    },
+    "ex-remada-maquina": {
+      "group": "back",
+      "index": 6,
+      "file": "/exercise-guide/clean/back/ex-remada-maquina.webp"
+    },
+    "ex-barra-fixa": {
+      "group": "back",
+      "index": 7,
+      "file": "/exercise-guide/clean/back/ex-barra-fixa.webp"
+    },
+    "ex-barra-fixa-assistida": {
+      "group": "back",
+      "index": 8,
+      "file": "/exercise-guide/clean/back/ex-barra-fixa-assistida.webp"
+    },
+    "ex-new-barrafixaneutra": {
+      "group": "back",
+      "index": 9,
+      "file": "/exercise-guide/clean/back/ex-new-barrafixaneutra.webp"
+    },
+    "ex-levantamento-terra": {
+      "group": "back",
+      "index": 10,
+      "file": "/exercise-guide/clean/back/ex-levantamento-terra.webp"
+    },
+    "ex-levantamento-terra-romeno": {
+      "group": "back",
+      "index": 11,
+      "file": "/exercise-guide/clean/back/ex-levantamento-terra-romeno.webp"
+    },
+    "ex-fedb-wide-grip-lat-pulldown": {
+      "group": "back",
+      "index": 12,
+      "file": "/exercise-guide/clean/back/ex-fedb-wide-grip-lat-pulldown.webp"
+    },
+    "ex-fedb-close-grip-front-lat-pulldown": {
+      "group": "back",
+      "index": 13,
+      "file": "/exercise-guide/clean/back/ex-fedb-close-grip-front-lat-pulldown.webp"
+    },
+    "ex-fedb-one-arm-lat-pulldown": {
+      "group": "back",
+      "index": 14,
+      "file": "/exercise-guide/clean/back/ex-fedb-one-arm-lat-pulldown.webp"
+    },
+    "ex-fedb-straight-arm-pulldown": {
+      "group": "back",
+      "index": 15,
+      "file": "/exercise-guide/clean/back/ex-fedb-straight-arm-pulldown.webp"
+    },
+    "ex-fedb-inverted-row": {
+      "group": "back",
+      "index": 16,
+      "file": "/exercise-guide/clean/back/ex-fedb-inverted-row.webp"
+    },
+    "ex-fedb-smith-machine-bent-over-row": {
+      "group": "back",
+      "index": 17,
+      "file": "/exercise-guide/clean/back/ex-fedb-smith-machine-bent-over-row.webp"
+    },
+    "ex-fedb-trap-bar-deadlift": {
+      "group": "back",
+      "index": 18,
+      "file": "/exercise-guide/clean/back/ex-fedb-trap-bar-deadlift.webp"
+    },
+    "ex-fedb-reverse-grip-bent-over-rows": {
+      "group": "back",
+      "index": 19,
+      "file": "/exercise-guide/clean/back/ex-fedb-reverse-grip-bent-over-rows.webp"
+    },
+    "ex-fedb-wide-grip-rear-pull-up": {
+      "group": "back",
+      "index": 20,
+      "file": "/exercise-guide/clean/back/ex-fedb-wide-grip-rear-pull-up.webp"
+    },
+    "ex-fedb-barbell-shrug-behind-the-back": {
+      "group": "back",
+      "index": 21,
+      "file": "/exercise-guide/clean/back/ex-fedb-barbell-shrug-behind-the-back.webp"
+    },
+    "ex-fedb-elevated-cable-rows": {
+      "group": "back",
+      "index": 22,
+      "file": "/exercise-guide/clean/back/ex-fedb-elevated-cable-rows.webp"
+    },
+    "ex-fedb-lying-t-bar-row": {
+      "group": "back",
+      "index": 23,
+      "file": "/exercise-guide/clean/back/ex-fedb-lying-t-bar-row.webp"
+    },
+    "ex-fedb-scapular-pull-up": {
+      "group": "back",
+      "index": 24,
+      "file": "/exercise-guide/clean/back/ex-fedb-scapular-pull-up.webp"
+    },
+    "ex-fedb-seated-one-arm-cable-pulley-rows": {
+      "group": "back",
+      "index": 25,
+      "file": "/exercise-guide/clean/back/ex-fedb-seated-one-arm-cable-pulley-rows.webp"
+    },
+    "ex-fedb-leverage-high-row": {
+      "group": "back",
+      "index": 26,
+      "file": "/exercise-guide/clean/back/ex-fedb-leverage-high-row.webp"
+    },
+    "ex-fedb-rope-straight-arm-pulldown": {
+      "group": "back",
+      "index": 27,
+      "file": "/exercise-guide/clean/back/ex-fedb-rope-straight-arm-pulldown.webp"
+    },
+    "ex-fedb-v-bar-pulldown": {
+      "group": "back",
+      "index": 28,
+      "file": "/exercise-guide/clean/back/ex-fedb-v-bar-pulldown.webp"
+    },
+    "ex-new-remadacompeitoapoiadonobanco": {
+      "group": "back",
+      "index": 29,
+      "file": "/exercise-guide/clean/back/ex-new-remadacompeitoapoiadonobanco.webp"
+    },
+    "ex-new-remadaunilateralnapoliabaixa": {
+      "group": "back",
+      "index": 30,
+      "file": "/exercise-guide/clean/back/ex-new-remadaunilateralnapoliabaixa.webp"
+    },
+    "ex-new-pulldownnapoliacomcorda": {
+      "group": "back",
+      "index": 31,
+      "file": "/exercise-guide/clean/back/ex-new-pulldownnapoliacomcorda.webp"
+    },
+    "ex-new-remadaaustraliananotrx": {
+      "group": "back",
+      "index": 32,
+      "file": "/exercise-guide/clean/back/ex-new-remadaaustraliananotrx.webp"
+    },
+    "ex-new-remadaaltaparacostascomcorda": {
+      "group": "back",
+      "index": 33,
+      "file": "/exercise-guide/clean/back/ex-new-remadaaltaparacostascomcorda.webp"
+    },
+    "ex-new-extensaolombar45graus": {
+      "group": "back",
+      "index": 34,
+      "file": "/exercise-guide/clean/back/ex-new-extensaolombar45graus.webp"
+    },
+    "ex-new-remadatbarcomapoiodepeito": {
+      "group": "back",
+      "index": 35,
+      "file": "/exercise-guide/clean/back/ex-new-remadatbarcomapoiodepeito.webp"
+    },
+    "ex-pull-over-maquina": {
+      "group": "back",
+      "index": 36,
+      "file": "/exercise-guide/clean/back/ex-pull-over-maquina.webp"
+    },
+    "ex-puxada-maquina": {
+      "group": "back",
+      "index": 37,
+      "file": "/exercise-guide/clean/back/ex-puxada-maquina.webp"
+    },
+    "ex-new-remadapendlay": {
+      "group": "back",
+      "index": 38,
+      "file": "/exercise-guide/clean/back/ex-new-remadapendlay.webp"
+    },
+    "ex-new-remadarenegade": {
+      "group": "back",
+      "index": 39,
+      "file": "/exercise-guide/clean/back/ex-new-remadarenegade.webp"
+    },
+    "ex-desenvolvimento-militar": {
+      "group": "shoulders",
+      "index": 0,
+      "file": "/exercise-guide/clean/shoulders/ex-desenvolvimento-militar.webp"
+    },
+    "ex-desenvolvimento-halter": {
+      "group": "shoulders",
+      "index": 1,
+      "file": "/exercise-guide/clean/shoulders/ex-desenvolvimento-halter.webp"
+    },
+    "ex-desenvolvimento-arnold": {
+      "group": "shoulders",
+      "index": 2,
+      "file": "/exercise-guide/clean/shoulders/ex-desenvolvimento-arnold.webp"
+    },
+    "ex-desenvolvimento-maquina": {
+      "group": "shoulders",
+      "index": 3,
+      "file": "/exercise-guide/clean/shoulders/ex-desenvolvimento-maquina.webp"
+    },
+    "ex-elevacao-lateral": {
+      "group": "shoulders",
+      "index": 4,
+      "file": "/exercise-guide/clean/shoulders/ex-elevacao-lateral.webp"
+    },
+    "ex-elevacao-frontal": {
+      "group": "shoulders",
+      "index": 5,
+      "file": "/exercise-guide/clean/shoulders/ex-elevacao-frontal.webp"
+    },
+    "ex-elevacao-frontal-barra": {
+      "group": "shoulders",
+      "index": 6,
+      "file": "/exercise-guide/clean/shoulders/ex-elevacao-frontal-barra.webp"
+    },
+    "ex-remada-alta": {
+      "group": "shoulders",
+      "index": 7,
+      "file": "/exercise-guide/clean/shoulders/ex-remada-alta.webp"
+    },
+    "ex-remada-alta-cabo": {
+      "group": "shoulders",
+      "index": 8,
+      "file": "/exercise-guide/clean/shoulders/ex-remada-alta-cabo.webp"
+    },
+    "ex-crucifixo-inverso": {
+      "group": "shoulders",
+      "index": 9,
+      "file": "/exercise-guide/clean/shoulders/ex-crucifixo-inverso.webp"
+    },
+    "ex-crucifixo-inverso-maquina": {
+      "group": "shoulders",
+      "index": 10,
+      "file": "/exercise-guide/clean/shoulders/ex-crucifixo-inverso-maquina.webp"
+    },
+    "ex-encolhimento-ombro": {
+      "group": "shoulders",
+      "index": 11,
+      "file": "/exercise-guide/clean/shoulders/ex-encolhimento-ombro.webp"
+    },
+    "ex-fedb-cable-shoulder-press": {
+      "group": "shoulders",
+      "index": 12,
+      "file": "/exercise-guide/clean/shoulders/ex-fedb-cable-shoulder-press.webp"
+    },
+    "ex-fedb-cuban-press": {
+      "group": "shoulders",
+      "index": 13,
+      "file": "/exercise-guide/clean/shoulders/ex-fedb-cuban-press.webp"
+    },
+    "ex-fedb-face-pull": {
+      "group": "shoulders",
+      "index": 14,
+      "file": "/exercise-guide/clean/shoulders/ex-fedb-face-pull.webp"
+    },
+    "ex-fedb-smith-machine-overhead-shoulder-press": {
+      "group": "shoulders",
+      "index": 15,
+      "file": "/exercise-guide/clean/shoulders/ex-fedb-smith-machine-overhead-shoulder-press.webp"
+    },
+    "ex-fedb-front-plate-raise": {
+      "group": "shoulders",
+      "index": 16,
+      "file": "/exercise-guide/clean/shoulders/ex-fedb-front-plate-raise.webp"
+    },
+    "ex-fedb-cable-rear-delt-fly": {
+      "group": "shoulders",
+      "index": 17,
+      "file": "/exercise-guide/clean/shoulders/ex-fedb-cable-rear-delt-fly.webp"
+    },
+    "ex-fedb-seated-side-lateral-raise": {
+      "group": "shoulders",
+      "index": 18,
+      "file": "/exercise-guide/clean/shoulders/ex-fedb-seated-side-lateral-raise.webp"
+    },
+    "ex-fedb-external-rotation-with-band": {
+      "group": "shoulders",
+      "index": 19,
+      "file": "/exercise-guide/clean/shoulders/ex-fedb-external-rotation-with-band.webp"
+    },
+    "ex-fedb-internal-rotation-with-band": {
+      "group": "shoulders",
+      "index": 20,
+      "file": "/exercise-guide/clean/shoulders/ex-fedb-internal-rotation-with-band.webp"
+    },
+    "ex-fedb-leverage-shoulder-press": {
+      "group": "shoulders",
+      "index": 21,
+      "file": "/exercise-guide/clean/shoulders/ex-fedb-leverage-shoulder-press.webp"
+    },
+    "ex-fedb-kettlebell-arnold-press": {
+      "group": "shoulders",
+      "index": 22,
+      "file": "/exercise-guide/clean/shoulders/ex-fedb-kettlebell-arnold-press.webp"
+    },
+    "ex-fedb-standing-palms-in-dumbbell-press": {
+      "group": "shoulders",
+      "index": 23,
+      "file": "/exercise-guide/clean/shoulders/ex-fedb-standing-palms-in-dumbbell-press.webp"
+    },
+    "ex-new-elevacaoynobancoinclinado": {
+      "group": "shoulders",
+      "index": 24,
+      "file": "/exercise-guide/clean/shoulders/ex-new-elevacaoynobancoinclinado.webp"
+    },
+    "ex-new-desenvolvimentomeioajoelhado": {
+      "group": "shoulders",
+      "index": 25,
+      "file": "/exercise-guide/clean/shoulders/ex-new-desenvolvimentomeioajoelhado.webp"
+    },
+    "ex-new-desenvolvimentolandmineunilatera": {
+      "group": "shoulders",
+      "index": 26,
+      "file": "/exercise-guide/clean/shoulders/ex-new-desenvolvimentolandmineunilatera.webp"
+    },
+    "ex-new-facepullcomrotacaoexterna": {
+      "group": "shoulders",
+      "index": 27,
+      "file": "/exercise-guide/clean/shoulders/ex-new-facepullcomrotacaoexterna.webp"
+    },
+    "ex-new-elevacaolateralnapoliaempe": {
+      "group": "shoulders",
+      "index": 28,
+      "file": "/exercise-guide/clean/shoulders/ex-new-elevacaolateralnapoliaempe.webp"
+    },
+    "ex-new-pikepushup": {
+      "group": "shoulders",
+      "index": 29,
+      "file": "/exercise-guide/clean/shoulders/ex-new-pikepushup.webp"
+    },
+    "ex-new-scaptioncomhalteres": {
+      "group": "shoulders",
+      "index": 30,
+      "file": "/exercise-guide/clean/shoulders/ex-new-scaptioncomhalteres.webp"
+    },
+    "ex-new-elevacaofrontalunilateralnocabo": {
+      "group": "shoulders",
+      "index": 31,
+      "file": "/exercise-guide/clean/shoulders/ex-new-elevacaofrontalunilateralnocabo.webp"
+    },
+    "ex-new-elevacaolateralinclinado": {
+      "group": "shoulders",
+      "index": 32,
+      "file": "/exercise-guide/clean/shoulders/ex-new-elevacaolateralinclinado.webp"
+    },
+    "ex-new-desenvolvimentopushpress": {
+      "group": "shoulders",
+      "index": 33,
+      "file": "/exercise-guide/clean/shoulders/ex-new-desenvolvimentopushpress.webp"
+    },
+    "ex-rosca-direta": {
+      "group": "biceps",
+      "index": 0,
+      "file": "/exercise-guide/clean/biceps/ex-rosca-direta.webp"
+    },
+    "ex-rosca-direta-w": {
+      "group": "biceps",
+      "index": 1,
+      "file": "/exercise-guide/clean/biceps/ex-rosca-direta-w.webp"
+    },
+    "ex-new-roscadiretacomhalteres": {
+      "group": "biceps",
+      "index": 2,
+      "file": "/exercise-guide/clean/biceps/ex-new-roscadiretacomhalteres.webp"
+    },
+    "ex-rosca-alternada": {
+      "group": "biceps",
+      "index": 3,
+      "file": "/exercise-guide/clean/biceps/ex-rosca-alternada.webp"
+    },
+    "ex-rosca-martelo": {
+      "group": "biceps",
+      "index": 4,
+      "file": "/exercise-guide/clean/biceps/ex-rosca-martelo.webp"
+    },
+    "ex-rosca-scott": {
+      "group": "biceps",
+      "index": 5,
+      "file": "/exercise-guide/clean/biceps/ex-rosca-scott.webp"
+    },
+    "ex-rosca-scott-maquina": {
+      "group": "biceps",
+      "index": 6,
+      "file": "/exercise-guide/clean/biceps/ex-rosca-scott-maquina.webp"
+    },
+    "ex-rosca-concentrada": {
+      "group": "biceps",
+      "index": 7,
+      "file": "/exercise-guide/clean/biceps/ex-rosca-concentrada.webp"
+    },
+    "ex-rosca-cabo": {
+      "group": "biceps",
+      "index": 8,
+      "file": "/exercise-guide/clean/biceps/ex-rosca-cabo.webp"
+    },
+    "ex-new-rosca21": {
+      "group": "biceps",
+      "index": 9,
+      "file": "/exercise-guide/clean/biceps/ex-new-rosca21.webp"
+    },
+    "ex-new-roscabayesiannocabo": {
+      "group": "biceps",
+      "index": 10,
+      "file": "/exercise-guide/clean/biceps/ex-new-roscabayesiannocabo.webp"
+    },
+    "ex-new-roscacomtoalha": {
+      "group": "biceps",
+      "index": 11,
+      "file": "/exercise-guide/clean/biceps/ex-new-roscacomtoalha.webp"
+    },
+    "ex-new-roscaconcentradaembancoinclinado": {
+      "group": "biceps",
+      "index": 12,
+      "file": "/exercise-guide/clean/biceps/ex-new-roscaconcentradaembancoinclinado.webp"
+    },
+    "ex-new-roscapronadacombarraw": {
+      "group": "biceps",
+      "index": 13,
+      "file": "/exercise-guide/clean/biceps/ex-new-roscapronadacombarraw.webp"
+    },
+    "ex-new-roscacomelasticoempe": {
+      "group": "biceps",
+      "index": 14,
+      "file": "/exercise-guide/clean/biceps/ex-new-roscacomelasticoempe.webp"
+    },
+    "ex-new-roscaspiderunilateral": {
+      "group": "biceps",
+      "index": 15,
+      "file": "/exercise-guide/clean/biceps/ex-new-roscaspiderunilateral.webp"
+    },
+    "ex-fedb-cross-body-hammer-curl": {
+      "group": "biceps",
+      "index": 16,
+      "file": "/exercise-guide/clean/biceps/ex-fedb-cross-body-hammer-curl.webp"
+    },
+    "ex-fedb-drag-curl": {
+      "group": "biceps",
+      "index": 17,
+      "file": "/exercise-guide/clean/biceps/ex-fedb-drag-curl.webp"
+    },
+    "ex-fedb-spider-curl": {
+      "group": "biceps",
+      "index": 18,
+      "file": "/exercise-guide/clean/biceps/ex-fedb-spider-curl.webp"
+    },
+    "ex-fedb-zottman-curl": {
+      "group": "biceps",
+      "index": 19,
+      "file": "/exercise-guide/clean/biceps/ex-fedb-zottman-curl.webp"
+    },
+    "ex-fedb-standing-one-arm-cable-curl": {
+      "group": "biceps",
+      "index": 20,
+      "file": "/exercise-guide/clean/biceps/ex-fedb-standing-one-arm-cable-curl.webp"
+    },
+    "ex-fedb-reverse-barbell-curl": {
+      "group": "biceps",
+      "index": 21,
+      "file": "/exercise-guide/clean/biceps/ex-fedb-reverse-barbell-curl.webp"
+    },
+    "ex-fedb-high-cable-curls": {
+      "group": "biceps",
+      "index": 22,
+      "file": "/exercise-guide/clean/biceps/ex-fedb-high-cable-curls.webp"
+    },
+    "ex-fedb-cable-hammer-curls-rope-attachment": {
+      "group": "biceps",
+      "index": 23,
+      "file": "/exercise-guide/clean/biceps/ex-fedb-cable-hammer-curls-rope-attachment.webp"
+    },
+    "ex-fedb-incline-dumbbell-curl": {
+      "group": "biceps",
+      "index": 24,
+      "file": "/exercise-guide/clean/biceps/ex-fedb-incline-dumbbell-curl.webp"
+    },
+    "ex-fedb-preacher-hammer-dumbbell-curl": {
+      "group": "biceps",
+      "index": 25,
+      "file": "/exercise-guide/clean/biceps/ex-fedb-preacher-hammer-dumbbell-curl.webp"
+    },
+    "ex-new-roscainversanocabo": {
+      "group": "biceps",
+      "index": 26,
+      "file": "/exercise-guide/clean/biceps/ex-new-roscainversanocabo.webp"
+    },
+    "ex-new-roscamarteloalternada": {
+      "group": "biceps",
+      "index": 27,
+      "file": "/exercise-guide/clean/biceps/ex-new-roscamarteloalternada.webp"
+    },
+    "ex-triceps-pulley-barra": {
+      "group": "triceps",
+      "index": 0,
+      "file": "/exercise-guide/clean/triceps/ex-triceps-pulley-barra.webp"
+    },
+    "ex-triceps-pulley": {
+      "group": "triceps",
+      "index": 1,
+      "file": "/exercise-guide/clean/triceps/ex-triceps-pulley.webp"
+    },
+    "ex-triceps-testa": {
+      "group": "triceps",
+      "index": 2,
+      "file": "/exercise-guide/clean/triceps/ex-triceps-testa.webp"
+    },
+    "ex-triceps-frances": {
+      "group": "triceps",
+      "index": 3,
+      "file": "/exercise-guide/clean/triceps/ex-triceps-frances.webp"
+    },
+    "ex-mergulho-banco": {
+      "group": "triceps",
+      "index": 4,
+      "file": "/exercise-guide/clean/triceps/ex-mergulho-banco.webp"
+    },
+    "ex-triceps-coice": {
+      "group": "triceps",
+      "index": 5,
+      "file": "/exercise-guide/clean/triceps/ex-triceps-coice.webp"
+    },
+    "ex-triceps-maquina": {
+      "group": "triceps",
+      "index": 6,
+      "file": "/exercise-guide/clean/triceps/ex-triceps-maquina.webp"
+    },
+    "ex-mergulho-paralelas": {
+      "group": "triceps",
+      "index": 7,
+      "file": "/exercise-guide/clean/triceps/ex-mergulho-paralelas.webp"
+    },
+    "ex-fedb-push-ups-close-triceps-position": {
+      "group": "triceps",
+      "index": 8,
+      "file": "/exercise-guide/clean/triceps/ex-fedb-push-ups-close-triceps-position.webp"
+    },
+    "ex-fedb-close-grip-barbell-bench-press": {
+      "group": "triceps",
+      "index": 9,
+      "file": "/exercise-guide/clean/triceps/ex-fedb-close-grip-barbell-bench-press.webp"
+    },
+    "ex-fedb-cable-rope-overhead-triceps-extension": {
+      "group": "triceps",
+      "index": 10,
+      "file": "/exercise-guide/clean/triceps/ex-fedb-cable-rope-overhead-triceps-extension.webp"
+    },
+    "ex-fedb-tate-press": {
+      "group": "triceps",
+      "index": 11,
+      "file": "/exercise-guide/clean/triceps/ex-fedb-tate-press.webp"
+    },
+    "ex-fedb-jm-press": {
+      "group": "triceps",
+      "index": 12,
+      "file": "/exercise-guide/clean/triceps/ex-fedb-jm-press.webp"
+    },
+    "ex-fedb-one-arm-supinated-dumbbell-triceps-extension": {
+      "group": "triceps",
+      "index": 13,
+      "file": "/exercise-guide/clean/triceps/ex-fedb-one-arm-supinated-dumbbell-triceps-extension.webp"
+    },
+    "ex-fedb-reverse-grip-triceps-pushdown": {
+      "group": "triceps",
+      "index": 14,
+      "file": "/exercise-guide/clean/triceps/ex-fedb-reverse-grip-triceps-pushdown.webp"
+    },
+    "ex-fedb-weighted-bench-dip": {
+      "group": "triceps",
+      "index": 15,
+      "file": "/exercise-guide/clean/triceps/ex-fedb-weighted-bench-dip.webp"
+    },
+    "ex-fedb-ring-dips": {
+      "group": "triceps",
+      "index": 16,
+      "file": "/exercise-guide/clean/triceps/ex-fedb-ring-dips.webp"
+    },
+    "ex-fedb-lying-dumbbell-tricep-extension": {
+      "group": "triceps",
+      "index": 17,
+      "file": "/exercise-guide/clean/triceps/ex-fedb-lying-dumbbell-tricep-extension.webp"
+    },
+    "ex-new-tricepstestacomhalteres": {
+      "group": "triceps",
+      "index": 18,
+      "file": "/exercise-guide/clean/triceps/ex-new-tricepstestacomhalteres.webp"
+    },
+    "ex-new-tricepsnapoliapegadainvertida": {
+      "group": "triceps",
+      "index": 19,
+      "file": "/exercise-guide/clean/triceps/ex-new-tricepsnapoliapegadainvertida.webp"
+    },
+    "ex-new-extensaoacimadacabecaunilateral": {
+      "group": "triceps",
+      "index": 20,
+      "file": "/exercise-guide/clean/triceps/ex-new-extensaoacimadacabecaunilateral.webp"
+    },
+    "ex-new-tricepsnacordaacimadacabeca": {
+      "group": "triceps",
+      "index": 21,
+      "file": "/exercise-guide/clean/triceps/ex-new-tricepsnacordaacimadacabeca.webp"
+    },
+    "ex-new-tricepsbarravnopulley": {
+      "group": "triceps",
+      "index": 22,
+      "file": "/exercise-guide/clean/triceps/ex-new-tricepsbarravnopulley.webp"
+    },
+    "ex-new-tricepsemargolas": {
+      "group": "triceps",
+      "index": 23,
+      "file": "/exercise-guide/clean/triceps/ex-new-tricepsemargolas.webp"
+    },
+    "ex-agachamento-livre": {
+      "group": "legs",
+      "index": 0,
+      "file": "/exercise-guide/clean/legs/ex-agachamento-livre.webp"
+    },
+    "ex-agachamento-smith": {
+      "group": "legs",
+      "index": 1,
+      "file": "/exercise-guide/clean/legs/ex-agachamento-smith.webp"
+    },
+    "ex-agachamento-frontal": {
+      "group": "legs",
+      "index": 2,
+      "file": "/exercise-guide/clean/legs/ex-agachamento-frontal.webp"
+    },
+    "ex-leg-press": {
+      "group": "legs",
+      "index": 3,
+      "file": "/exercise-guide/clean/legs/ex-leg-press.webp"
+    },
+    "ex-cadeira-extensora": {
+      "group": "legs",
+      "index": 4,
+      "file": "/exercise-guide/clean/legs/ex-cadeira-extensora.webp"
+    },
+    "ex-mesa-flexora": {
+      "group": "legs",
+      "index": 5,
+      "file": "/exercise-guide/clean/legs/ex-mesa-flexora.webp"
+    },
+    "ex-cadeira-flexora": {
+      "group": "legs",
+      "index": 6,
+      "file": "/exercise-guide/clean/legs/ex-cadeira-flexora.webp"
+    },
+    "ex-stiff-barra": {
+      "group": "legs",
+      "index": 7,
+      "file": "/exercise-guide/clean/legs/ex-stiff-barra.webp"
+    },
+    "ex-stiff-halter": {
+      "group": "legs",
+      "index": 8,
+      "file": "/exercise-guide/clean/legs/ex-stiff-halter.webp"
+    },
+    "ex-passada-halteres": {
+      "group": "legs",
+      "index": 9,
+      "file": "/exercise-guide/clean/legs/ex-passada-halteres.webp"
+    },
+    "ex-fedb-goblet-squat": {
+      "group": "legs",
+      "index": 10,
+      "file": "/exercise-guide/clean/legs/ex-fedb-goblet-squat.webp"
+    },
+    "ex-fedb-weighted-sissy-squat": {
+      "group": "legs",
+      "index": 11,
+      "file": "/exercise-guide/clean/legs/ex-fedb-weighted-sissy-squat.webp"
+    },
+    "ex-fedb-zercher-squats": {
+      "group": "legs",
+      "index": 12,
+      "file": "/exercise-guide/clean/legs/ex-fedb-zercher-squats.webp"
+    },
+    "ex-fedb-narrow-stance-leg-press": {
+      "group": "legs",
+      "index": 13,
+      "file": "/exercise-guide/clean/legs/ex-fedb-narrow-stance-leg-press.webp"
+    },
+    "ex-fedb-single-leg-leg-extension": {
+      "group": "legs",
+      "index": 14,
+      "file": "/exercise-guide/clean/legs/ex-fedb-single-leg-leg-extension.webp"
+    },
+    "ex-fedb-standing-leg-curl": {
+      "group": "legs",
+      "index": 15,
+      "file": "/exercise-guide/clean/legs/ex-fedb-standing-leg-curl.webp"
+    },
+    "ex-fedb-step-up-with-knee-raise": {
+      "group": "legs",
+      "index": 16,
+      "file": "/exercise-guide/clean/legs/ex-fedb-step-up-with-knee-raise.webp"
+    },
+    "ex-fedb-plie-dumbbell-squat": {
+      "group": "legs",
+      "index": 17,
+      "file": "/exercise-guide/clean/legs/ex-fedb-plie-dumbbell-squat.webp"
+    },
+    "ex-new-agachamentocomsalto": {
+      "group": "legs",
+      "index": 18,
+      "file": "/exercise-guide/clean/legs/ex-new-agachamentocomsalto.webp"
+    },
+    "ex-fedb-wide-stance-barbell-squat": {
+      "group": "legs",
+      "index": 19,
+      "file": "/exercise-guide/clean/legs/ex-fedb-wide-stance-barbell-squat.webp"
+    },
+    "ex-fedb-narrow-stance-squats": {
+      "group": "legs",
+      "index": 20,
+      "file": "/exercise-guide/clean/legs/ex-fedb-narrow-stance-squats.webp"
+    },
+    "ex-fedb-one-leg-barbell-squat": {
+      "group": "legs",
+      "index": 21,
+      "file": "/exercise-guide/clean/legs/ex-fedb-one-leg-barbell-squat.webp"
+    },
+    "ex-fedb-kettlebell-pistol-squat": {
+      "group": "legs",
+      "index": 22,
+      "file": "/exercise-guide/clean/legs/ex-fedb-kettlebell-pistol-squat.webp"
+    },
+    "ex-fedb-smith-single-leg-split-squat": {
+      "group": "legs",
+      "index": 23,
+      "file": "/exercise-guide/clean/legs/ex-fedb-smith-single-leg-split-squat.webp"
+    },
+    "ex-fedb-elevated-back-lunge": {
+      "group": "legs",
+      "index": 24,
+      "file": "/exercise-guide/clean/legs/ex-fedb-elevated-back-lunge.webp"
+    },
+    "ex-fedb-dumbbell-rear-lunge": {
+      "group": "legs",
+      "index": 25,
+      "file": "/exercise-guide/clean/legs/ex-fedb-dumbbell-rear-lunge.webp"
+    },
+    "ex-new-agachamentopausa": {
+      "group": "legs",
+      "index": 26,
+      "file": "/exercise-guide/clean/legs/ex-new-agachamentopausa.webp"
+    },
+    "ex-new-agachamentocaixa": {
+      "group": "legs",
+      "index": 27,
+      "file": "/exercise-guide/clean/legs/ex-new-agachamentocaixa.webp"
+    },
+    "ex-new-agachamentolandmine": {
+      "group": "legs",
+      "index": 28,
+      "file": "/exercise-guide/clean/legs/ex-new-agachamentolandmine.webp"
+    },
+    "ex-new-stepuplateral": {
+      "group": "legs",
+      "index": 29,
+      "file": "/exercise-guide/clean/legs/ex-new-stepuplateral.webp"
+    },
+    "ex-elevacao-pelvica": {
+      "group": "glutes",
+      "index": 0,
+      "file": "/exercise-guide/clean/glutes/ex-elevacao-pelvica.webp"
+    },
+    "ex-gluteo-cabo": {
+      "group": "glutes",
+      "index": 1,
+      "file": "/exercise-guide/clean/glutes/ex-gluteo-cabo.webp"
+    },
+    "ex-abducao-quadril": {
+      "group": "glutes",
+      "index": 2,
+      "file": "/exercise-guide/clean/glutes/ex-abducao-quadril.webp"
+    },
+    "ex-hip-thrust-maquina": {
+      "group": "glutes",
+      "index": 3,
+      "file": "/exercise-guide/clean/glutes/ex-hip-thrust-maquina.webp"
+    },
+    "ex-agachamento-sumo": {
+      "group": "glutes",
+      "index": 4,
+      "file": "/exercise-guide/clean/glutes/ex-agachamento-sumo.webp"
+    },
+    "ex-fedb-single-leg-glute-bridge": {
+      "group": "glutes",
+      "index": 5,
+      "file": "/exercise-guide/clean/glutes/ex-fedb-single-leg-glute-bridge.webp"
+    },
+    "ex-fedb-physioball-hip-bridge": {
+      "group": "glutes",
+      "index": 6,
+      "file": "/exercise-guide/clean/glutes/ex-fedb-physioball-hip-bridge.webp"
+    },
+    "ex-fedb-floor-glute-ham-raise": {
+      "group": "glutes",
+      "index": 7,
+      "file": "/exercise-guide/clean/glutes/ex-fedb-floor-glute-ham-raise.webp"
+    },
+    "ex-fedb-monster-walk": {
+      "group": "glutes",
+      "index": 8,
+      "file": "/exercise-guide/clean/glutes/ex-fedb-monster-walk.webp"
+    },
+    "ex-fedb-reverse-hyperextension": {
+      "group": "glutes",
+      "index": 9,
+      "file": "/exercise-guide/clean/glutes/ex-fedb-reverse-hyperextension.webp"
+    },
+    "ex-fedb-glute-kickback": {
+      "group": "glutes",
+      "index": 10,
+      "file": "/exercise-guide/clean/glutes/ex-fedb-glute-kickback.webp"
+    },
+    "ex-new-glutebridgenosolo": {
+      "group": "glutes",
+      "index": 11,
+      "file": "/exercise-guide/clean/glutes/ex-new-glutebridgenosolo.webp"
+    },
+    "ex-new-hipthrustunilateral": {
+      "group": "glutes",
+      "index": 12,
+      "file": "/exercise-guide/clean/glutes/ex-new-hipthrustunilateral.webp"
+    },
+    "ex-new-abducaolateraldeitada": {
+      "group": "glutes",
+      "index": 13,
+      "file": "/exercise-guide/clean/glutes/ex-new-abducaolateraldeitada.webp"
+    },
+    "ex-new-frogpump": {
+      "group": "glutes",
+      "index": 14,
+      "file": "/exercise-guide/clean/glutes/ex-new-frogpump.webp"
+    },
+    "ex-panturrilha-em-pe": {
+      "group": "calves",
+      "index": 0,
+      "file": "/exercise-guide/clean/calves/ex-panturrilha-em-pe.webp"
+    },
+    "ex-panturrilha-sentado": {
+      "group": "calves",
+      "index": 1,
+      "file": "/exercise-guide/clean/calves/ex-panturrilha-sentado.webp"
+    },
+    "ex-panturrilha-leg-press": {
+      "group": "calves",
+      "index": 2,
+      "file": "/exercise-guide/clean/calves/ex-panturrilha-leg-press.webp"
+    },
+    "ex-new-panturrilhaempeunilateral": {
+      "group": "calves",
+      "index": 3,
+      "file": "/exercise-guide/clean/calves/ex-new-panturrilhaempeunilateral.webp"
+    },
+    "ex-new-panturrilhanostep": {
+      "group": "calves",
+      "index": 4,
+      "file": "/exercise-guide/clean/calves/ex-new-panturrilhanostep.webp"
+    },
+    "ex-abdominal-supra": {
+      "group": "abdomen",
+      "index": 0,
+      "file": "/exercise-guide/clean/abdomen/ex-abdominal-supra.webp"
+    },
+    "ex-prancha": {
+      "group": "abdomen",
+      "index": 1,
+      "file": "/exercise-guide/clean/abdomen/ex-prancha.webp"
+    },
+    "ex-prancha-lateral": {
+      "group": "abdomen",
+      "index": 2,
+      "file": "/exercise-guide/clean/abdomen/ex-prancha-lateral.webp"
+    },
+    "ex-abdominal-cabo": {
+      "group": "abdomen",
+      "index": 3,
+      "file": "/exercise-guide/clean/abdomen/ex-abdominal-cabo.webp"
+    },
+    "ex-abdominal-maquina": {
+      "group": "abdomen",
+      "index": 4,
+      "file": "/exercise-guide/clean/abdomen/ex-abdominal-maquina.webp"
+    },
+    "ex-abdominal-bicicleta": {
+      "group": "abdomen",
+      "index": 5,
+      "file": "/exercise-guide/clean/abdomen/ex-abdominal-bicicleta.webp"
+    },
+    "ex-rotacao-tronco-cabo": {
+      "group": "abdomen",
+      "index": 6,
+      "file": "/exercise-guide/clean/abdomen/ex-rotacao-tronco-cabo.webp"
+    },
+    "ex-fedb-3-4-sit-up": {
+      "group": "abdomen",
+      "index": 7,
+      "file": "/exercise-guide/clean/abdomen/ex-fedb-3-4-sit-up.webp"
+    },
+    "ex-fedb-ab-roller": {
+      "group": "abdomen",
+      "index": 8,
+      "file": "/exercise-guide/clean/abdomen/ex-fedb-ab-roller.webp"
+    },
+    "ex-fedb-hanging-leg-raise": {
+      "group": "abdomen",
+      "index": 9,
+      "file": "/exercise-guide/clean/abdomen/ex-fedb-hanging-leg-raise.webp"
+    },
+    "ex-fedb-reverse-crunch": {
+      "group": "abdomen",
+      "index": 10,
+      "file": "/exercise-guide/clean/abdomen/ex-fedb-reverse-crunch.webp"
+    },
+    "ex-fedb-russian-twist": {
+      "group": "abdomen",
+      "index": 11,
+      "file": "/exercise-guide/clean/abdomen/ex-fedb-russian-twist.webp"
+    },
+    "ex-fedb-weighted-crunches": {
+      "group": "abdomen",
+      "index": 12,
+      "file": "/exercise-guide/clean/abdomen/ex-fedb-weighted-crunches.webp"
+    },
+    "ex-fedb-dead-bug": {
+      "group": "abdomen",
+      "index": 13,
+      "file": "/exercise-guide/clean/abdomen/ex-fedb-dead-bug.webp"
+    },
+    "ex-fedb-flutter-kicks": {
+      "group": "abdomen",
+      "index": 14,
+      "file": "/exercise-guide/clean/abdomen/ex-fedb-flutter-kicks.webp"
+    },
+    "ex-fedb-alternate-heel-touchers": {
+      "group": "abdomen",
+      "index": 15,
+      "file": "/exercise-guide/clean/abdomen/ex-fedb-alternate-heel-touchers.webp"
+    },
+    "ex-fedb-decline-crunch": {
+      "group": "abdomen",
+      "index": 16,
+      "file": "/exercise-guide/clean/abdomen/ex-fedb-decline-crunch.webp"
+    },
+    "ex-fedb-exercise-ball-crunch": {
+      "group": "abdomen",
+      "index": 17,
+      "file": "/exercise-guide/clean/abdomen/ex-fedb-exercise-ball-crunch.webp"
+    },
+    "ex-fedb-plate-twist": {
+      "group": "abdomen",
+      "index": 18,
+      "file": "/exercise-guide/clean/abdomen/ex-fedb-plate-twist.webp"
+    },
+    "ex-fedb-oblique-crunches": {
+      "group": "abdomen",
+      "index": 19,
+      "file": "/exercise-guide/clean/abdomen/ex-fedb-oblique-crunches.webp"
+    },
+    "ex-fedb-cable-reverse-crunch": {
+      "group": "abdomen",
+      "index": 20,
+      "file": "/exercise-guide/clean/abdomen/ex-fedb-cable-reverse-crunch.webp"
+    },
+    "ex-fedb-side-jackknife": {
+      "group": "abdomen",
+      "index": 21,
+      "file": "/exercise-guide/clean/abdomen/ex-fedb-side-jackknife.webp"
+    },
+    "ex-elevacao-pernas": {
+      "group": "abdomen",
+      "index": 22,
+      "file": "/exercise-guide/clean/abdomen/ex-elevacao-pernas.webp"
+    },
+    "ex-new-hollowhold": {
+      "group": "abdomen",
+      "index": 23,
+      "file": "/exercise-guide/clean/abdomen/ex-new-hollowhold.webp"
+    },
+    "ex-new-pranchacomtoquenoombro": {
+      "group": "abdomen",
+      "index": 24,
+      "file": "/exercise-guide/clean/abdomen/ex-new-pranchacomtoquenoombro.webp"
+    },
+    "ex-new-pranchacomelevacaodeperna": {
+      "group": "abdomen",
+      "index": 25,
+      "file": "/exercise-guide/clean/abdomen/ex-new-pranchacomelevacaodeperna.webp"
+    },
+    "ex-new-birddog": {
+      "group": "abdomen",
+      "index": 26,
+      "file": "/exercise-guide/clean/abdomen/ex-new-birddog.webp"
+    },
+    "ex-new-suitcasecarryunilateral": {
+      "group": "abdomen",
+      "index": 27,
+      "file": "/exercise-guide/clean/abdomen/ex-new-suitcasecarryunilateral.webp"
+    },
+    "ex-new-pranchacomdeslocamento": {
+      "group": "abdomen",
+      "index": 28,
+      "file": "/exercise-guide/clean/abdomen/ex-new-pranchacomdeslocamento.webp"
+    },
+    "ex-new-elevacaodejoelhosnabarra": {
+      "group": "abdomen",
+      "index": 29,
+      "file": "/exercise-guide/clean/abdomen/ex-new-elevacaodejoelhosnabarra.webp"
+    },
+    "ex-new-abdominalcanivete": {
+      "group": "abdomen",
+      "index": 30,
+      "file": "/exercise-guide/clean/abdomen/ex-new-abdominalcanivete.webp"
+    },
+    "ex-new-deadbugalternado": {
+      "group": "abdomen",
+      "index": 31,
+      "file": "/exercise-guide/clean/abdomen/ex-new-deadbugalternado.webp"
+    },
+    "ex-new-pallofpress": {
+      "group": "abdomen",
+      "index": 32,
+      "file": "/exercise-guide/clean/abdomen/ex-new-pallofpress.webp"
+    },
+    "ex-new-abwheelajoelhado": {
+      "group": "abdomen",
+      "index": 33,
+      "file": "/exercise-guide/clean/abdomen/ex-new-abwheelajoelhado.webp"
+    },
+    "ex-new-pranchafrontalcomapoiodecotovelo": {
+      "group": "abdomen",
+      "index": 34,
+      "file": "/exercise-guide/clean/abdomen/ex-new-pranchafrontalcomapoiodecotovelo.webp"
+    },
+    "ex-new-mobilidadedequadril9090": {
+      "group": "conditioning",
+      "index": 0,
+      "file": "/exercise-guide/clean/conditioning/ex-new-mobilidadedequadril9090.webp"
+    },
+    "ex-new-alongamentodeflexordequadril": {
+      "group": "conditioning",
+      "index": 1,
+      "file": "/exercise-guide/clean/conditioning/ex-new-alongamentodeflexordequadril.webp"
+    },
+    "ex-new-alongamentodeposteriorcomfaixa": {
+      "group": "conditioning",
+      "index": 2,
+      "file": "/exercise-guide/clean/conditioning/ex-new-alongamentodeposteriorcomfaixa.webp"
+    },
+    "ex-new-rotacaotoracicaemquatroapoios": {
+      "group": "conditioning",
+      "index": 3,
+      "file": "/exercise-guide/clean/conditioning/ex-new-rotacaotoracicaemquatroapoios.webp"
+    },
+    "ex-new-mobilidadedetornozelonaparede": {
+      "group": "conditioning",
+      "index": 4,
+      "file": "/exercise-guide/clean/conditioning/ex-new-mobilidadedetornozelonaparede.webp"
+    },
+    "ex-new-alongamentodepeitoralnaporta": {
+      "group": "conditioning",
+      "index": 5,
+      "file": "/exercise-guide/clean/conditioning/ex-new-alongamentodepeitoralnaporta.webp"
+    },
+    "ex-new-worldsgreateststretch": {
+      "group": "conditioning",
+      "index": 6,
+      "file": "/exercise-guide/clean/conditioning/ex-new-worldsgreateststretch.webp"
+    },
+    "ex-new-agachamentoprofundosustentado": {
+      "group": "conditioning",
+      "index": 7,
+      "file": "/exercise-guide/clean/conditioning/ex-new-agachamentoprofundosustentado.webp"
+    },
+    "ex-fedb-wrist-roller": {
+      "group": "conditioning",
+      "index": 8,
+      "file": "/exercise-guide/clean/conditioning/ex-fedb-wrist-roller.webp"
+    },
+    "ex-fedb-seated-palm-up-barbell-wrist-curl": {
+      "group": "conditioning",
+      "index": 9,
+      "file": "/exercise-guide/clean/conditioning/ex-fedb-seated-palm-up-barbell-wrist-curl.webp"
+    },
+    "ex-fedb-seated-palms-down-barbell-wrist-curl": {
+      "group": "conditioning",
+      "index": 10,
+      "file": "/exercise-guide/clean/conditioning/ex-fedb-seated-palms-down-barbell-wrist-curl.webp"
+    },
+    "ex-new-flexaodepunhos": {
+      "group": "conditioning",
+      "index": 11,
+      "file": "/exercise-guide/clean/conditioning/ex-new-flexaodepunhos.webp"
+    },
+    "ex-new-extensaodepunhos": {
+      "group": "conditioning",
+      "index": 12,
+      "file": "/exercise-guide/clean/conditioning/ex-new-extensaodepunhos.webp"
+    },
+    "ex-new-pronacaoesupinacaodeantebraco": {
+      "group": "conditioning",
+      "index": 13,
+      "file": "/exercise-guide/clean/conditioning/ex-new-pronacaoesupinacaodeantebraco.webp"
+    },
+    "ex-new-supinacaodeantebraco": {
+      "group": "conditioning",
+      "index": 14,
+      "file": "/exercise-guide/clean/conditioning/ex-new-supinacaodeantebraco.webp"
+    },
+    "ex-new-farmercarryunilateral": {
+      "group": "conditioning",
+      "index": 15,
+      "file": "/exercise-guide/clean/conditioning/ex-new-farmercarryunilateral.webp"
+    },
+    "ex-new-roscapunhoreversa": {
+      "group": "conditioning",
+      "index": 16,
+      "file": "/exercise-guide/clean/conditioning/ex-new-roscapunhoreversa.webp"
+    },
+    "ex-new-deadhangnabarra": {
+      "group": "conditioning",
+      "index": 17,
+      "file": "/exercise-guide/clean/conditioning/ex-new-deadhangnabarra.webp"
+    },
+    "ex-esteira": {
+      "group": "conditioning",
+      "index": 18,
+      "file": "/exercise-guide/clean/conditioning/ex-esteira.webp"
+    },
+    "ex-bike": {
+      "group": "conditioning",
+      "index": 19,
+      "file": "/exercise-guide/clean/conditioning/ex-bike.webp"
+    },
+    "ex-eliptico": {
+      "group": "conditioning",
+      "index": 20,
+      "file": "/exercise-guide/clean/conditioning/ex-eliptico.webp"
+    },
+    "ex-remo-ergometrico": {
+      "group": "conditioning",
+      "index": 21,
+      "file": "/exercise-guide/clean/conditioning/ex-remo-ergometrico.webp"
+    },
+    "ex-escada-stairmaster": {
+      "group": "conditioning",
+      "index": 22,
+      "file": "/exercise-guide/clean/conditioning/ex-escada-stairmaster.webp"
+    },
+    "ex-new-corridaleveaoarlivre": {
+      "group": "conditioning",
+      "index": 23,
+      "file": "/exercise-guide/clean/conditioning/ex-new-corridaleveaoarlivre.webp"
+    },
+    "ex-new-caminhadaeminclinacao": {
+      "group": "conditioning",
+      "index": 24,
+      "file": "/exercise-guide/clean/conditioning/ex-new-caminhadaeminclinacao.webp"
+    },
+    "ex-corda": {
+      "group": "conditioning",
+      "index": 25,
+      "file": "/exercise-guide/clean/conditioning/ex-corda.webp"
+    },
+    "ex-new-shuttlerun": {
+      "group": "conditioning",
+      "index": 26,
+      "file": "/exercise-guide/clean/conditioning/ex-new-shuttlerun.webp"
+    },
+    "ex-new-airbikeintervalada": {
+      "group": "conditioning",
+      "index": 27,
+      "file": "/exercise-guide/clean/conditioning/ex-new-airbikeintervalada.webp"
+    },
+    "ex-new-assaultbikemoderada": {
+      "group": "conditioning",
+      "index": 28,
+      "file": "/exercise-guide/clean/conditioning/ex-new-assaultbikemoderada.webp"
+    },
+    "ex-new-corridaintervaladanaesteira": {
+      "group": "conditioning",
+      "index": 29,
+      "file": "/exercise-guide/clean/conditioning/ex-new-corridaintervaladanaesteira.webp"
+    },
+    "ex-new-remoergometricointervalado": {
+      "group": "conditioning",
+      "index": 30,
+      "file": "/exercise-guide/clean/conditioning/ex-new-remoergometricointervalado.webp"
+    },
+    "ex-fedb-wind-sprints": {
+      "group": "conditioning",
+      "index": 31,
+      "file": "/exercise-guide/clean/conditioning/ex-fedb-wind-sprints.webp"
+    },
+    "ex-new-subidadeescadas": {
+      "group": "conditioning",
+      "index": 32,
+      "file": "/exercise-guide/clean/conditioning/ex-new-subidadeescadas.webp"
+    },
+    "ex-hyrox-ski": {
+      "group": "conditioning",
+      "index": 33,
+      "file": "/exercise-guide/clean/conditioning/ex-hyrox-ski.webp"
+    },
+    "ex-hyrox-sled-push": {
+      "group": "conditioning",
+      "index": 34,
+      "file": "/exercise-guide/clean/conditioning/ex-hyrox-sled-push.webp"
+    },
+    "ex-hyrox-sled-pull": {
+      "group": "conditioning",
+      "index": 35,
+      "file": "/exercise-guide/clean/conditioning/ex-hyrox-sled-pull.webp"
+    },
+    "ex-hyrox-farmers": {
+      "group": "conditioning",
+      "index": 36,
+      "file": "/exercise-guide/clean/conditioning/ex-hyrox-farmers.webp"
+    },
+    "ex-hyrox-wall-ball": {
+      "group": "conditioning",
+      "index": 37,
+      "file": "/exercise-guide/clean/conditioning/ex-hyrox-wall-ball.webp"
+    },
+    "ex-hyrox-sandbag": {
+      "group": "conditioning",
+      "index": 38,
+      "file": "/exercise-guide/clean/conditioning/ex-hyrox-sandbag.webp"
+    },
+    "ex-fedb-prowler-sprint": {
+      "group": "conditioning",
+      "index": 39,
+      "file": "/exercise-guide/clean/conditioning/ex-fedb-prowler-sprint.webp"
+    },
+    "ex-new-burpeebroadjump": {
+      "group": "conditioning",
+      "index": 40,
+      "file": "/exercise-guide/clean/conditioning/ex-new-burpeebroadjump.webp"
+    },
+    "ex-new-sledpushtecnico": {
+      "group": "conditioning",
+      "index": 41,
+      "file": "/exercise-guide/clean/conditioning/ex-new-sledpushtecnico.webp"
+    },
+    "ex-new-skiergintervalado": {
+      "group": "conditioning",
+      "index": 42,
+      "file": "/exercise-guide/clean/conditioning/ex-new-skiergintervalado.webp"
+    },
+    "ex-new-cordanavalemondas": {
+      "group": "conditioning",
+      "index": 43,
+      "file": "/exercise-guide/clean/conditioning/ex-new-cordanavalemondas.webp"
+    },
+    "ex-hyrox-burpee": {
+      "group": "conditioning",
+      "index": 44,
+      "file": "/exercise-guide/clean/conditioning/ex-hyrox-burpee.webp"
+    },
+    "ex-new-kettlebellswing": {
+      "group": "conditioning",
+      "index": 45,
+      "file": "/exercise-guide/clean/conditioning/ex-new-kettlebellswing.webp"
+    },
+    "ex-elevacao-lateral-cabo": {
+      "group": "supplement-22",
+      "index": 0,
+      "file": "/exercise-guide/clean/supplement-22/ex-elevacao-lateral-cabo.webp"
+    },
+    "ex-elevacao-lateral-maquina": {
+      "group": "supplement-22",
+      "index": 1,
+      "file": "/exercise-guide/clean/supplement-22/ex-elevacao-lateral-maquina.webp"
+    },
+    "ex-new-facepullnoelastico": {
+      "group": "supplement-22",
+      "index": 2,
+      "file": "/exercise-guide/clean/supplement-22/ex-new-facepullnoelastico.webp"
+    },
+    "ex-new-pushpresscomhalteres": {
+      "group": "supplement-22",
+      "index": 3,
+      "file": "/exercise-guide/clean/supplement-22/ex-new-pushpresscomhalteres.webp"
+    },
+    "ex-agachamento-bulgaro": {
+      "group": "supplement-22",
+      "index": 4,
+      "file": "/exercise-guide/clean/supplement-22/ex-agachamento-bulgaro.webp"
+    },
+    "ex-leg-press-horizontal": {
+      "group": "supplement-22",
+      "index": 5,
+      "file": "/exercise-guide/clean/supplement-22/ex-leg-press-horizontal.webp"
+    },
+    "ex-afundo": {
+      "group": "supplement-22",
+      "index": 6,
+      "file": "/exercise-guide/clean/supplement-22/ex-afundo.webp"
+    },
+    "ex-new-cossacksquat": {
+      "group": "supplement-22",
+      "index": 7,
+      "file": "/exercise-guide/clean/supplement-22/ex-new-cossacksquat.webp"
+    },
+    "ex-new-legpressunilateral": {
+      "group": "supplement-22",
+      "index": 8,
+      "file": "/exercise-guide/clean/supplement-22/ex-new-legpressunilateral.webp"
+    },
+    "ex-new-wallsitisometrico": {
+      "group": "supplement-22",
+      "index": 9,
+      "file": "/exercise-guide/clean/supplement-22/ex-new-wallsitisometrico.webp"
+    },
+    "ex-new-afundoreverso": {
+      "group": "supplement-22",
+      "index": 10,
+      "file": "/exercise-guide/clean/supplement-22/ex-new-afundoreverso.webp"
+    },
+    "ex-new-nordiccurlassistido": {
+      "group": "supplement-22",
+      "index": 11,
+      "file": "/exercise-guide/clean/supplement-22/ex-new-nordiccurlassistido.webp"
+    },
+    "ex-new-passadalateral": {
+      "group": "supplement-22",
+      "index": 12,
+      "file": "/exercise-guide/clean/supplement-22/ex-new-passadalateral.webp"
+    },
+    "ex-stiff-unilateral": {
+      "group": "supplement-22",
+      "index": 13,
+      "file": "/exercise-guide/clean/supplement-22/ex-stiff-unilateral.webp"
+    },
+    "ex-new-pontecomminiband": {
+      "group": "supplement-22",
+      "index": 14,
+      "file": "/exercise-guide/clean/supplement-22/ex-new-pontecomminiband.webp"
+    },
+    "ex-new-elevacaopelvicanotrx": {
+      "group": "supplement-22",
+      "index": 15,
+      "file": "/exercise-guide/clean/supplement-22/ex-new-elevacaopelvicanotrx.webp"
+    },
+    "ex-new-agachamentocomminiband": {
+      "group": "supplement-22",
+      "index": 16,
+      "file": "/exercise-guide/clean/supplement-22/ex-new-agachamentocomminiband.webp"
+    },
+    "ex-new-tricepscoicenocabo": {
+      "group": "supplement-22",
+      "index": 17,
+      "file": "/exercise-guide/clean/supplement-22/ex-new-tricepscoicenocabo.webp"
+    },
+    "ex-new-tricepsbancocompeselevados": {
+      "group": "supplement-22",
+      "index": 18,
+      "file": "/exercise-guide/clean/supplement-22/ex-new-tricepsbancocompeselevados.webp"
+    },
+    "ex-new-extensaodetricepscomelastico": {
+      "group": "supplement-22",
+      "index": 19,
+      "file": "/exercise-guide/clean/supplement-22/ex-new-extensaodetricepscomelastico.webp"
+    },
+    "ex-new-supinofechadocomhalteres": {
+      "group": "supplement-22",
+      "index": 20,
+      "file": "/exercise-guide/clean/supplement-22/ex-new-supinofechadocomhalteres.webp"
+    },
+    "ex-new-flexaodiamante": {
+      "group": "supplement-22",
+      "index": 21,
+      "file": "/exercise-guide/clean/supplement-22/ex-new-flexaodiamante.webp"
+    }
+  },
+  "reused_ids": {
+    "ex-new-supinocompegadafechada": [
+      "triceps:24"
+    ],
+    "ex-new-shuttlerun": [
+      "conditioning:46"
+    ],
+    "ex-new-subidadeescadas": [
+      "conditioning:47"
+    ]
+  }
+}

@@ -15,22 +15,24 @@ const photoFiles = [
   'src/lib/exerciseMediaNovember.ts','src/lib/exerciseMediaRoundTwo.ts',
   'src/lib/lowerBodyPhotoMedia.ts','src/lib/hyroxMedia.ts',
 ];
-const catalog = catalogFiles.flatMap(path => [...read(path).matchAll(/\{\s*id:\s*'(ex-[^']+)',\s*name:\s*'([^']+)',\s*muscleGroup:\s*'([^']+)'/g)]
-  .map(m=>({id:m[1],name:m[2]})));
+// A regex antiga ignorava "World's greatest stretch" por conter apóstrofo no nome.
+// IDs estáveis são a fonte de verdade; jamais inferir cobertura pelo texto do nome.
+const catalog = catalogFiles.flatMap(path => [...read(path).matchAll(/\bid:\s*'(ex-[^']+)'/g)]
+  .map(m=>({id:m[1]})));
 const illustrated = new Set(illustrationFiles.flatMap(path => [...read(path).matchAll(/['"](ex-[a-z0-9-]+)['"]/g)].map(m=>m[1])));
 const photographs = new Set(photoFiles.flatMap(path => [...read(path).matchAll(/['"](ex-[a-z0-9-]+)['"]\s*:/g)].map(m=>m[1])));
 const currentPhotos = catalog.filter(item=>!illustrated.has(item.id) && photographs.has(item.id));
 const expectedPhotos = [];
 
 test('catalog has unique exercise IDs with a media mapping for each',()=>{
-  assert.equal(catalog.length,330);
+  assert.equal(catalog.length,331);
   assert.equal(new Set(catalog.map(item=>item.id)).size,catalog.length);
   for(const item of catalog)assert.ok(illustrated.has(item.id)||photographs.has(item.id),item.id+' has no media');
 });
 
-test('all 330 catalog exercises now have an illustrated guide mapping',()=>{
+test('all 331 catalog exercises now have an illustrated guide mapping',()=>{
   assert.deepEqual(currentPhotos.map(item=>item.id).sort(),expectedPhotos.slice().sort());
-  assert.equal(catalog.filter(item=>illustrated.has(item.id)).length,330);
+  assert.equal(catalog.filter(item=>illustrated.has(item.id)).length,331);
 });
 
 test('personal program label is clean and ID remains stable',()=>{

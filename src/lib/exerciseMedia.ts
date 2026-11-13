@@ -1,5 +1,6 @@
 import type { Exercise } from '../types';
 import { getUserProvidedIllustration } from './userProvidedIllustrationMedia';
+import { getNormalizedIllustration } from './normalizedIllustrationMedia';
 import { getSupplementIllustration } from './supplementIllustrationMedia';
 import { getConditioningIllustration } from './conditioningIllustrationMedia';
 import { getChestIllustration } from './chestIllustrationMedia';
@@ -155,6 +156,13 @@ export function exerciseMedia(exercise?: Exercise | null): ExerciseMediaResult |
     kind: 'ilustracao',
     standaloneCard: true,
     credit: 'Ilustração de execução fornecida pelo usuário para o FitBox.',
+  };
+  // Quadros normalizados: um WebP por ID, sem molduras e sem cortes do atlas.
+  const normalized = getNormalizedIllustration(exerciseId);
+  if (normalized) return {
+    first: normalized, sourceId: exerciseId, kind: 'ilustracao',
+    standaloneCard: true,
+    credit: 'Ilustração original normalizada individualmente para FitBox.',
   };
   const supplement = getSupplementIllustration(exerciseId);
   if (supplement) return {
