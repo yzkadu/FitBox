@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronRight, Check, CalendarDays, Info, Clock, Target, SlidersHorizontal, Search, Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronRight, Check, CalendarDays, Info, Clock, Target, SlidersHorizontal, Search, Sparkles, ChevronDown, ChevronUp, PlusCircle } from 'lucide-react';
 import { PageHeader, Card, Button, Pill, AppIcon } from '../components/ui';
 import { Sheet } from '../components/Sheet';
 import { useAuth } from '../hooks/useAuth';
@@ -163,6 +163,20 @@ export function ProgramLibrary() {
   return (
     <div className="px-4 lg:px-0">
       <PageHeader title="Escolha seu treino" />
+      <button type="button" onClick={()=>navigate('/atividades')}
+        className="lg:hidden w-full flex items-center gap-3 rounded-xl p-3.5 mb-3 text-left"
+        style={{background:'var(--surface-2)',border:'1px solid var(--border)'}}>
+        <span className="rounded-lg p-2" style={{background:'var(--brand-dim)',color:'var(--brand)'}}>
+          <PlusCircle size={20}/>
+        </span>
+        <span className="flex-1">
+          <span className="block text-sm font-semibold">Atividades rápidas</span>
+          <span className="block text-xs mt-1" style={{color:'var(--text-dim)'}}>
+            Registrar HYROX, cardio, funcional ou caminhada por tempo e kcal
+          </span>
+        </span>
+        <ChevronRight size={18} style={{color:'var(--brand)'}}/>
+      </button>
       <button type="button" onClick={()=>navigate('/montador')}
         className="flex items-center gap-3 w-full p-3.5 mb-4 rounded-xl text-left"
         style={{background:'var(--brand-dim)',border:'1px solid var(--brand)'}}>
