@@ -1,0 +1,26 @@
+name: Audit all FitBox exercise images
+on:
+  pull_request:
+    paths:
+      - 'scripts/audit-exercise-visuals.py'
+      - 'public/exercise-guide/**'
+      - 'src/assets/exercise-guide/**'
+      - 'src/lib/*IllustrationMedia.ts'
+      - '.github/workflows/visual-audit.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install visual audit dependency
+        run: pip install Pillow==11.3.0
+      - name: Check image dimensions, content, duplication and audit previews
+        run: python scripts/audit-exercise-visuals.py --previews
