@@ -145,6 +145,20 @@ export interface CardioLog {
   proofPhotoDataUrl?: string;
 }
 
+/** Registro de atividade rápida que não exige uma ficha de exercícios. */
+export type ActivityKind = 'hyrox' | 'funcional' | 'caminhada' | 'musculacao' | 'cardio' | 'esporte' | 'mobilidade' | 'outro';
+export interface ActivityLog {
+  id: string;
+  date: string; // data local AAAA-MM-DD
+  kind: ActivityKind;
+  label?: string; // atividade personalizada
+  durationMin: number;
+  caloriesKcal?: number; // informadas pelo usuário ou relógio
+  avgHeartRate?: number;
+  rpe?: number;
+  notes?: string;
+}
+
 /** Metas nutricionais definidas manualmente pelo usuário.
  * Não equivalem a prescrição nem são calculadas com déficit automático.
  */
@@ -216,6 +230,7 @@ export interface AppData {
   measurements: BodyMeasurement[];
   photos: BodyPhoto[];
   cardioLogs: CardioLog[];
+  activityLogs: ActivityLog[];
   weeklySchedule: WeeklySchedule;
   weightGoal: WeightGoal | null;
   nutritionGoal: NutritionGoal | null;

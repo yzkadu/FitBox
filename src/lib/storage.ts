@@ -6,6 +6,8 @@ import type {
   BodyMeasurement,
   BodyPhoto,
   CardioLog,
+  ActivityLog,
+  ActivityKind,
   WeeklySchedule,
   WeightGoal,
   NutritionGoal,
@@ -22,6 +24,7 @@ export function emptyData(): AppData {
     measurements: [],
     photos: [],
     cardioLogs: [],
+    activityLogs: [],
     weeklySchedule: {},
     weightGoal: null,
     nutritionGoal: null,
@@ -48,7 +51,7 @@ function readLocalSnapshot(userId: string): AppData | null {
     const locallyCreated = Array.isArray(data.exercises)
       ? data.exercises.filter(ex => ex.custom && !builtInIds.has(ex.id))
       : [];
-    return { ...emptyData(), ...data, nutritionEntries: Array.isArray(data.nutritionEntries) ? data.nutritionEntries : [], nutritionGoal: data.nutritionGoal ?? null, photos: [], exercises: [...BUILTIN_EXERCISES, ...locallyCreated] };
+    return { ...emptyData(), ...data, activityLogs: Array.isArray(data.activityLogs) ? data.activityLogs : [], nutritionEntries: Array.isArray(data.nutritionEntries) ? data.nutritionEntries : [], nutritionGoal: data.nutritionGoal ?? null, photos: [], exercises: [...BUILTIN_EXERCISES, ...locallyCreated] };
   } catch {
     return null;
   }
@@ -142,6 +145,18 @@ function rowToCardio(r: Record<string, unknown>): CardioLog {
   };
 }
 
+function rowToActivity(r: Record<string, unknown>): ActivityLog {
+  return {
+    id: String(r.id), date: String(r.date), kind: r.kind as ActivityKind,
+    label: r.label == null ? undefined : String(r.label),
+    durationMin: Number(r.duration_min),
+    caloriesKcal: r.calories_kcal == null ? undefined : Number(r.calories_kcal),
+    avgHeartRate: r.avg_heart_rate == null ? undefined : Number(r.avg_heart_rate),
+    rpe: r.rpe == null ? undefined : Number(r.rpe),
+    notes: r.notes == null ? undefined : String(r.notes),
+  };
+}
+
 function rowToNutritionEntry(r: Record<string,unknown>): NutritionEntry {
   return {
     id: String(r.id), date: String(r.entry_date), label: String(r.label),
@@ -215,13 +230,14 @@ class Store {
     this.data = cached ?? emptyData();
     this.notify();
 
-    const [workoutsRes, sessionsRes, customExRes, measurementsRes, photosRes, cardioRes, scheduleRes, goalRes, nutritionGoalRes, nutritionEntriesRes] = await Promise.all([
+    const [workoutsRes, sessionsRes, customExRes, measurementsRes, photosRes, cardioRes, activityRes, scheduleRes, goalRes, nutritionGoalRes, nutritionEntriesRes] = await Promise.all([
       supabase.from('workouts').select('*').order('created_at', { ascending: true }),
       supabase.from('sessions').select('*').order('started_at', { ascending: true }),
       supabase.from('custom_exercises').select('*'),
       supabase.from('measurements').select('*').order('date', { ascending: true }),
       supabase.from('photos').select('*').order('date', { ascending: true }),
       supabase.from('cardio_logs').select('*').order('date', { ascending: true }),
+      supabase.from('activity_logs').select('*').eq('user_id', userId).order('date', { ascending: true }),
       supabase.from('weekly_schedule').select('*').eq('user_id', userId).maybeSingle(),
       supabase.from('weight_goal').select('*').eq('user_id', userId).maybeSingle(),
       supabase.from('nutrition_goals').select('*').eq('user_id', userId).maybeSingle(),
@@ -245,7 +261,7 @@ class Store {
       })(),
     ]);
 
-    const responses = [workoutsRes, sessionsRes, customExRes, measurementsRes, photosRes, cardioRes, scheduleRes, goalRes, nutritionGoalRes, nutritionEntriesRes];
+    const responses = [workoutsRes, sessionsRes, customExRes, measurementsRes, photosRes, cardioRes, activityRes, scheduleRes, goalRes, nutritionGoalRes, nutritionEntriesRes];
     const failures = responses.filter((res) => res.error);
     if (failures.length) {
       failures.forEach((res) => console.error('Falha ao carregar dados do FitBox:', res.error));
@@ -267,6 +283,7 @@ class Store {
       measurements: (measurementsRes.data ?? []).map(rowToMeasurement),
       photos: (photosRes.data ?? []).map(rowToPhoto),
       cardioLogs: (cardioRes.data ?? []).map(rowToCardio),
+      activityLogs: (activityRes.data ?? []).map(rowToActivity),
       weeklySchedule: (scheduleRes.data?.schedule as WeeklySchedule) ?? {},
       weightGoal: (goalRes.data?.goal as WeightGoal) ?? null,
       nutritionGoal: nutritionGoalRes.data ? rowToNutritionGoal(nutritionGoalRes.data) : null,
