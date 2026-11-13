@@ -8,7 +8,6 @@ const links = [
   { to: '/programas', label: 'Programas prontos', icon: LayoutGrid, end: true },
   { to: '/treinador', label: 'Treinador IA', icon: Bot, end: false },
   { to: '/cardio', label: 'Cardio', icon: Bike, end: false },
-  { to: '/atividades', label: 'Registrar atividade', icon: PlusCircle, end: false },
   { to: '/historico', label: 'Histórico', icon: History, end: false },
   { to: '/evolucao', label: 'Evolução e metas', icon: TrendingUp, end: false },
   { to: '/medidas', label: 'Medidas', icon: Ruler, end: false },
@@ -58,6 +57,18 @@ export function Sidebar({
             {label}
           </NavLink>
         ))}
+        <div className="border-t mt-3 pt-3" style={{borderColor:'var(--border)'}}>
+          <p className="text-[10px] font-semibold tracking-wide px-3 mb-2 uppercase"
+            style={{color:'var(--text-faint)'}}>Registros</p>
+          <NavLink to="/atividades"
+            className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors"
+            style={({isActive})=>({
+              background:isActive?'var(--brand-dim)':'transparent',
+              color:isActive?'var(--brand)':'var(--text-dim)',
+            })}>
+            <PlusCircle size={17}/> Atividades rápidas
+          </NavLink>
+        </div>
       </nav>
 
       <button
