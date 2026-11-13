@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Plus, ArrowUp, ArrowDown, Sparkles, X, Play, Repeat } from 'lucide-react';
 import { useAppData } from '../hooks/useAppData';
@@ -11,7 +11,8 @@ import {
   reorderWorkoutExercises,
   setWorkoutCircuit,
 } from '../lib/actions';
-import { startSession } from '../lib/actions';
+import { startSession, addActivityLog } from '../lib/actions';
+import { localIsoDate } from '../lib/nextTraining';
 import { Card, Button, EmptyState } from '../components/ui';
 import { ExercisePicker } from '../components/ExercisePicker';
 import { MUSCLE_GROUP_LABELS } from '../lib/exercises';
@@ -50,6 +51,12 @@ export function WorkoutEditor() {
   const [draftRest,setDraftRest] = useState(60);
   const [draftFormat,setDraftFormat] = useState<'rounds'|'amrap'|'emom'|'for_time'>('rounds');
   const [draftDuration,setDraftDuration] = useState(20);
+  const [hyroxDate,setHyroxDate] = useState(() => localIsoDate(new Date()));
+  const [hyroxMinutes,setHyroxMinutes] = useState('');
+  const [hyroxKcal,setHyroxKcal] = useState('');
+  const [hyroxSaving,setHyroxSaving] = useState(false);
+  const [hyroxError,setHyroxError] = useState('');
+  const [hyroxSuccess,setHyroxSuccess] = useState('');
   const [bulkStations,setBulkStations] = useState('');
   const [bulkError,setBulkError] = useState('');
   const [boardPhoto,setBoardPhoto] = useState<string|null>(null);
@@ -68,7 +75,7 @@ export function WorkoutEditor() {
     setBulkError('');
     if(previous) URL.revokeObjectURL(previous);
   }
-  const { workouts, exercises } = useAppData();
+  const { workouts, exercises, activityLogs, sessions } = useAppData();
   const [pickerOpen, setPickerOpen] = useState(false);
   const [editingName, setEditingName] = useState(false);
   const [showQuickBlocks, setShowQuickBlocks] = useState(false);
@@ -115,6 +122,57 @@ export function WorkoutEditor() {
     const next = Math.max(1,Math.min(180, value || 1));
     setDraftDuration(next);
     if (sorted.length) setWorkoutCircuit(workout!.id,true,rounds,circuitRest,circuitFormat,next);
+  }
+
+  /** Registro simples do que foi feito na aula; não altera estações da ficha. */
+  async function registerHyroxResult(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (hyroxSaving || !workout) return;
+    setHyroxError('');
+    setHyroxSuccess('');
+    const minutes = Number(hyroxMinutes);
+    const kcal = hyroxKcal.trim() === '' ? undefined : Number(hyroxKcal);
+    const parsed = new Date(hyroxDate + 'T12:00:00');
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(hyroxDate) || Number.isNaN(parsed.getTime()) ||
+        localIsoDate(parsed) !== hyroxDate || hyroxDate > localIsoDate(new Date())) {
+      setHyroxError('Escolha uma data válida até hoje.');
+      return;
+    }
+    if (!Number.isFinite(minutes) || minutes <= 0 || minutes > 1440) {
+      setHyroxError('Informe o tempo total entre 1 e 1440 minutos.');
+      return;
+    }
+    if (kcal !== undefined && (!Number.isInteger(kcal) || kcal < 0 || kcal > 20000)) {
+      setHyroxError('As kcal devem ser um número inteiro de 0 a 20.000.');
+      return;
+    }
+    if (activityLogs.some(log =>
+      log.kind === 'hyrox' && log.date === hyroxDate && log.label === workout.name.slice(0,80)
+    )) {
+      setHyroxError('Esta aula já foi registrada nessa data. Consulte Atividades rápidas para evitar duplicidade.');
+      return;
+    }
+    if (sessions.some(session =>
+      session.workoutId === workout.id && session.finishedAt &&
+      localIsoDate(new Date(session.finishedAt)) === hyroxDate
+    )) {
+      setHyroxError('Esta ficha já foi concluída nesse dia. Confira o Histórico para não somar o tempo duas vezes.');
+      return;
+    }
+    setHyroxSaving(true);
+    try {
+      const saved = await addActivityLog({
+        kind: 'hyrox', label: workout.name.slice(0,80), date: hyroxDate,
+        durationMin: minutes, caloriesKcal: kcal,
+        notes: 'Aula HYROX registrada na configuração do circuito.',
+      });
+      if (!saved.ok) { setHyroxError(saved.error); return; }
+      setHyroxSuccess('Aula registrada! Tempo e kcal no histórico; foguinho atualizado.');
+      setHyroxMinutes('');
+      setHyroxKcal('');
+    } finally {
+      setHyroxSaving(false);
+    }
   }
 
   function addStationsFromText() {
@@ -259,6 +317,53 @@ export function WorkoutEditor() {
             style={{background:'var(--brand)',color:'white'}}>Adicionar sequência</button>
         </div>}
         </details>
+        {circuit && (
+          <form onSubmit={registerHyroxResult} className="rounded-xl border p-3 mt-4 flex flex-col gap-3"
+            style={{borderColor:'var(--border)',background:'var(--surface)'}}>
+            <div>
+              <p className="text-sm font-semibold">Resultado da aula HYROX</p>
+              <p className="text-xs mt-1" style={{color:'var(--text-dim)'}}>
+                Coloque tempo total e kcal sem cadastrar estações ou trocar exercícios.
+              </p>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <label className="text-xs col-span-2" style={{color:'var(--text-dim)'}}>
+                Data da aula
+                <input type="date" required max={localIsoDate(new Date())}
+                  aria-label="Data da aula HYROX" value={hyroxDate}
+                  onChange={e=>setHyroxDate(e.target.value)}
+                  className="block w-full rounded-lg p-2 mt-1 text-sm"
+                  style={{background:'var(--surface-3)',color:'var(--text)'}}/>
+              </label>
+              <label className="text-xs" style={{color:'var(--text-dim)'}}>
+                Tempo total (min) *
+                <input type="number" required min={1} max={1440} step="any"
+                  inputMode="decimal" aria-label="Tempo total em minutos"
+                  value={hyroxMinutes} onChange={e=>setHyroxMinutes(e.target.value)}
+                  placeholder="Ex: 55" className="block w-full rounded-lg p-2 mt-1 text-sm"
+                  style={{background:'var(--surface-3)',color:'var(--text)'}}/>
+              </label>
+              <label className="text-xs" style={{color:'var(--text-dim)'}}>
+                Kcal gastas
+                <input type="number" min={0} max={20000} step={1}
+                  inputMode="numeric" aria-label="Calorias gastas em kcal"
+                  value={hyroxKcal} onChange={e=>setHyroxKcal(e.target.value)}
+                  placeholder="Opcional" className="block w-full rounded-lg p-2 mt-1 text-sm"
+                  style={{background:'var(--surface-3)',color:'var(--text)'}}/>
+              </label>
+            </div>
+            {hyroxError && <p role="alert" className="text-xs" style={{color:'var(--danger)'}}>{hyroxError}</p>}
+            {hyroxSuccess && <p role="status" className="text-xs" style={{color:'var(--success)'}}>{hyroxSuccess}</p>}
+            <button type="submit" disabled={hyroxSaving || !hyroxMinutes}
+              className="rounded-lg px-3 py-2.5 text-sm font-semibold text-white disabled:opacity-40"
+              style={{background:'var(--brand)'}}>
+              {hyroxSaving ? 'Salvando aula...' : 'Salvar resultado da aula'}
+            </button>
+            <p className="text-[11px]" style={{color:'var(--text-faint)'}}>
+              Salva como atividade concluída, sem iniciar outra sessão. Não lance novamente uma ficha já finalizada.
+            </p>
+          </form>
+        )}
       </div>
       <div className="mb-3">
         <button type="button" onClick={() => setShowQuickBlocks((open) => !open)}
