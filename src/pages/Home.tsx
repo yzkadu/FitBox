@@ -59,17 +59,17 @@ function Metric({ icon, value, label, color }: { icon: ReactNode; value: string 
 }
 
 export function Home() {
-  const { workouts, sessions, exercises, activeSessionId, weeklySchedule, cardioLogs } = useAppData();
+  const { workouts, sessions, exercises, activeSessionId, weeklySchedule, cardioLogs, activityLogs } = useAppData();
   const { user } = useAuth();
   const [profile, refetchProfile] = useProfile(user?.id);
   const navigate = useNavigate();
   const [switcherOpen, setSwitcherOpen] = useState(false);
 
   const active = workouts.filter((w) => !w.archived);
-  const streak = getCurrentStreakDays(sessions, cardioLogs, weeklySchedule);
-  const weekSessions = getTrainingDaysThisWeek(sessions, cardioLogs);
+  const streak = getCurrentStreakDays(sessions, cardioLogs, weeklySchedule, new Date(), activityLogs);
+  const weekSessions = getTrainingDaysThisWeek(sessions, cardioLogs, activityLogs);
   const weekVolume = getVolumeThisWeek(sessions);
-  const weekMinutes = getTrainingMinutesThisWeek(sessions, cardioLogs);
+  const weekMinutes = getTrainingMinutesThisWeek(sessions, cardioLogs, activityLogs);
   const coachTip = getTopCoachTip(sessions);
   const coachExercise = coachTip ? exercises.find((e) => e.id === coachTip.exerciseId) : null;
   const coachColor = coachTip?.action === 'increase' ? 'var(--success)' : coachTip?.action === 'deload' ? 'var(--warn)' : 'var(--text)';
@@ -134,6 +134,20 @@ export function Home() {
       </div>
 
       {user && active.length === 0 && <ImportLocalDataBanner userId={user.id} />}
+      <button type="button" onClick={() => navigate('/atividades')}
+        className="w-full mb-4 rounded-2xl border flex items-center gap-3 p-3 text-left"
+        style={{borderColor:'var(--border)',background:'var(--surface)'}}>
+        <span className="rounded-xl p-2" style={{background:'var(--brand-dim)',color:'var(--brand)'}}>
+          <Plus size={20}/>
+        </span>
+        <span className="flex-1 min-w-0">
+          <span className="block text-sm font-semibold">Registrar atividade rápida</span>
+          <span className="block text-xs" style={{color:'var(--text-dim)'}}>
+            HYROX, funcional ou outra · tempo, kcal e data
+          </span>
+        </span>
+        <ArrowRight size={16} style={{color:'var(--text-faint)'}}/>
+      </button>
 
       <div className="lg:grid lg:grid-cols-[1.5fr_1fr] lg:gap-4 lg:items-start">
         <div>

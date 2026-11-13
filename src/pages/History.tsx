@@ -7,7 +7,7 @@ import { deleteSession } from '../lib/actions';
 import { PageHeader, Card, EmptyState, Pill } from '../components/ui';
 
 export function History() {
-  const { sessions, exercises } = useAppData();
+  const { sessions, exercises, activityLogs } = useAppData();
   const navigate = useNavigate();
   const [expanded, setExpanded] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
@@ -28,7 +28,7 @@ export function History() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessions, exerciseById]);
 
-  if (finished.length === 0) {
+  if (finished.length === 0 && activityLogs.length === 0) {
     return (
       <div className="px-4">
         <PageHeader title="Histórico" />
@@ -43,6 +43,28 @@ export function History() {
       {deleteError && <p role="alert" className="text-xs rounded-lg px-3 py-2 mb-3"
         style={{color:'var(--danger)',background:'var(--surface-2)'}}>{deleteError}</p>}
 
+      {activityLogs.length > 0 && <section className="mb-5">
+        <div className="flex items-center justify-between mb-2">
+          <p className="text-sm font-semibold">Atividades rápidas</p>
+          <button type="button" onClick={()=>navigate('/atividades')} className="text-xs"
+            style={{color:'var(--brand)'}}>Gerenciar</button>
+        </div>
+        <div className="flex flex-col gap-2">
+          {[...activityLogs].sort((a,b)=>b.date.localeCompare(a.date)).map(a=>(
+            <Card key={a.id} className="!p-3">
+              <p className="text-sm font-semibold">
+                {a.label || ({hyrox:'HYROX',funcional:'Funcional',caminhada:'Caminhada',musculacao:'Musculação livre',cardio:'Cardio livre',esporte:'Esporte',mobilidade:'Mobilidade',outro:'Outro'}[a.kind] ?? 'Atividade')}
+              </p>
+              <p className="text-xs mt-1" style={{color:'var(--text-dim)'}}>
+                {new Date(a.date+'T12:00:00').toLocaleDateString('pt-BR')} · {a.durationMin} min
+                {a.caloriesKcal != null ? ' · '+a.caloriesKcal+' kcal' : ''}
+                {a.rpe != null ? ' · RPE '+a.rpe : ''}
+              </p>
+              {a.notes && <p className="text-xs mt-1" style={{color:'var(--text-faint)'}}>{a.notes}</p>}
+            </Card>
+          ))}
+        </div>
+      </section>}
       {records.length > 0 && (
         <div className="mb-5">
           <p className="text-sm font-semibold mb-2 flex items-center gap-1.5" style={{ color: 'var(--text-dim)' }}>

@@ -168,6 +168,11 @@ export function Cardio() {
         }
       />
 
+      <button type="button" onClick={()=>navigate('/atividades')}
+        className="w-full rounded-xl px-3 py-3 mb-4 flex items-center gap-2 text-xs text-left"
+        style={{background:'var(--surface-2)',color:'var(--brand)'}}>
+        <Plus size={16}/> Fez HYROX, funcional ou outra atividade? Registro rápido por minutos e kcal.
+      </button>
       {cardioPlan && (cardioPlan.label || suggestedDistanceKm || combinedToday) && (
         <Card className="mb-4 flex items-start gap-3" style={{ borderColor: 'var(--success)' }}>
           <RouteIcon size={18} style={{ color: 'var(--success)' }} />

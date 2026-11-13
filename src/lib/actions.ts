@@ -13,6 +13,7 @@ import type {
   BodyPhoto,
   MuscleGroup,
   CardioLog,
+  ActivityLog,
   Weekday,
   DaySchedule,
   WeightGoal,
@@ -1018,6 +1019,52 @@ export function deleteCardioLog(id: string) {
   const userId = requireUserId();
   if (userId) {
     supabase.from('cardio_logs').delete().eq('id', id).then(logIfError('cardio_logs.delete'));
+  }
+}
+
+// ---------- Registro rápido de atividades: gravação confirmada pelo Supabase ----------
+export async function addActivityLog(log: Omit<ActivityLog,'id'>):
+  Promise<{ok:true;entry:ActivityLog}|{ok:false;error:string}> {
+  const userId=requireUserId();
+  if(!userId) return {ok:false,error:'Faça login para registrar atividades.'};
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(log.date) || !Number.isFinite(log.durationMin) ||
+     log.durationMin<=0 || log.durationMin>1440) {
+    return {ok:false,error:'Data ou duração inválida.'};
+  }
+  const entry:ActivityLog={id:uid(),...log};
+  try {
+    const {error}=await supabase.from('activity_logs').insert({
+      id:entry.id,user_id:userId,date:entry.date,kind:entry.kind,
+      label:entry.label??null,duration_min:entry.durationMin,
+      calories_kcal:entry.caloriesKcal??null,avg_heart_rate:entry.avgHeartRate??null,
+      rpe:entry.rpe??null,notes:entry.notes??null,
+    });
+    if(error) {
+      console.error('activity_logs.insert:',error);
+      return {ok:false,error:'Não foi possível confirmar o registro no servidor. Tente novamente.'};
+    }
+    if(store.getUserId()===userId)store.update(d=>{
+      d.activityLogs.push(entry);
+      d.activityLogs.sort((a,b)=>a.date.localeCompare(b.date));
+    });
+    return {ok:true,entry};
+  } catch {
+    return {ok:false,error:'Conexão indisponível. A atividade ainda não foi salva.'};
+  }
+}
+
+export async function deleteActivityLog(id:string):Promise<{ok:true}|{ok:false;error:string}> {
+  const userId=requireUserId();
+  if(!userId)return {ok:false,error:'Faça login para excluir atividades.'};
+  try {
+    const {error}=await supabase.from('activity_logs').delete().eq('id',id).eq('user_id',userId);
+    if(error)return {ok:false,error:'Não foi possível confirmar a exclusão no servidor.'};
+    if(store.getUserId()===userId)store.update(d=>{
+      d.activityLogs=d.activityLogs.filter(a=>a.id!==id);
+    });
+    return {ok:true};
+  } catch {
+    return {ok:false,error:'Conexão indisponível. A exclusão não foi concluída.'};
   }
 }
 
