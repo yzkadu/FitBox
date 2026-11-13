@@ -67,12 +67,12 @@ function StatTile({
 }
 
 export function Progress() {
-  const { sessions, measurements, cardioLogs, weeklySchedule } = useAppData();
+  const { sessions, measurements, cardioLogs, activityLogs, weeklySchedule } = useAppData();
   const { user } = useAuth();
   const [profile] = useProfile(user?.id);
   const [activeFields, setActiveFields] = useState<Set<string>>(new Set(['waistCm']));
 
-  const freq = useMemo(() => getWeeklyFrequency(sessions, cardioLogs, 10), [sessions, cardioLogs]);
+  const freq = useMemo(() => getWeeklyFrequency(sessions, cardioLogs, 10, activityLogs), [sessions, cardioLogs, activityLogs]);
   const freqData = freq.map((f) => ({
     week: new Date(f.weekStart).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
     dias: f.count,
@@ -114,8 +114,8 @@ export function Progress() {
   }
 
   // ---------- Resumo do topo ----------
-  const streakDays = getCurrentStreakDays(sessions, cardioLogs, weeklySchedule);
-  const monthCount = getTrainingDaysThisMonth(sessions, cardioLogs);
+  const streakDays = getCurrentStreakDays(sessions, cardioLogs, weeklySchedule, new Date(), activityLogs);
+  const monthCount = getTrainingDaysThisMonth(sessions, cardioLogs, activityLogs);
   const trendCutoff = Date.now() - 28 * 24 * 60 * 60 * 1000;
   const baselineWeightEntry =
     weightEntries.slice().reverse().find((m) => Date.parse(m.date) <= trendCutoff) ?? weightEntries[0];
@@ -144,7 +144,7 @@ export function Progress() {
     .filter(item=>item.stats.count>0);
   const recentMeasurements=sortedByDate.slice(-6).reverse();
 
-  const hasAnyData = sessions.some((s) => s.finishedAt) || cardioLogs.length > 0 || measurements.length > 0;
+  const hasAnyData = sessions.some((s) => s.finishedAt) || cardioLogs.length > 0 || activityLogs.length > 0 || measurements.length > 0;
 
   if (!hasAnyData) {
     return (
