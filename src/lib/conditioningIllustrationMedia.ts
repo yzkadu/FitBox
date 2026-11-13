@@ -53,7 +53,12 @@ export const CONDITIONING_GUIDE_IDS = [
   "ex-new-shuttlerun",
   "ex-new-subidadeescadas"
 ] as const;
-const indexById = new Map<string,number>(CONDITIONING_GUIDE_IDS.map((id,index)=>[id,index]));
+// Shuttle run e subida de escadas aparecem duas vezes no atlas.
+// Evita que a segunda célula substitua silenciosamente a primeira.
+const indexById = new Map<string,number>();
+CONDITIONING_GUIDE_IDS.forEach((id,index) => {
+  if (!indexById.has(id)) indexById.set(id,index);
+});
 export function getConditioningIllustration(id:string): {src:string;index:number;rows:number;aspectRatio:string}|null {
   const index=indexById.get(id);
   return index===undefined ? null : {src:'/exercise-guide/conditioning/sprite.webp',index,rows:10,aspectRatio:'260 / 200'};
