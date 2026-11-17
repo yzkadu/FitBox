@@ -5,7 +5,7 @@ import { useAppData } from '../hooks/useAppData';
 import { useAuth } from '../hooks/useAuth';
 import { useProfile } from '../hooks/useProfile';
 import { startSession } from '../lib/actions';
-import { getCurrentStreakDays, getTrainingDaysThisWeek, getVolumeThisWeek, getTrainingMinutesThisWeek } from '../lib/stats';
+import { getCurrentStreakDays, hasPlannedTrainingDays, getTrainingDaysThisWeek, getVolumeThisWeek, getTrainingMinutesThisWeek } from '../lib/stats';
 import { getTopCoachTip } from '../lib/coach';
 import { computeGroupReadiness, READINESS_COLORS, READINESS_ORDER } from '../lib/recovery';
 import type { Readiness } from '../lib/recovery';
@@ -67,6 +67,7 @@ export function Home() {
 
   const active = workouts.filter((w) => !w.archived);
   const streak = getCurrentStreakDays(sessions, cardioLogs, weeklySchedule, new Date(), activityLogs);
+  const followsRoutine = hasPlannedTrainingDays(weeklySchedule);
   const weekSessions = getTrainingDaysThisWeek(sessions, cardioLogs, activityLogs);
   const weekVolume = getVolumeThisWeek(sessions);
   const weekMinutes = getTrainingMinutesThisWeek(sessions, cardioLogs, activityLogs);
@@ -375,12 +376,19 @@ export function Home() {
         className="grid grid-cols-2 gap-y-3 gap-x-2 lg:flex lg:items-center lg:justify-between lg:gap-2 py-4 mb-5"
         style={{ borderTop: '1px solid var(--border-soft)', borderBottom: '1px solid var(--border-soft)' }}
       >
-        <Metric icon={<Flame size={16} />} value={streak} label={`dia${streak !== 1 ? 's' : ''} seguidos`} color="var(--warn)" />
+        <Metric icon={<Flame size={16} />} value={streak} label={followsRoutine ? 'dias ativos na sequência' : 'dias seguidos'} color="var(--warn)" />
         <Metric icon={<Play size={16} />} value={weekSessions} label="dias ativos/semana" color="var(--success)" />
         <Metric icon={<Zap size={16} />} value={weekVolume.toLocaleString('pt-BR')} label="kg volume/semana" color="var(--brand-2)" />
         <Metric icon={<Timer size={16} />} value={formatMinutes(weekMinutes)} label="tempo/semana" />
       </div>
 
+      {(sessions.some(s => s.finishedAt) || cardioLogs.length > 0 || activityLogs.length > 0) && (
+        <p className="text-[11px] mb-4" style={{color:'var(--text-faint)'}}>
+          {followsRoutine
+            ? 'O foguinho conta dias ativos e ignora descansos da agenda. Treinos previstos sem registro quebram a sequência.'
+            : 'Para preservar o foguinho nos dias de descanso, configure seus treinos e descansos em Meus treinos.'}
+        </p>
+      )}
       <p className="text-sm font-semibold mb-2.5" style={{ color: 'var(--text-dim)' }}>
         {todaySchedule ? 'Todos os treinos' : 'Escolha um treino'}
       </p>

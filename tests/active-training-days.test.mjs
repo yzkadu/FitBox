@@ -63,3 +63,74 @@ test('tempo da semana soma cardio à musculação', () => {
   const now=new Date();
   assert.equal(stats.getTrainingMinutesThisWeek([completed(now.toISOString())],[cardio(localDay(now))]),30);
 });
+
+
+const weekdaysRoutine = {
+  seg: {kind:'treino',workoutId:'upper-costas'},
+  ter: {kind:'multi',activities:[{kind:'treino',workoutId:'hyrox'},{kind:'cardio',label:'HYROX'}]},
+  qua: {kind:'treino',workoutId:'lower'},
+  qui: {kind:'cardio',label:'HYROX'},
+  sex: {kind:'treino',workoutId:'upper-biceps'},
+  sab: {kind:'descanso'},
+  dom: {kind:'descanso'},
+};
+const quick = (date,kind='hyrox') => ({id:date, date, kind, durationMin:50});
+
+test('sexta + segunda + terça formam sequência de 3 treinos, sem quebrar no descanso do fim de semana',()=>{
+  const sessions=[completed(at('2026-11-13')),completed(at('2026-11-16'))];
+  assert.equal(stats.getCurrentStreakDays(sessions,[],weekdaysRoutine,new Date('2026-11-17T13:00:00-03:00'),[quick('2026-11-17')]),3);
+});
+
+test('HYROX de quinta + upper sexta + upper segunda + HYROX terça resultam em 4 dias ativos na sequência',()=>{
+  const sessions=[completed(at('2026-11-13')),completed(at('2026-11-16'))];
+  const logs=[quick('2026-11-12'),quick('2026-11-17')];
+  assert.equal(stats.getCurrentStreakDays(sessions,[],weekdaysRoutine,new Date('2026-11-17T13:00:00-03:00'),logs),4);
+});
+
+test('treino previsto para hoje ainda em aberto não perde sequência anterior',()=>{
+  const sessions=[completed(at('2026-11-13')),completed(at('2026-11-16'))];
+  assert.equal(stats.getCurrentStreakDays(sessions,[],weekdaysRoutine,new Date('2026-11-17T09:00:00-03:00')),2);
+});
+
+test('faltar a um treino previsto passado quebra a sequência mesmo após descanso',()=>{
+  const sessions=[completed(at('2026-11-13'))];
+  assert.equal(stats.getCurrentStreakDays(sessions,[],weekdaysRoutine,new Date('2026-11-17T09:00:00-03:00')),0);
+  assert.equal(stats.getCurrentStreakDays(sessions,[],weekdaysRoutine,new Date('2026-11-17T17:00:00-03:00'),[quick('2026-11-17')]),1);
+});
+
+test('descanso não soma dias fictícios e treino previsto no sábado não pode ser pulado',()=>{
+  const sessions=[completed(at('2026-11-13')),completed(at('2026-11-16'))];
+  const ref=new Date('2026-11-17T13:00:00-03:00');
+  assert.equal(stats.getCurrentStreakDays(sessions,[],weekdaysRoutine,ref,[quick('2026-11-17')]),3);
+  const saturdayTraining={...weekdaysRoutine,sab:{kind:'treino',workoutId:'lower'}};
+  assert.equal(stats.getCurrentStreakDays(sessions,[],saturdayTraining,ref,[quick('2026-11-17')]),2);
+});
+
+test('atividade extra no descanso conta uma vez, mas não mascara ausência em dia planejado',()=>{
+  const ref=new Date('2026-11-17T13:00:00-03:00');
+  const sessions=[completed(at('2026-11-13')),completed(at('2026-11-16'))];
+  const extras=[quick('2026-11-14','caminhada'),quick('2026-11-17')];
+  assert.equal(stats.getCurrentStreakDays(sessions,[],weekdaysRoutine,ref,extras),4);
+  assert.equal(stats.getActiveTrainingDays(sessions,[cardio('2026-11-14')],extras).size,4);
+});
+
+test('agenda vazia conserva regra antiga de dias corridos, sem supor descanso no fim de semana',()=>{
+  const sessions=[completed(at('2026-11-13')),completed(at('2026-11-16'))];
+  const ref=new Date('2026-11-17T13:00:00-03:00');
+  assert.equal(stats.hasPlannedTrainingDays({}),false);
+  assert.equal(stats.hasPlannedTrainingDays({sab:{kind:'descanso'},dom:{kind:'descanso'}}),false);
+  assert.equal(stats.hasPlannedTrainingDays(weekdaysRoutine),true);
+  assert.equal(stats.getCurrentStreakDays(sessions,[],{},ref,[quick('2026-11-17')]),2);
+});
+
+test('programação multi vazia equivale a descanso e dia multi com cardio aceita HYROX rápido',()=>{
+  const schedule={seg:{kind:'multi',activities:[]},ter:{kind:'multi',activities:[{kind:'cardio',label:'HYROX'}]},qua:{kind:'descanso'}};
+  assert.equal(stats.getCurrentStreakDays([],[],schedule,new Date('2026-11-17T20:00:00-03:00'),[quick('2026-11-17')]),1);
+  assert.equal(stats.hasPlannedTrainingDays(schedule),true);
+});
+
+test('abrir/check-in de sessão sem concluir não conta como treino cumprido',()=>{
+  const ref=new Date('2026-11-17T13:00:00-03:00');
+  const unclosed={startedAt:at('2026-11-16'),finishedAt:null,exercises:[]};
+  assert.equal(stats.getCurrentStreakDays([unclosed],[],weekdaysRoutine,ref,[quick('2026-11-17')]),1);
+});
