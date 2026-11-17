@@ -183,23 +183,54 @@ export function getCurrentStreakWeeks(sessions: Session[], cardioLogs: CardioLog
   return count;
 }
 
-/** Foguinho: sequência de dias consecutivos com atividade de qualquer modalidade.
- * Cada data conta no máximo uma vez. O dia atual fica em aberto até ser concluído:
- * se hoje ainda não houve atividade, uma sequência que terminou ontem continua
- * aparecendo. Dias sem registro no passado quebram a sequência — mesmo que estejam
- * marcados como descanso na agenda. A agenda não cria atividades fictícias.
+/** Há pelo menos um dia de treino previsto na programação semanal?
+ * Só descansos/agenda vazia não ativam uma rotina fictícia.
+ */
+export function hasPlannedTrainingDays(schedule?: WeeklySchedule): boolean {
+  return Object.values(schedule ?? {}).some(day =>
+    !!day && day.kind !== 'descanso' &&
+    (day.kind !== 'multi' || (Array.isArray(day.activities) && day.activities.length > 0)),
+  );
+}
+
+/** A agenda aceita treino, cardio, ambos ou várias opções: cumprir QUALQUER
+ * atividade física registrada no dia já é suficiente para o foguinho.
+ */
+function isPlannedTrainingDay(schedule: WeeklySchedule, date: Date): boolean {
+  const weekday = (['dom','seg','ter','qua','qui','sex','sab'] as const)[date.getDay()];
+  const day = schedule[weekday];
+  return !!day && day.kind !== 'descanso' &&
+    (day.kind !== 'multi' || (Array.isArray(day.activities) && day.activities.length > 0));
+}
+
+/** Foguinho: consistência de dias ativos ao longo da agenda semanal.
+ * - Cada dia com musculação concluída, cardio ou atividade rápida conta 1.
+ * - Dias sem treino previsto (descanso/sem entrada) são IGNORADOS, sem pontuar
+ *   ou interromper, desde que a agenda tenha ao menos um dia de treino.
+ * - Treino previsto e não realizado em dia já encerrado QUEBRA a sequência.
+ * - Hoje ainda não terminado não quebra uma sequência concluída anteriormente.
+ * - Sem agenda configurada, mantém o comportamento antigo de dias corridos.
+ *
+ * A programação atual é aplicada retroativamente; não há histórico de versões
+ * da agenda no banco. Horário civil local sempre, incluindo o fuso do Brasil.
  */
 export function getCurrentStreakDays(
-  sessions: Session[], cardioLogs: CardioLog[], _weeklySchedule?: WeeklySchedule, today = new Date(), activityLogs: ActivityLog[] = [],
+  sessions: Session[], cardioLogs: CardioLog[], weeklySchedule?: WeeklySchedule, today = new Date(), activityLogs: ActivityLog[] = [],
 ): number {
   const activeDays = getActiveTrainingDays(sessions, cardioLogs, activityLogs);
+  const followsPlan = hasPlannedTrainingDays(weeklySchedule);
   const cursor = new Date(today);
-  cursor.setHours(12, 0, 0, 0); // mantém dia civil ao atravessar mudanças de horário
-  if (!activeDays.has(localDay(cursor))) cursor.setDate(cursor.getDate() - 1);
+  cursor.setHours(12, 0, 0, 0);
+  const currentDay = localDay(cursor);
   let streak = 0;
   for (let guard = 0; guard < 3650; guard++) {
-    if (!activeDays.has(localDay(cursor))) break;
-    streak += 1;
+    const key = localDay(cursor);
+    if (activeDays.has(key)) {
+      streak += 1;
+    } else if (key !== currentDay && (!followsPlan || isPlannedTrainingDay(weeklySchedule!, cursor))) {
+      // Só pula os dias de descanso da agenda, nunca um treino previsto perdido.
+      break;
+    }
     cursor.setDate(cursor.getDate() - 1);
   }
   return streak;
