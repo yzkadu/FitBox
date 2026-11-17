@@ -89,9 +89,9 @@ export function Home() {
   const todayKey = todayWeekdayKey();
   const todaySchedule = weeklySchedule[todayKey];
   const todayWorkout = todaySchedule?.kind === 'treino' || todaySchedule?.kind === 'combo' ? workouts.find((w) => w.id === todaySchedule.workoutId) : null;
-  const completedToday = hasCompletedScheduledActivityToday(todaySchedule, sessions, cardioLogs);
+  const completedToday = hasCompletedScheduledActivityToday(todaySchedule, sessions, cardioLogs, new Date(), activityLogs, workouts);
   const todaysOptions = getActivitiesForDay(todaySchedule);
-  const hasAnyDoneToday = todaysOptions.some(a => isScheduledActivityDone(a, sessions, cardioLogs));
+  const hasAnyDoneToday = todaysOptions.some(a => isScheduledActivityDone(a, sessions, cardioLogs, new Date(), activityLogs, workouts));
   const nextTraining = hasAnyDoneToday ? findNextScheduledTraining(weeklySchedule, workouts) : null;
 
   const lastFinished = sessions
@@ -176,7 +176,7 @@ export function Home() {
               </p>
               <div className="flex flex-col gap-2">
                 {todaysOptions.map((activity, index) => {
-                  const done = isScheduledActivityDone(activity, sessions, cardioLogs);
+                  const done = isScheduledActivityDone(activity, sessions, cardioLogs, new Date(), activityLogs, workouts);
                   const workout = activity.kind === 'treino'
                     ? workouts.find(w => w.id === activity.workoutId && !w.archived) : undefined;
                   return (

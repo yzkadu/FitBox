@@ -1,8 +1,10 @@
 import { useState, type FormEvent, type ReactNode } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { CalendarDays, Clock3, Flame, HeartPulse, Plus, Trash2 } from 'lucide-react';
 import { useAppData } from '../hooks/useAppData';
 import { addActivityLog, deleteActivityLog } from '../lib/actions';
-import { localIsoDate } from '../lib/nextTraining';
+import { getActivitiesForDay, localIsoDate } from '../lib/nextTraining';
+import { WEEKDAY_ORDER } from '../types';
 import type { ActivityKind, ActivityLog } from '../types';
 import { Button, Card, EmptyState, PageHeader, Pill } from '../components/ui';
 import { Sheet } from '../components/Sheet';
@@ -27,16 +29,18 @@ function Field({label,children}:{label:string;children:ReactNode}) {
   </label>;
 }
 export function Activities() {
-  const {activityLogs}=useAppData();
+  const {activityLogs, weeklySchedule, workouts}=useAppData();
+  const navigate=useNavigate();
   const [open,setOpen]=useState(false);
   const [form,setForm]=useState(init);
+  const [linkedWorkoutId,setLinkedWorkoutId]=useState('');
   const [saving,setSaving]=useState(false);
   const [error,setError]=useState('');
   const [notice,setNotice]=useState('');
   const [confirmDelete,setConfirmDelete]=useState<string|null>(null);
   const [removing,setRemoving]=useState(false);
   function openForm(date=today()){
-    setForm({...init(),date});setError('');setNotice('');setOpen(true);
+    setForm({...init(),date});setLinkedWorkoutId('');setError('');setNotice('');setOpen(true);
   }
   async function save(event:FormEvent<HTMLFormElement>){
     event.preventDefault();
@@ -62,16 +66,22 @@ export function Activities() {
       setError('O esforço deve estar entre 1 e 10.');return;
     }
     if(form.kind==='outro'&&!form.label.trim()){setError('Informe o nome da atividade.');return;}
+    // O vínculo só é aceito se a ficha realmente estiver na programação
+    // dessa data. A modalidade genérica sozinha não conclui Upper/Lower.
+    const selectedWorkout = plannedWorkouts.find(w=>w.id===linkedWorkoutId);
+    if(linkedWorkoutId && !selectedWorkout){
+      setError('O treino selecionado não está programado nesta data.');return;
+    }
     setError('');setSaving(true);
     const result=await addActivityLog({
       date:form.date,kind:form.kind,durationMin,
-      label:form.kind==='outro'?form.label.trim().slice(0,80):undefined,
+      label:selectedWorkout?.name.slice(0,80) ?? (form.kind==='outro'?form.label.trim().slice(0,80):undefined),
       caloriesKcal,avgHeartRate,rpe,notes:form.notes.trim().slice(0,1000)||undefined,
     });
     setSaving(false);
     if(!result.ok){setError(result.error);return;}
-    setNotice('Atividade salva com sucesso. O foguinho e a frequência foram atualizados.');
-    setOpen(false);setForm(init());
+    setNotice('Atividade salva! Se ela corresponde ao treino planejado, o próximo treino aparecerá em Hoje.');
+    setOpen(false);setForm(init());setLinkedWorkoutId('');
   }
   async function remove(id:string){
     if(removing)return;
@@ -81,6 +91,12 @@ export function Activities() {
     if(result.ok){setConfirmDelete(null);setNotice('Registro excluído.');}
     else setError(result.error);
   }
+  const dateObject = new Date(form.date+'T12:00:00');
+  const dayKey = WEEKDAY_ORDER[(dateObject.getDay()+6)%7];
+  const plannedWorkouts = getActivitiesForDay(weeklySchedule[dayKey])
+    .filter((item)=>item.kind==='treino')
+    .map(item=>workouts.find(w=>w.id===item.workoutId && !w.archived))
+    .filter((w):w is NonNullable<typeof w>=>!!w);
   const ordered=[...activityLogs].sort((a,b)=>b.date.localeCompare(a.date));
   const totalMinutes=activityLogs.reduce((sum,a)=>sum+a.durationMin,0);
   return <div className="px-4 pb-8">
@@ -100,7 +116,11 @@ export function Activities() {
         Dia com atividade concluída conta uma vez no foguinho, mesmo com cardio e musculação juntos.
       </p>
     </Card>
-    {notice&&<p role="status" className="text-xs mb-3" style={{color:'var(--success)'}}>{notice}</p>}
+    {notice&&<div className="flex items-center justify-between gap-2 mb-3">
+      <p role="status" className="text-xs" style={{color:'var(--success)'}}>{notice}</p>
+      <button type="button" onClick={()=>navigate('/')} className="text-xs font-semibold shrink-0"
+        style={{color:'var(--brand)'}}>Ver próximo treino</button>
+    </div>}
     {error&&!open&&<p role="alert" className="text-xs mb-3" style={{color:'var(--danger)'}}>{error}</p>}
     <div className="grid grid-cols-2 gap-2 mb-5">
       <Card className="!p-3"><p className="text-xs" style={{color:'var(--text-dim)'}}>Registros rápidos</p>
@@ -150,7 +170,7 @@ export function Activities() {
           <p className="text-xs font-semibold mb-2">Tipo de atividade</p>
           <div className="grid grid-cols-2 gap-2">
             {OPTIONS.map(({kind,label})=><button type="button" key={kind} aria-pressed={form.kind===kind}
-              onClick={()=>setForm(v=>({...v,kind}))}
+              onClick={()=>{setForm(v=>({...v,kind}));setLinkedWorkoutId('')}}
               className="rounded-xl px-3 py-2.5 text-xs font-medium"
               style={{background:form.kind===kind?'var(--brand-dim)':'var(--surface-2)',
                 color:form.kind===kind?'var(--brand)':'var(--text-dim)'}}>{label}</button>)}
@@ -161,9 +181,21 @@ export function Activities() {
             className="rounded-lg px-3 py-2.5 text-sm" style={inputStyle} placeholder="Ex: dança, trilha, futebol"/></Field>}
         <Field label="Data">
           <input type="date" required max={today()} value={form.date}
-            onChange={e=>setForm(v=>({...v,date:e.target.value}))}
+            onChange={e=>{setForm(v=>({...v,date:e.target.value}));setLinkedWorkoutId('')}}
             className="rounded-lg px-3 py-2.5 text-sm" style={inputStyle}/>
         </Field>
+        {plannedWorkouts.length>0 && ['musculacao','hyrox','funcional'].includes(form.kind) && (
+          <Field label="Vincular ao treino planejado (opcional)">
+            <select value={linkedWorkoutId} onChange={e=>setLinkedWorkoutId(e.target.value)}
+              className="rounded-lg px-3 py-2.5 text-sm" style={inputStyle}>
+              <option value="">Sem vínculo explícito {form.kind==='hyrox'?'(HYROX identificado automaticamente)':''}</option>
+              {plannedWorkouts.map(w=><option key={w.id} value={w.id}>{w.name}</option>)}
+            </select>
+            <span className="text-[11px]" style={{color:'var(--text-faint)'}}>
+              Para musculação, selecione a ficha que você realizou. HYROX é reconhecido pela programação.
+            </span>
+          </Field>
+        )}
         <div className="grid grid-cols-2 gap-3">
           <Field label="Duração (min) *">
             <input type="number" required min={1} max={1440} step="any" inputMode="decimal"
