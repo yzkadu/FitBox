@@ -1,4 +1,4 @@
-import type { CardioLog, DaySchedule, ScheduledActivity, Session, Weekday, WeeklySchedule, Workout } from '../types';
+import type { ActivityLog, CardioLog, DaySchedule, ScheduledActivity, Session, Weekday, WeeklySchedule, Workout } from '../types';
 import { WEEKDAY_ORDER } from '../types';
 
 export type NextScheduledTraining =
@@ -26,23 +26,78 @@ export function getActivitiesForDay(schedule: DaySchedule | undefined): Schedule
   ];
 }
 
-export function isScheduledActivityDone(activity: ScheduledActivity, sessions: Session[], cardioLogs: CardioLog[], date = new Date()): boolean {
-  if (activity.kind === 'treino') {
-    return sessions.some(s => s.workoutId === activity.workoutId && !!s.finishedAt && onLocalDay(s.finishedAt, date));
-  }
-  return cardioLogs.some(c => c.date === localIsoDate(date));
+/** Normaliza só para identificação de modalidades, sem confiar em nomes parciais. */
+function normalizeLabel(value: string): string {
+  return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
 }
 
-/** Mantido para usar com agendas legadas que armazenaram kind=combo. */
+/** A categoria HYROX tem ficha variável e pode ser lançada sem exercícios.
+ * Para fichas de força, o registro rápido precisa estar explicitamente
+ * vinculado ao nome completo da ficha — nunca basta escrever "musculação".
+ */
+function quickMatchesWorkout(log: ActivityLog, workout: Workout): boolean {
+  const title = normalizeLabel(workout.name);
+  const linkedName = normalizeLabel(log.label ?? '');
+  if (linkedName && linkedName === normalizeLabel(workout.name.slice(0, 80))) {
+    return true;
+  }
+  return log.kind === 'hyrox' && /\bhyrox\b|\bhirox\b/.test(title);
+}
+
+/** Cardio genérico pode ser registrado rapidamente; dias especificamente HYROX
+ * só são cumpridos por HYROX (não por corrida aleatória no mesmo dia).
+ */
+function quickMatchesCardio(log: ActivityLog, label?: string): boolean {
+  const expected = normalizeLabel(label ?? '');
+  const actual = normalizeLabel(log.label ?? '');
+  if (actual && expected && actual === expected) return true;
+  if (/\bhyrox\b|\bhirox\b/.test(expected)) return log.kind === 'hyrox';
+  if (/\bcaminhad/.test(expected)) return log.kind === 'caminhada';
+  if (/\bmobilidad|\balongamento/.test(expected)) return log.kind === 'mobilidade';
+  return log.kind === 'cardio' || (log.kind === 'caminhada' &&
+    (!expected || /\bcardio\b|\baerobico\b/.test(expected)));
+}
+
+/** Um registro rápido salvo é uma conclusão real, não precisa criar outra
+ * sessão de força para aparecer como realizado na programação.
+ */
+export function isScheduledActivityDone(
+  activity: ScheduledActivity,
+  sessions: Session[],
+  cardioLogs: CardioLog[],
+  date = new Date(),
+  activityLogs: ActivityLog[] = [],
+  workouts: Workout[] = [],
+): boolean {
+  const day = localIsoDate(date);
+  if (activity.kind === 'treino') {
+    if (sessions.some(s => s.workoutId === activity.workoutId && !!s.finishedAt && onLocalDay(s.finishedAt, date))) {
+      return true;
+    }
+    const workout = workouts.find(w => w.id === activity.workoutId && !w.archived);
+    return !!workout && activityLogs.some(log =>
+      log.date === day && log.durationMin > 0 && quickMatchesWorkout(log, workout));
+  }
+  // Cardios clássicos mantêm compatibilidade com registros existentes.
+  const expected = normalizeLabel(activity.label ?? '');
+  const isHyroxPlan = /\bhyrox\b|\bhirox\b/.test(expected);
+  if (!isHyroxPlan && cardioLogs.some(c => c.date === day && c.durationMin > 0)) return true;
+  return activityLogs.some(log =>
+    log.date === day && log.durationMin > 0 && quickMatchesCardio(log, activity.label));
+}
+
+/** Mantém os formatos de agenda combo antigos, com atividades independentes. */
 export function getCombinedTrainingProgress(
   schedule: Extract<DaySchedule, { kind: 'combo' }>,
   sessions: Session[],
   cardioLogs: CardioLog[],
   date = new Date(),
+  activityLogs: ActivityLog[] = [],
+  workouts: Workout[] = [],
 ) {
   const activities = getActivitiesForDay(schedule);
-  const cardioDone = isScheduledActivityDone(activities[0], sessions, cardioLogs, date);
-  const strengthDone = isScheduledActivityDone(activities[1], sessions, cardioLogs, date);
+  const cardioDone = isScheduledActivityDone(activities[0], sessions, cardioLogs, date, activityLogs, workouts);
+  const strengthDone = isScheduledActivityDone(activities[1], sessions, cardioLogs, date, activityLogs, workouts);
   return { cardioDone, strengthDone, completed: cardioDone && strengthDone };
 }
 
@@ -51,9 +106,12 @@ export function hasCompletedScheduledActivityToday(
   sessions: Session[],
   cardioLogs: CardioLog[],
   date = new Date(),
+  activityLogs: ActivityLog[] = [],
+  workouts: Workout[] = [],
 ): boolean {
   const activities = getActivitiesForDay(schedule);
-  return activities.length > 0 && activities.every(a => isScheduledActivityDone(a, sessions, cardioLogs, date));
+  return activities.length > 0 && activities.every(a =>
+    isScheduledActivityDone(a, sessions, cardioLogs, date, activityLogs, workouts));
 }
 
 /** Destaca a próxima atividade programada a partir de amanhã, pulando descanso. */
