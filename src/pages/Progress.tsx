@@ -16,7 +16,7 @@ import { Flame, CalendarCheck, Scale, Activity } from 'lucide-react';
 import { useAppData } from '../hooks/useAppData';
 import { useAuth } from '../hooks/useAuth';
 import { useProfile } from '../hooks/useProfile';
-import { getWeeklyFrequency, getCurrentStreakDays, getTrainingDaysThisMonth } from '../lib/stats';
+import { getWeeklyFrequency, getCurrentStreakDays, hasPlannedTrainingDays, getTrainingDaysThisMonth } from '../lib/stats';
 import { calcImc, classifyImc, healthyWeightRangeKg } from '../lib/imc';
 import { PageHeader, Card, EmptyState, Pill } from '../components/ui';
 import { chartColors, seriesOrder, tooltipStyle } from '../lib/chartTheme';
@@ -162,8 +162,9 @@ export function Progress() {
       <div className="grid grid-cols-2 gap-2.5 mb-4">
         <StatTile
           icon={<Flame size={13} />}
-          label="Sequência"
+          label="Sequência de treinos"
           value={`${streakDays} dia${streakDays === 1 ? '' : 's'}`}
+          sub={hasPlannedTrainingDays(weeklySchedule) ? 'Descansos preservados' : 'Sem rotina programada'}
         />
         <StatTile icon={<CalendarCheck size={13} />} label="Dias ativos/mês" value={String(monthCount)} />
         <StatTile
