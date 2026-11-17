@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ChevronDown, Trophy, Trash2, Camera, Pencil } from 'lucide-react';
 import { useAppData } from '../hooks/useAppData';
 import { getPersonalRecord, getTrainedExerciseIds } from '../lib/stats';
+import { getSessionHistory, quickActivityName } from '../lib/sessionHistory';
 import { deleteSession } from '../lib/actions';
 import { PageHeader, Card, EmptyState, Pill } from '../components/ui';
 
@@ -15,9 +16,7 @@ export function History() {
   const [deleteError,setDeleteError] = useState('');
 
   const exerciseById = new Map(exercises.map((e) => [e.id, e]));
-  const finished = sessions
-    .filter((s) => s.finishedAt)
-    .sort((a, b) => Date.parse(b.finishedAt as string) - Date.parse(a.finishedAt as string));
+  const timeline = getSessionHistory(sessions, activityLogs);
 
   const records = useMemo(() => {
     return getTrainedExerciseIds(sessions)
@@ -28,7 +27,7 @@ export function History() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessions, exerciseById]);
 
-  if (finished.length === 0 && activityLogs.length === 0) {
+  if (timeline.length === 0) {
     return (
       <div className="px-4">
         <PageHeader title="Histórico" />
@@ -43,28 +42,6 @@ export function History() {
       {deleteError && <p role="alert" className="text-xs rounded-lg px-3 py-2 mb-3"
         style={{color:'var(--danger)',background:'var(--surface-2)'}}>{deleteError}</p>}
 
-      {activityLogs.length > 0 && <section className="mb-5">
-        <div className="flex items-center justify-between mb-2">
-          <p className="text-sm font-semibold">Atividades rápidas</p>
-          <button type="button" onClick={()=>navigate('/atividades')} className="text-xs"
-            style={{color:'var(--brand)'}}>Gerenciar</button>
-        </div>
-        <div className="flex flex-col gap-2">
-          {[...activityLogs].sort((a,b)=>b.date.localeCompare(a.date)).map(a=>(
-            <Card key={a.id} className="!p-3">
-              <p className="text-sm font-semibold">
-                {a.label || ({hyrox:'HYROX',funcional:'Funcional',caminhada:'Caminhada',musculacao:'Musculação livre',cardio:'Cardio livre',esporte:'Esporte',mobilidade:'Mobilidade',outro:'Outro'}[a.kind] ?? 'Atividade')}
-              </p>
-              <p className="text-xs mt-1" style={{color:'var(--text-dim)'}}>
-                {new Date(a.date+'T12:00:00').toLocaleDateString('pt-BR')} · {a.durationMin} min
-                {a.caloriesKcal != null ? ' · '+a.caloriesKcal+' kcal' : ''}
-                {a.rpe != null ? ' · RPE '+a.rpe : ''}
-              </p>
-              {a.notes && <p className="text-xs mt-1" style={{color:'var(--text-faint)'}}>{a.notes}</p>}
-            </Card>
-          ))}
-        </div>
-      </section>}
       {records.length > 0 && (
         <div className="mb-5">
           <p className="text-sm font-semibold mb-2 flex items-center gap-1.5" style={{ color: 'var(--text-dim)' }}>
@@ -91,8 +68,57 @@ export function History() {
       <p className="text-sm font-semibold mb-2" style={{ color: 'var(--text-dim)' }}>
         Sessões
       </p>
+      <p className="text-xs mb-3" style={{color:'var(--text-faint)'}}>
+        Musculação, HYROX e outras atividades registradas no mesmo histórico.
+      </p>
       <div className="flex flex-col gap-2.5 pb-6">
-        {finished.map((s) => {
+        {timeline.map((entry) => {
+          if (entry.kind === 'activity') {
+            const a = entry.activity;
+            const key = 'quick-' + a.id;
+            const isOpen = expanded === key;
+            return (
+              <Card key={key} className="!p-0 overflow-hidden">
+                <button type="button" onClick={() => setExpanded(isOpen ? null : key)}
+                  className="w-full flex items-center justify-between px-4 py-3.5 text-left">
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium truncate">{quickActivityName(a)}</p>
+                    <p className="text-xs mt-1" style={{color:'var(--text-faint)'}}>
+                      {new Date(a.date + 'T12:00:00').toLocaleDateString('pt-BR', {
+                        weekday:'short',day:'2-digit',month:'short',
+                      })}
+                      {' · '}{a.durationMin} min
+                      {a.caloriesKcal != null ? ' · ' + a.caloriesKcal + ' kcal' : ''}
+                      {a.rpe != null ? ' · RPE ' + a.rpe : ''}
+                    </p>
+                    <span className="text-[11px] font-medium" style={{color:'var(--brand)'}}>
+                      Registro rápido
+                    </span>
+                  </div>
+                  <ChevronDown size={18} style={{
+                    color:'var(--text-faint)',transform:isOpen?'rotate(180deg)':undefined,
+                    transition:'transform 0.15s',
+                  }}/>
+                </button>
+                {isOpen && (
+                  <div className="px-4 pb-4 border-t pt-3 flex flex-col gap-2 text-xs"
+                    style={{borderColor:'var(--border)',color:'var(--text-dim)'}}>
+                    <p>Atividade concluída · {a.durationMin} minutos
+                      {a.caloriesKcal != null ? ' · ' + a.caloriesKcal + ' kcal' : ''}
+                    </p>
+                    {a.avgHeartRate != null && <p>FC média: {a.avgHeartRate} bpm</p>}
+                    {a.rpe != null && <p>Esforço: {a.rpe}/10</p>}
+                    {a.notes && <p className="whitespace-pre-wrap">{a.notes}</p>}
+                    <button type="button" onClick={() => navigate('/atividades')}
+                      className="text-xs font-semibold text-left mt-1" style={{color:'var(--brand)'}}>
+                      Gerenciar registro rápido
+                    </button>
+                  </div>
+                )}
+              </Card>
+            );
+          }
+          const s = entry.session;
           const isOpen = expanded === s.id;
           const totalVolume = s.exercises.reduce(
             (sum, se) => sum + se.sets.reduce((sv, st) => sv + st.weight * st.reps, 0),
